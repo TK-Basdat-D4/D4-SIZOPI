@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Choose Registration Type{% endblock %}
+
+{% block content %}
+<div>
+    <h1>Choose Registration Type</h1>
+    <p>Select your role in the zoo system</p>
+    
+    <div>
+        <div>
+            <h3>Pengunjung</h3>
+            <p>Register as a visitor</p>
+            <a href="{% url 'register_login:register_pengunjung' %}">Register as Visitor</a>
+        </div>
+        
+        <div>
+            <h3>Dokter Hewan</h3>
+            <p>Join as a veterinarian</p>
+            <a href="{% url 'register_login:register_dokter' %}">Register as Vet</a>
+        </div>
+        
+        <div>
+            <h3>Staff</h3>
+            <p>Register as zoo staff</p>
+            <a href="{% url 'register_login:register_staff' %}">Register as Staff</a>
+        </div>
+    </div>
+    
+    <div>
+        <a href="{% url 'register_login:login' %}">Already have an account? Login</a>
+    </div>
+</div>
+{% endblock %}
