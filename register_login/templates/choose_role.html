@@ -3,32 +3,40 @@
 {% block title %}Choose Registration Type{% endblock %}
 
 {% block content %}
-<div>
-    <h1>Choose Registration Type</h1>
-    <p>Select your role in the zoo system</p>
-    
-    <div>
+<div class="min-h-screen flex flex-col items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
         <div>
-            <h3>Pengunjung</h3>
-            <p>Register as a visitor</p>
-            <a href="{% url 'register_login:register_pengunjung' %}">Register as Visitor</a>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Choose Registration Type</h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Select your role in the zoo system
+            </p>
         </div>
-        
-        <div>
-            <h3>Dokter Hewan</h3>
-            <p>Join as a veterinarian</p>
-            <a href="{% url 'register_login:register_dokter' %}">Register as Vet</a>
+
+        <div class="space-y-4">
+            <div class="text-center">
+                <h3 class="text-lg font-medium text-gray-700">Pengunjung</h3>
+                <p class="text-sm text-gray-500">Register as a visitor</p>
+                <a href="{% url 'register_login:register_pengunjung' %}" class="text-indigo-600 hover:text-indigo-800 font-semibold">Register as Visitor</a>
+            </div>
+
+            <div class="text-center">
+                <h3 class="text-lg font-medium text-gray-700">Dokter Hewan</h3>
+                <p class="text-sm text-gray-500">Join as a veterinarian</p>
+                <a href="{% url 'register_login:register_dokter' %}" class="text-indigo-600 hover:text-indigo-800 font-semibold">Register as Vet</a>
+            </div>
+
+            <div class="text-center">
+                <h3 class="text-lg font-medium text-gray-700">Staff</h3>
+                <p class="text-sm text-gray-500">Register as zoo staff</p>
+                <a href="{% url 'register_login:register_staff' %}" class="text-indigo-600 hover:text-indigo-800 font-semibold">Register as Staff</a>
+            </div>
         </div>
-        
-        <div>
-            <h3>Staff</h3>
-            <p>Register as zoo staff</p>
-            <a href="{% url 'register_login:register_staff' %}">Register as Staff</a>
+
+        <div class="text-center mt-6">
+            <a href="{% url 'register_login:login' %}" class="text-sm text-gray-500 hover:text-gray-700">
+                Already have an account? <span class="font-semibold text-indigo-600 hover:text-indigo-800">Login</span>
+            </a>
         </div>
-    </div>
-    
-    <div>
-        <a href="{% url 'register_login:login' %}">Already have an account? Login</a>
     </div>
 </div>
 {% endblock %}

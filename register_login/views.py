@@ -71,12 +71,9 @@ users = [
     }
 ]
 
-# Variable to store currently logged in user
-current_user = {}
-
 def home(request):
     """Home page that can be accessed by guests"""
-    return render(request, "home.html", {"current_user": current_user})
+    return render(request, "home.html")
 
 def choose_role(request):
     """Page to choose registration role"""
@@ -248,14 +245,13 @@ def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        global current_user
-        
         # Check credentials
         for user in users:
             if user['username'] == username and user['password'] == password:
-                current_user = user
+                # Simpan user ke session
+                request.session['user'] = user
                 messages.success(request, f"Selamat datang, {user['nama_depan']}!")
-                return redirect('register_login:profile')
+                return redirect('register_login:dashboard')
         
         # If credentials don't match
         messages.error(request, 'Username atau Password salah!')
@@ -264,22 +260,31 @@ def login(request):
 
 def logout(request):
     """Logout function"""
-    global current_user
-    current_user = {}
+    # Hapus user dari session
+    if 'user' in request.session:
+        del request.session['user']
     messages.success(request, 'Berhasil logout!')
     return redirect('register_login:login')
 
 def profile(request):
     """Profile page based on user role"""
-    global current_user
-    
-    if not current_user:
+    if 'user' not in request.session:
         messages.error(request, 'Silahkan login terlebih dahulu!')
         return redirect('register_login:login')
     
-    if current_user['role'] == 'pengunjung':
-        return render(request, 'profile_pengunjung.html', {'user': current_user})
-    elif current_user['role'] == 'dokter_hewan':
-        return render(request, 'profile_dokter.html', {'user': current_user})
+    user = request.session['user']
+    
+    if user['role'] == 'pengunjung':
+        return render(request, 'profile_pengunjung.html', {'user': user})
+    elif user['role'] == 'dokter_hewan':
+        return render(request, 'profile_dokter.html', {'user': user})
     else:  # staff
-        return render(request, 'profile_staff.html', {'user': current_user})
+        return render(request, 'profile_staff.html', {'user': user})
+    
+def dashboard(request):
+    """Dashboard page after login"""
+    if 'user' not in request.session:
+        messages.error(request, 'Silahkan login terlebih dahulu!')
+        return redirect('register_login:login')
+    
+    return render(request, 'dashboard.html', {'user': request.session['user']})

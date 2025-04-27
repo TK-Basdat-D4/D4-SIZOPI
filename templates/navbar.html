@@ -1,0 +1,83 @@
+<nav class="bg-white shadow-md">
+    <div class="container mx-auto px-4 py-2 flex justify-between items-center">
+        <a href="{% if request.session.user %}{% url 'register_login:dashboard' %}{% else %}{% url 'register_login:home' %}{% endif %}">
+            <div class="text-xl font-bold text-gray-800">SIZOPI</div>
+        </a>
+        <div class="flex items-center space-x-4">
+            {% if request.session.user %}
+                <div class="text-gray-700 font-medium">
+                    {{ request.session.user.nama_depan }} ({{ request.session.user.role }})
+                </div>
+            {% endif %}
+            <ul class="hidden md:flex space-x-4 items-center">
+                {% if request.session.user %}
+                    <!-- Navbar setelah login -->
+                    <li><a href="{% url 'register_login:dashboard' %}" class="text-gray-700 hover:text-gray-900">Dashboard</a></li>
+
+                    {% if request.session.user.role == 'dokter_hewan' %}
+                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Rekam Medis Hewan</a></li>
+                    {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
+                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Catatan Perawatan Hewan</a></li>
+                    {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
+                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a></li>
+                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Kelola Adopsi</a></li>
+                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Kelola Adopter</a></li>
+                    {% elif request.session.user.role == 'staff' and request.session.user.peran == 'pelatih_pertunjukan' %}
+                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Jadwal Pertunjukan</a></li>
+                    {% elif request.session.user.role == 'pengunjung' %}
+                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Informasi Kebun Binatang</a></li>
+                    {% endif %}
+
+                    <li><a href="{% url 'register_login:profile' %}" class="text-gray-700 hover:text-gray-900">Pengaturan Profil</a></li>
+                    <li><a href="{% url 'register_login:logout' %}" class="text-gray-700 hover:text-gray-900">Logout</a></li>
+                {% else %}
+                    <!-- Navbar Guest -->
+                    <li><a href="{% url 'register_login:login' %}" class="text-gray-700 hover:text-gray-900">Login</a></li>
+                    <li><a href="{% url 'register_login:choose_role' %}" class="text-gray-700 hover:text-gray-900">Registrasi</a></li>
+                {% endif %}
+            </ul>
+
+            <button id="hamburger-btn" class="block md:hidden p-2 rounded-md hover:bg-gray-200 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="bg-white shadow-md py-2 px-4 md:hidden hidden">
+        {% if request.session.user %}
+            <a href="{% url 'register_login:dashboard' %}" class="block text-gray-700 hover:text-gray-900 py-2">Dashboard</a>
+
+            {% if request.session.user.role == 'dokter_hewan' %}
+                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Rekam Medis Hewan</a>
+            {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
+                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Catatan Perawatan Hewan</a>
+            {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
+                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Kelola Pengunjung</a>
+                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Kelola Adopsi</a>
+                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Kelola Adopter</a>
+            {% elif request.session.user.role == 'staff' and request.session.user.peran == 'pelatih_pertunjukan' %}
+                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Jadwal Pertunjukan</a>
+            {% elif request.session.user.role == 'pengunjung' %}
+                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Informasi Kebun Binatang</a>
+            {% endif %}
+
+            <a href="{% url 'register_login:profile' %}" class="block text-gray-700 hover:text-gray-900 py-2">Pengaturan Profil</a>
+            <a href="{% url 'register_login:logout' %}" class="block text-gray-700 hover:text-gray-900 py-2">Logout</a>
+        {% else %}
+            <a href="{% url 'register_login:login' %}" class="block text-gray-700 hover:text-gray-900 py-2">Login</a>
+            <a href="{% url 'register_login:choose_role' %}" class="block text-gray-700 hover:text-gray-900 py-2">Registrasi</a>
+        {% endif %}
+    </div>
+</nav>
+
+<script>
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+
+hamburgerBtn.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+});
+</script>
