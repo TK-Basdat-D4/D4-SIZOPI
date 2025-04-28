@@ -1,0 +1,27 @@
+<!-- templates/kuning/edit_habitat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Habitat</title>
+</head>
+<body>
+    <h1>Edit Habitat</h1>
+    <form method="post">
+        <label>Nama Habitat:</label><br>
+        <input type="text" name="nama" value="{{ habitat.nama }}"><br><br>
+
+        <label>Luas Area (m²):</label><br>
+        <input type="number" name="luas" value="{{ habitat.luas }}"><br><br>
+
+        <label>Kapasitas Maksimal (jumlah hewan):</label><br>
+        <input type="number" name="kapasitas" value="{{ habitat.kapasitas }}"><br><br>
+
+        <label>Status Lingkungan:</label><br>
+        <textarea name="status_lingkungan">{{ habitat.status_lingkungan }}</textarea><br><br>
+
+        <button type="submit">SIMPAN PERUBAHAN</button>
+        <a href="{% url 'list_habitat' %}">BATAL</a>
+    </form>
+</body>
+</html>

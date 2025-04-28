@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Tambah Satwa</h1>
+<form method="post">
+    {% csrf_token %}
+    Nama Individu: <input type="text" name="nama"><br>
+    Spesies: <input type="text" name="spesies" required><br>
+    Asal Hewan: <input type="text" name="asal" required><br>
+    Tanggal Lahir: <input type="date" name="tanggal_lahir"><br>
+    Status Kesehatan:
+    <select name="status_kesehatan" required>
+        <option>Sehat</option>
+        <option>Sakit</option>
+        <option>Dalam Pemantauan</option>
+    </select><br>
+    Nama Habitat:
+    <select name="habitat" required>
+        {% for h in habitats %}
+        <option value="{{ h.nama }}">{{ h.nama }}</option>
+        {% endfor %}
+    </select><br>
+    URL Foto Satwa: <input type="text" name="foto" required><br>
+    <button type="submit">Tambah</button>
+    <a href="{% url 'list_satwa' %}">Batal</a>
+</form>
+{% endblock %}

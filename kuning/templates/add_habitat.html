@@ -1,0 +1,27 @@
+<!-- templates/kuning/add_habitat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tambah Habitat</title>
+</head>
+<body>
+    <h1>Tambah Habitat</h1>
+    <form method="post">
+        <label>Nama Habitat:</label><br>
+        <input type="text" name="nama"><br><br>
+
+        <label>Luas Area (m²):</label><br>
+        <input type="number" name="luas"><br><br>
+
+        <label>Kapasitas Maksimal (jumlah hewan):</label><br>
+        <input type="number" name="kapasitas"><br><br>
+
+        <label>Status Lingkungan:</label><br>
+        <textarea name="status_lingkungan"></textarea><br><br>
+
+        <button type="submit">Tambah Habitat</button>
+        <a href="{% url 'list_habitat' %}">BATAL</a>
+    </form>
+</body>
+</html>

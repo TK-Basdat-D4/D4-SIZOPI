@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Data Satwa</h1>
+<a href="{% url 'tambah_satwa' %}">+ Tambah Satwa</a>
+<table border="1">
+    <thead>
+        <tr>
+            <th>Nama Individu</th>
+            <th>Spesies</th>
+            <th>Asal</th>
+            <th>Tanggal Lahir</th>
+            <th>Status Kesehatan</th>
+            <th>Habitat</th>
+            <th>Foto</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in satwa %}
+        <tr>
+            <td>{{ s.nama }}</td>
+            <td>{{ s.spesies }}</td>
+            <td>{{ s.asal }}</td>
+            <td>{{ s.tanggal_lahir }}</td>
+            <td>{{ s.status_kesehatan }}</td>
+            <td>{{ s.habitat }}</td>
+            <td><img src="{{ s.foto }}" width="100"></td>
+            <td>
+                <a href="{% url 'edit_satwa' s.id %}">Edit</a> |
+                <a href="#">Hapus</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,44 @@
+<!-- templates/kuning/edit_satwa.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Data Satwa</title>
+</head>
+<body>
+    <h1>Edit Data Satwa</h1>
+    <form method="post">
+        <label>Nama Individu:</label><br>
+        <input type="text" name="nama" value="{{ satwa.nama }}"><br><br>
+
+        <label>Spesies:</label><br>
+        <input type="text" name="spesies" value="{{ satwa.spesies }}"><br><br>
+
+        <label>Asal Hewan:</label><br>
+        <input type="text" name="asal" value="{{ satwa.asal }}"><br><br>
+
+        <label>Tanggal Lahir:</label><br>
+        <input type="date" name="tanggal_lahir" value="{{ satwa.tanggal_lahir }}"><br><br>
+
+        <label>Status Kesehatan:</label><br>
+        <select name="status_kesehatan">
+            <option value="Sehat" {% if satwa.status_kesehatan == "Sehat" %}selected{% endif %}>Sehat</option>
+            <option value="Sakit" {% if satwa.status_kesehatan == "Sakit" %}selected{% endif %}>Sakit</option>
+            <option value="Dalam Pemantauan" {% if satwa.status_kesehatan == "Dalam Pemantauan" %}selected{% endif %}>Dalam Pemantauan</option>
+        </select><br><br>
+
+        <label>Nama Habitat:</label><br>
+        <select name="habitat">
+            {% for habitat in habitats %}
+                <option value="{{ habitat }}" {% if habitat == satwa.habitat %}selected{% endif %}>{{ habitat }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label>URL Foto Satwa:</label><br>
+        <input type="text" name="foto" value="{{ satwa.foto }}"><br><br>
+
+        <button type="submit">SIMPAN PERUBAHAN</button>
+        <a href="{% url 'list_satwa' %}">BATAL</a>
+    </form>
+</body>
+</html>
