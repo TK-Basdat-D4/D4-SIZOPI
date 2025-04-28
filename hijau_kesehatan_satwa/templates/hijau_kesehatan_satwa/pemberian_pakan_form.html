@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if feeding %}Edit{% else %}Tambah{% endif %} Pemberian Pakan{% endblock %}
+
+{% block content %}
+<h1>{% if feeding %}Edit{% else %}Tambah{% endif %} Pemberian Pakan</h1>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="jenis">Jenis Pakan:</label>
+        <input type="text" name="jenis" id="jenis" class="form-control" 
+               value="{{ feeding.jenis_pakan }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="jumlah">Jumlah Pakan (gram):</label>
+        <input type="number" name="jumlah" id="jumlah" class="form-control" 
+               value="{{ feeding.jumlah }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="jadwal">Jadwal:</label>
+        <input type="datetime-local" name="jadwal" id="jadwal" class="form-control" 
+               value="{{ feeding.jadwal|date:'Y-m-d\TH:i' }}" required>
+    </div>
+    
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Simpan</button>
+        <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="btn btn-secondary">Batal</a>
+    </div>
+</form>
+{% endblock %}

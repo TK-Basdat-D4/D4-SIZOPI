@@ -1,31 +1,35 @@
 {% extends 'base.html' %}
 
-{% block title %}Veterinarian Profile{% endblock %}
+{% block title %}Profil Dokter Hewan{% endblock %}
 
 {% block content %}
 <div>
-    <h1>Welcome, Dr. {{ user.nama_belakang }}!</h1>
-    <h3>Veterinarian Profile</h3>
+    <h1>Profil Dokter Hewan</h1>
     
     <div>
-        <p><strong>Username:</strong> {{ user.username }}</p>
-        <p><strong>Name:</strong> {{ user.nama_depan }} {% if user.nama_tengah %} {{ user.nama_tengah }} {% endif %} {{ user.nama_belakang }}</p>
+        <h2>Data Dokter</h2>
+        <p><strong>Nama:</strong> {{ user.nama_depan }} {{ user.nama_tengah }} {{ user.nama_belakang }}</p>
         <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Phone:</strong> {{ user.nomor_telepon }}</p>
-        <p><strong>Certification Number:</strong> {{ user.nomor_sertifikasi }}</p>
-        <p><strong>Specializations:</strong></p>
-        <ul>
-            {% for spesial in user.spesialisasi %}
-                <li>{{ spesial }}</li>
+        <p><strong>No. Telepon:</strong> {{ user.nomor_telepon }}</p>
+        <p><strong>Nomor Sertifikasi:</strong> {{ user.nomor_sertifikasi }}</p>
+        <p><strong>Spesialisasi:</strong> 
+            {% for spes in user.spesialisasi %}
+                {{ spes }}{% if not forloop.last %}, {% endif %}
             {% endfor %}
-        </ul>
+        </p>
     </div>
     
-    <h3>Veterinarian Options</h3>
-    <ul>
-        <li><a href="#">Animal Health Records</a></li>
-        <li><a href="#">Schedule Check-ups</a></li>
-        <li><a href="#">Medical Inventory</a></li>
-    </ul>
+    <div>
+        <h2>Fitur Dokter Hewan</h2>
+        <div>
+            <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}">Kelola Rekam Medis Hewan</a>
+            <p>Lihat dan kelola semua rekam medis hewan</p>
+        </div>
+        
+        <div>
+            <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_list' %}">Kelola Jadwal Pemeriksaan</a>
+            <p>Atur jadwal pemeriksaan kesehatan hewan</p>
+        </div>
+    </div>
 </div>
 {% endblock %}
