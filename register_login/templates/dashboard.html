@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SIZOPI - Dashboard{% endblock %}
+
+{% block content %}
+<section class="py-12">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold mb-6 text-center">Dashboard Pengguna</h1>
+
+                <!-- Informasi Dasar -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Informasi Dasar</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p><strong>Nama Lengkap:</strong> {{ user.nama_depan }} {% if user.nama_tengah %}{{ user.nama_tengah }}{% endif %} {{ user.nama_belakang }}</p>
+                <p><strong>Username:</strong> {{ user.username }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Nomor Telepon:</strong> {{ user.nomor_telepon }}</p>
+                <p><strong>Peran:</strong> {{ user.role }}</p>
+            </div>
+        </div>
+
+        <!-- Informasi Spesifik Role -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Informasi Spesifik</h2>
+
+            {% if user.role == 'pengunjung' %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>Alamat Lengkap:</strong> {{ user.alamat }}</p>
+                    <p><strong>Tanggal Lahir:</strong> {{ user.tanggal_lahir }}</p>
+                    <p><strong>Riwayat Kunjungan:</strong> Belum tersedia</p>
+                    <p><strong>Informasi Tiket:</strong> Belum tersedia</p>
+                </div>
+
+            {% elif user.role == 'dokter_hewan' %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>Nomor Sertifikasi Profesional:</strong> {{ user.nomor_sertifikasi }}</p>
+                    <p><strong>Daftar Spesialisasi:</strong> {{ user.spesialisasi|join:", " }}</p>
+                    <p><strong>Jumlah Hewan Ditangani:</strong> Belum tersedia</p>
+                </div>
+
+            {% elif user.role == 'staff' and user.peran == 'penjaga_hewan' %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>ID Staff:</strong> {{ user.staff_id }}</p>
+                    <p><strong>Jumlah Hewan Diberi Pakan:</strong> Belum tersedia</p>
+                </div>
+
+            {% elif user.role == 'staff' and user.peran == 'staff_administrasi' %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>ID Staff:</strong> {{ user.staff_id }}</p>
+                    <p><strong>Penjualan Tiket Hari Ini:</strong> Belum tersedia</p>
+                    <p><strong>Jumlah Pengunjung Hari Ini:</strong> Belum tersedia</p>
+                    <p><strong>Laporan Pendapatan Mingguan:</strong> Belum tersedia</p>
+                </div>
+
+            {% elif user.role == 'staff' and user.peran == 'pelatih_pertunjukan' %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>ID Staff:</strong> {{ user.staff_id }}</p>
+                    <p><strong>Jadwal Pertunjukan Hari Ini:</strong> Belum tersedia</p>
+                    <p><strong>Daftar Hewan Dilatih:</strong> Belum tersedia</p>
+                    <p><strong>Status Latihan Terakhir:</strong> Belum tersedia</p>
+                </div>
+
+            {% else %}
+                <p>Role tidak dikenali.</p>
+            {% endif %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}
