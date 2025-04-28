@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Pantau Kondisi Hewan{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3>Pantau Kondisi Hewan: {{ hewan.nama }}</h3>
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Tanggal Pemeriksaan</th>
+                <th>Diagnosis</th>
+                <th>Pengobatan</th>
+                <th>Status Kesehatan</th>
+                <th>Catatan</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rekam in rekam_medis %}
+            <tr>
+                <td>{{ rekam.tanggal }}</td>
+                <td>{{ rekam.diagnosis }}</td>
+                <td>{{ rekam.pengobatan }}</td>
+                <td>{{ rekam.status }}</td>
+                <td>{{ rekam.catatan }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">Belum ada rekam medis setelah adopsi.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-secondary mt-3">Kembali</a>
+</div>
+{% endblock %}

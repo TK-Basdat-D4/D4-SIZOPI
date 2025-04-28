@@ -36,9 +36,10 @@
  
                 <hr>
 
-                <p>Menyatakan kepedulian dan minat untuk mengadopsi satwa:</p>
-                <p>Nama Satwa: {{ hewan.nama }}</p>
+                <p>Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+                <p>Nama: {{ hewan.nama }}</p>
                 <p>Jenis: {{ hewan.spesies }}</p>
+                <p>Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
 
                 <div class="mb-3">
                     <label class="form-label">Nominal Kontribusi (Rp)</label>
@@ -46,7 +47,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Periode Adopsi (bulan)</label>
+                    <label class="form-label">untuk periode adopsi selama (bulan)</label>
                     <select class="form-select" name="periode" required>
                         <option value="3">3 Bulan</option>
                         <option value="6">6 Bulan</option>
@@ -56,7 +57,7 @@
 
                 <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary">Submit Form</button>
-                    <a href="{% url 'daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
+                    <a href="{% url 'adopsi:daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
                 </div>
             </form>
 
@@ -87,9 +88,10 @@
 
                 <hr>
 
-                <p>Menyatakan kepedulian dan minat untuk mengadopsi satwa:</p>
-                <p>Nama Satwa: {{ hewan.nama }}</p>
+                <p>Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+                <p>Nama: {{ hewan.nama }}</p>
                 <p>Jenis: {{ hewan.spesies }}</p>
+                <p>Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
 
                 <div class="mb-3">
                     <label class="form-label">Nominal Kontribusi (Rp)</label>
@@ -97,7 +99,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Periode Adopsi (bulan)</label>
+                    <label class="form-label">untuk periode adopsi selama (bulan)</label>
                     <select class="form-select" name="periode" required>
                         <option value="3">3 Bulan</option>
                         <option value="6">6 Bulan</option>
@@ -107,7 +109,7 @@
 
                 <div class="d-flex justify-content-end">
                     <button type="submit" class="btn btn-primary">Submit Form</button>
-                    <a href="{% url 'daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
+                    <a href="{% url 'adopsi:daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
                 </div>
             </form>
             {% endif %}

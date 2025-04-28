@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Sertifikat Adopsi{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-body text-center">
+            <h2 class="mb-4">Sertifikat Adopsi</h2>
+            <p><strong>Nomor Sertifikat:</strong> {{ nomor_sertifikat }}</p>
+            <p><strong>Nama Adopter:</strong> {{ hewan.adopter }}</p>
+            <p><strong>Nama Hewan:</strong> {{ hewan.nama }}</p>
+            <p><strong>Spesies:</strong> {{ hewan.spesies }}</p>
+            <p><strong>Tanggal Mulai Adopsi:</strong> {{ tanggal_sertifikat }}</p>
+            <hr>
+            <p class="mt-3">Terima kasih telah berkontribusi dalam menjaga kelestarian satwa!</p>
+            <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-secondary mt-4">Kembali</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

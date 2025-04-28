@@ -88,7 +88,7 @@
                 <ul class="navbar-nav me-auto">
                     {% if user.is_staff %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'daftar_hewan' %}">Manajemen Adopsi</a>
+                        <a class="nav-link" href="{% url 'admin_program_adopsi' %}">Manajemen Adopsi</a>
                     </li>
                     {% endif %}
                     {% if user.is_authenticated and not user.is_staff %}

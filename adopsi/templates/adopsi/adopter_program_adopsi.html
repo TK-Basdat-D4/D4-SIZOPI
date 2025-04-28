@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Program Adopsi Satwa: Bantu Mereka dengan Cinta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg mb-4">
+        <div class="card-header bg-success text-white">
+            <h4 class="mb-0">Program Adopsi Satwa: Bantu Mereka dengan Cinta</h4>
+        </div>
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <!-- Area untuk ilustrasi jika ada -->
+                <p class="text-muted">[Bisa Tambahkan Ilustrasi Kalau Mau]</p>
+            </div>
+            
+            <p>Terima kasih telah mewujudkan kepedulian Anda terhadap satwa dengan menjadi adopter simbolis! Dapatkan sertifikat digital dan laporan berkala tentang kondisi hewan yang Anda dukung.</p>
+            
+            <h5 class="mt-4 mb-3">Hewan yang Sedang Anda Adopsi</h5>
+            
+            {% if hewan_diadopsi %}
+                <div class="row">
+                    {% for hewan in hewan_diadopsi %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ hewan.nama }}</h5>
+                                    <p class="card-text">{{ hewan.spesies }}</p>
+                                    <p class="card-text">Kondisi terbaru: {{ hewan.kondisi }}</p>
+                                    <div class="text-end">
+                                        <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-sm btn-primary">Lihat Detail</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Anda belum mengadopsi satwa. Silakan kunjungi halaman daftar hewan untuk mulai mengadopsi.
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'adopsi:admin_program_adopsi' %}" class="btn btn-primary">Lihat Daftar Hewan</a>
+                </div>
+            {% endif %}
+        </div>
+        <div class="card-footer text-muted text-end">
+            {{ forloop.counter }} dari {{ hewan_diadopsi|length }}
+        </div>
+    </div>
+</div>
+{% endblock %}

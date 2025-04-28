@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Riwayat Adopsi{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <a href="{% url 'adopsi:admin_list_adopter' %}">[Kembali]</a>
+    <h2>Riwayat Adopsi</h2>
+    <p>Nama Adopter: {{ adopter.nama }}</p>
+    <p>Alamat Adopter: {{ adopter.alamat }}</p>
+    <p>Kontak Adopter: {{ adopter.kontak }}</p>
+
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Nama Hewan</th>
+                <th>Jenis Hewan</th>
+                <th>Tanggal Mulai Adopsi</th>
+                <th>Tanggal Akhir Adopsi</th>
+                <th>Nominal Kontribusi</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for adopsi in adopter.riwayat_adopsi %}
+            <tr>
+                <td>{{ adopsi.nama_hewan }}</td>
+                <td>{{ adopsi.jenis_hewan }}</td>
+                <td>{{ adopsi.tanggal_mulai }}</td>
+                <td>{{ adopsi.tanggal_akhir }}</td>
+                <td>Rp{{ adopsi.nominal }}</td>
+                <td>
+                    {% if adopsi.status == 'Sedang Berlangsung' %}
+                        [Sedang Berlangsung]
+                    {% else %}
+                        <button type="button" class="btn btn-sm btn-link text-danger" data-bs-toggle="modal" data-bs-target="#hapusAdopsiModal{{ adopsi.id }}">[Hapus]</button>
+
+                        <!-- Modal Hapus Adopsi -->
+                        <div class="modal fade" id="hapusAdopsiModal{{ adopsi.id }}" tabindex="-1" aria-labelledby="hapusAdopsiLabel{{ adopsi.id }}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-body text-center">
+                                <p>Yakin ingin menghapus riwayat adopsi hewan <strong>{{ adopsi.nama_hewan }}</strong>?</p>
+                                <div class="d-flex justify-content-center gap-3">
+                                  <form method="post" action="{% url 'adopsi:hapus_riwayat_adopsi' adopter.id adopsi.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                                  </form>
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

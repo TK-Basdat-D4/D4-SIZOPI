@@ -20,19 +20,13 @@
                     <p class="card-text"><strong>Status:</strong> {{ hewan.status_adopsi }}</p>
 
                     <div class="mt-auto">
-                        {% if user.is_staff %}
-                            {% if hewan.status_adopsi == 'Diadopsi' %}
-                                <a href="{% url 'detail_adopsi' hewan.id %}" class="btn btn-primary w-100">Lihat Detail</a>
-                            {% else %}
-                                <a href="{% url 'pendataan_adopter' hewan.id %}" class="btn btn-secondary w-100">Daftarkan Adopter</a>
-                            {% endif %}
-                        {% else %}
-                            {% if hewan.adopter == user.username %}
-                                <a href="{% url 'adopter_lihat_detail' hewan.id %}" class="btn btn-success w-100">Lihat Detail</a>
-                            {% endif %}
+                        {% if hewan.status_adopsi == 'Diadopsi' %}
+                            <a href="{% url 'adopsi:admin_detail_adopsi' hewan.id %}" class="btn btn-primary w-100">Lihat Detail</a>
+                        {% elif hewan.status_adopsi == 'Tidak Diadopsi' %}
+                            <a href="{% url 'adopsi:admin_pendataan_adopter' hewan.id %}" class="btn btn-secondary w-100">Daftarkan Adopter</a>
                         {% endif %}
+                        
                     </div>
-                    
                 </div>
             </div>
         </div>

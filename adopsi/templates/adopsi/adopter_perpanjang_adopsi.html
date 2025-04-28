@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Perpanjang Adopsi{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="text-center">Form Perpanjang Periode Adopsi Satwa</h3>
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if tipe_adopter == 'Individu' %}
+            <p><strong>Nama:</strong> {{ hewan.adopter }}</p>
+            <p><strong>NIK:</strong> [isi NIK adopter]</p>
+        {% else %}
+            <p><strong>Nama Organisasi:</strong> {{ hewan.adopter }}</p>
+            <p><strong>NPP:</strong> [isi NPP organisasi]</p>
+        {% endif %}
+        
+        <p><strong>Alamat:</strong> [alamat adopter]</p>
+        <p><strong>Kontak:</strong> [no telepon adopter]</p>
+
+        <p><strong>Nama Hewan:</strong> {{ hewan.nama }}</p>
+        <p><strong>Jenis:</strong> {{ hewan.spesies }}</p>
+
+        <div class="mb-3">
+            <label>Nominal Kontribusi (Rp):</label>
+            <input type="number" name="nominal" class="form-control" required>
+        </div>
+        
+        <div class="mb-3">
+            <label>Perpanjang Periode:</label>
+            <select name="periode" class="form-select" required>
+                <option value="3">3 Bulan</option>
+                <option value="6">6 Bulan</option>
+                <option value="12">12 Bulan</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit Form</button>
+        <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-secondary">Batal</a>
+    </form>
+</div>
+{% endblock %}

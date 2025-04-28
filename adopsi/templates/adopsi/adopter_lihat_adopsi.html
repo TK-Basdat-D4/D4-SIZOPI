@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Informasi Hewan Adopsi{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title">Informasi Hewan Adopsi</h5>
+                <a href="{% url 'adopsi:adopter_program_adopsi' %}" class="btn-close"></a>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ hewan.foto }}" class="img-fluid mb-3" alt="Foto {{ hewan.nama }}" style="max-height: 300px; object-fit: cover;">
+                <p><strong>Nama Hewan:</strong> {{ hewan.nama }}</p>
+                <p><strong>Jenis Hewan:</strong> {{ hewan.spesies }}</p>
+                <p><strong>Habitat:</strong> (informasi habitat belum tersedia)</p> <!-- nanti bisa diisi kalau ada -->
+                <p><strong>Tanggal Mulai Adopsi:</strong> {{ hewan.tanggal_mulai }}</p>
+                <p><strong>Tanggal Akhir Adopsi:</strong> {{ hewan.tanggal_akhir }}</p>
+            </div>
+            <div class="modal-footer flex-wrap">
+                <a href="{% url 'adopsi:adopter_pantau_kondisi' hewan.id %}" class="btn btn-primary">Pantau Kondisi Hewan</a>
+                <a href="{% url 'adopsi:adopter_sertifikat' hewan.id %}" class="btn btn-success">Lihat Sertifikat Adopsi</a>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#hentikanAdopsiModal">
+                    Hentikan Adopsi
+                </button>
+                <a href="{% url 'adopsi:adopter_perpanjang_adopsi' hewan.id %}" class="btn btn-warning">Perpanjang Periode Adopsi</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hentikan Adopsi -->
+<div class="modal fade" id="hentikanAdopsiModal" tabindex="-1" aria-labelledby="hentikanAdopsiLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body text-center">
+        <p>Apakah Anda yakin ingin menghentikan adopsi ini?</p>
+        <div class="d-flex justify-content-center gap-3">
+          <form method="post" action="{% url 'adopsi:hentikan_adopsi_adopter' hewan.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Iya, Hentikan</button>
+          </form>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
