@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Sizopi - Manajemen Adopsi Satwa{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4 text-center text-success">Program Adopsi Satwa</h1>
+
+    <div class="row">
+        {% for hewan in daftar_hewan %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <img src="{{ hewan.foto }}" class="card-img-top" alt="Foto {{ hewan.nama }}" style="height: 250px; object-fit: cover;">
+                <div class="card-header">
+                    {{ hewan.nama }}
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <p class="card-text"><strong>Spesies:</strong> {{ hewan.spesies }}</p>
+                    <p class="card-text"><strong>Kondisi:</strong> {{ hewan.kondisi }}</p>
+                    <p class="card-text"><strong>Status:</strong> {{ hewan.status_adopsi }}</p>
+
+                    <div class="mt-auto">
+                        {% if user.is_staff %}
+                            {% if hewan.status_adopsi == 'Diadopsi' %}
+                                <a href="{% url 'detail_adopsi' hewan.id %}" class="btn btn-primary w-100">Lihat Detail</a>
+                            {% else %}
+                                <a href="{% url 'pendataan_adopter' hewan.id %}" class="btn btn-secondary w-100">Daftarkan Adopter</a>
+                            {% endif %}
+                        {% else %}
+                            {% if hewan.adopter == user.username %}
+                                <a href="{% url 'adopter_lihat_detail' hewan.id %}" class="btn btn-success w-100">Lihat Detail</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

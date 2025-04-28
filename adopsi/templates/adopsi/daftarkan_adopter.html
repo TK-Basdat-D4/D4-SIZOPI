@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Form Adopsi Satwa{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="mb-0">Form Adopsi Satwa</h5>
+        </div>
+        <div class="card-body">
+            {% if tipe_adopter == 'Individu' %}
+            <form method="post">
+                {% csrf_token %}
+                <p>Pihak di bawah ini,</p>
+                <div class="mb-3">
+                    <label class="form-label">Nama</label>
+                    <input type="text" class="form-control" name="nama_adopter" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">NIK</label>
+                    <input type="text" class="form-control" name="nik" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Alamat</label>
+                    <input type="text" class="form-control" name="alamat" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nomor Telepon</label>
+                    <input type="text" class="form-control" name="telepon" required>
+                </div>
+ 
+                <hr>
+
+                <p>Menyatakan kepedulian dan minat untuk mengadopsi satwa:</p>
+                <p>Nama Satwa: {{ hewan.nama }}</p>
+                <p>Jenis: {{ hewan.spesies }}</p>
+
+                <div class="mb-3">
+                    <label class="form-label">Nominal Kontribusi (Rp)</label>
+                    <input type="number" class="form-control" name="nominal" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Periode Adopsi (bulan)</label>
+                    <select class="form-select" name="periode" required>
+                        <option value="3">3 Bulan</option>
+                        <option value="6">6 Bulan</option>
+                        <option value="12">12 Bulan</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Submit Form</button>
+                    <a href="{% url 'daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
+                </div>
+            </form>
+
+            {% elif tipe_adopter == 'Organisasi' %}
+            <form method="post">
+                {% csrf_token %}
+                <p>Pihak di bawah ini, selaku organisasi/perusahaan</p>
+                <div class="mb-3">
+                    <label class="form-label">Nama Organisasi</label>
+                    <input type="text" class="form-control" name="nama_organisasi" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">NPP</label>
+                    <input type="text" class="form-control" name="npp" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Alamat</label>
+                    <input type="text" class="form-control" name="alamat" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nomor Telepon</label>
+                    <input type="text" class="form-control" name="telepon" required>
+                </div>                
+
+                <hr>
+
+                <p>Menyatakan kepedulian dan minat untuk mengadopsi satwa:</p>
+                <p>Nama Satwa: {{ hewan.nama }}</p>
+                <p>Jenis: {{ hewan.spesies }}</p>
+
+                <div class="mb-3">
+                    <label class="form-label">Nominal Kontribusi (Rp)</label>
+                    <input type="number" class="form-control" name="nominal" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Periode Adopsi (bulan)</label>
+                    <select class="form-select" name="periode" required>
+                        <option value="3">3 Bulan</option>
+                        <option value="6">6 Bulan</option>
+                        <option value="12">12 Bulan</option>
+                    </select>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">Submit Form</button>
+                    <a href="{% url 'daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

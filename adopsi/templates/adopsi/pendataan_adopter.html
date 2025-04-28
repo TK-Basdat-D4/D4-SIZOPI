@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Pendataan Adopter{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="mb-0">Pendataan Adopter</h5>
+        </div>
+        <div class="card-body">
+            <!-- Tambahin ini: kalau ada messages error -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Username Calon Adopter</label>
+                    <input type="text" name="username" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Calon Adopter akan mengadopsi sebagai:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="tipe_adopter" value="Individu" id="individu" required>
+                        <label class="form-check-label" for="individu">
+                            Individu
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="tipe_adopter" value="Organisasi" id="organisasi" required>
+                        <label class="form-check-label" for="organisasi">
+                            Organisasi
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'daftar_hewan' %}" class="btn btn-secondary">Batal</a>
+                    <button type="submit" class="btn btn-primary">Verifikasi Akun</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
