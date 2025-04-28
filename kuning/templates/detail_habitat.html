@@ -1,0 +1,37 @@
+<!-- templates/kuning/detail_habitat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Detail Habitat</title>
+</head>
+<body>
+    <h1>Detail Habitat: {{ habitat.nama }}</h1>
+    <p>Luas Area: {{ habitat.luas }}</p>
+    <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
+    <p>Kapasitas Maksimal: {{ habitat.kapasitas }}</p>
+
+    <a href="{% url 'edit_habitat' habitat.id %}">Edit Habitat</a> |
+    <a href="{% url 'delete_habitat' habitat.id %}">Hapus Habitat</a>
+    
+    <h2>Daftar Hewan dalam Habitat</h2>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Nama Individu</th>
+            <th>Spesies</th>
+            <th>Asal</th>
+            <th>Tanggal Lahir</th>
+            <th>Status Kesehatan</th>
+        </tr>
+        {% for hewan in hewan_habitat %}
+        <tr>
+            <td>{{ hewan.nama }}</td>
+            <td>{{ hewan.spesies }}</td>
+            <td>{{ hewan.asal }}</td>
+            <td>{{ hewan.tanggal_lahir }}</td>
+            <td>{{ hewan.status_kesehatan }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
