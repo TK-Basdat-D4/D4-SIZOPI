@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Success{% endblock %}
+
+{% block content %}
+<div>
+    <h3>Success</h3>
+    <h5>{{ message }}</h5>
+    <p>You can now login to your account.</p>
+    <a href="{% url 'register_login:login' %}">Go to Login</a>
+</div>
+{% endblock %}

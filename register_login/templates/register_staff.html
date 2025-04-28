@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Register as Staff{% endblock %}
+
+{% block content %}
+<div>
+    <h1>Register as Staff</h1>
+    <p>Please fill in all required information</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div>
+            <label for="username">Username *</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        
+        <div>
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div>
+            <label for="password">Password *</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div>
+            <label for="confirm_password">Konfirmasi Password *</label>
+            <input type="password" id="confirm_password" name="confirm_password" required>
+        </div>
+        
+        <div>
+            <label for="nama_depan">Nama Depan *</label>
+            <input type="text" id="nama_depan" name="nama_depan" required>
+        </div>
+        
+        <div>
+            <label for="nama_tengah">Nama Tengah</label>
+            <input type="text" id="nama_tengah" name="nama_tengah">
+        </div>
+        
+        <div>
+            <label for="nama_belakang">Nama Belakang *</label>
+            <input type="text" id="nama_belakang" name="nama_belakang" required>
+        </div>
+        
+        <div>
+            <label for="nomor_telepon">Nomor Telepon *</label>
+            <input type="tel" id="nomor_telepon" name="nomor_telepon" required>
+        </div>
+        
+        <div>
+            <label>Peran *</label>
+            <div>
+                <input type="radio" id="penjaga_hewan" name="peran" value="penjaga_hewan" required>
+                <label for="penjaga_hewan">Penjaga Hewan (PJHXXX)</label>
+            </div>
+            <div>
+                <input type="radio" id="staff_administrasi" name="peran" value="staff_administrasi">
+                <label for="staff_administrasi">Staf Administrasi (ADMXXX)</label>
+            </div>
+            <div>
+                <input type="radio" id="pelatih_pertunjukan" name="peran" value="pelatih_pertunjukan">
+                <label for="pelatih_pertunjukan">Pelatih Pertunjukan (PLPXXX)</label>
+            </div>
+        </div>
+        
+        <div>
+            <label for="id_staff">ID Staf</label>
+            <input type="text" id="id_staff" disabled placeholder="ID will be generated automatically">
+        </div>
+        
+        <div>
+            <button type="submit">DAFTAR</button>
+            <a href="{% url 'register_login:choose_role' %}">Kembali</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

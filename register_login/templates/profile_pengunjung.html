@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Visitor Profile{% endblock %}
+
+{% block content %}
+<div>
+    <h1>Welcome, {{ user.nama_depan }}!</h1>
+    <h3>Visitor Profile</h3>
+    
+    <div>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Name:</strong> {{ user.nama_depan }} {% if user.nama_tengah %} {{ user.nama_tengah }} {% endif %} {{ user.nama_belakang }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Phone:</strong> {{ user.nomor_telepon }}</p>
+        <p><strong>Address:</strong> {{ user.alamat }}</p>
+        <p><strong>Date of Birth:</strong> {{ user.tanggal_lahir }}</p>
+    </div>
+    
+    <h3>Visitor Options</h3>
+    <ul>
+        <li><a href="#">Book Tickets</a></li>
+        <li><a href="#">View Schedule</a></li>
+        <li><a href="#">My Bookings</a></li>
+    </ul>
+</div>
+{% endblock %}

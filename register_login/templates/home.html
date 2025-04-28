@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Zoo Management System{% endblock %}
+
+{% block content %}
+<div>
+    <h1>Welcome to Zoo Management System</h1>
+    <p>A system for managing zoo operations</p>
+    
+    <div>
+        <div>
+            <h3>Visitors</h3>
+            <p>Register as a visitor</p>
+            <a href="{% url 'register_login:register_pengunjung' %}">Register as Visitor</a>
+        </div>
+        
+        <div>
+            <h3>Veterinarians</h3>
+            <p>Join as a veterinarian</p>
+            <a href="{% url 'register_login:register_dokter' %}">Register as Vet</a>
+        </div>
+        
+        <div>
+            <h3>Staff</h3>
+            <p>Register as zoo staff</p>
+            <a href="{% url 'register_login:register_staff' %}">Register as Staff</a>
+        </div>
+    </div>
+    
+    {% if not current_user %}
+    <div>
+        <a href="{% url 'register_login:login' %}">Already have an account? Login</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

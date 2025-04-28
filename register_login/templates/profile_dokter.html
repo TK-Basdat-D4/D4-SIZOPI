@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Veterinarian Profile{% endblock %}
+
+{% block content %}
+<div>
+    <h1>Welcome, Dr. {{ user.nama_belakang }}!</h1>
+    <h3>Veterinarian Profile</h3>
+    
+    <div>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <p><strong>Name:</strong> {{ user.nama_depan }} {% if user.nama_tengah %} {{ user.nama_tengah }} {% endif %} {{ user.nama_belakang }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Phone:</strong> {{ user.nomor_telepon }}</p>
+        <p><strong>Certification Number:</strong> {{ user.nomor_sertifikasi }}</p>
+        <p><strong>Specializations:</strong></p>
+        <ul>
+            {% for spesial in user.spesialisasi %}
+                <li>{{ spesial }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <h3>Veterinarian Options</h3>
+    <ul>
+        <li><a href="#">Animal Health Records</a></li>
+        <li><a href="#">Schedule Check-ups</a></li>
+        <li><a href="#">Medical Inventory</a></li>
+    </ul>
+</div>
+{% endblock %}
