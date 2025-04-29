@@ -3,30 +3,112 @@
 {% block title %}Perpanjang Adopsi{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h3 class="text-center">Form Perpanjang Periode Adopsi Satwa</h3>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+        background: #f8f9fa;
+    }
+
+    .form-card {
+        background: white;
+        padding: 40px;
+        margin-top: 50px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-card h3 {
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .form-card label {
+        font-weight: 600;
+        color: #444;
+    }
+
+    .form-card input,
+    .form-card select {
+        border-radius: 12px;
+    }
+
+    .form-card button,
+    .form-card a.btn {
+        border-radius: 20px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .form-card button:hover,
+    .form-card a.btn:hover {
+        transform: scale(1.03);
+    }
+</style>
+
+<div class="form-card">
+    <h3>🐾 Form Perpanjang Periode Adopsi Satwa</h3>
     <form method="post">
         {% csrf_token %}
-        
-        {% if tipe_adopter == 'Individu' %}
-            <p><strong>Nama:</strong> {{ hewan.adopter }}</p>
-            <p><strong>NIK:</strong> [isi NIK adopter]</p>
-        {% else %}
-            <p><strong>Nama Organisasi:</strong> {{ hewan.adopter }}</p>
-            <p><strong>NPP:</strong> [isi NPP organisasi]</p>
-        {% endif %}
-        
-        <p><strong>Alamat:</strong> [alamat adopter]</p>
-        <p><strong>Kontak:</strong> [no telepon adopter]</p>
 
-        <p><strong>Nama Hewan:</strong> {{ hewan.nama }}</p>
-        <p><strong>Jenis:</strong> {{ hewan.spesies }}</p>
+        {% if tipe_adopter == 'Individu' %}
+            <div class="mb-3">
+                <label>Nama:</label>
+                <input type="text" name="nama" value="{{ hewan.adopter }}" class="form-control" readonly>
+            </div>
+            <div class="mb-3">
+                <label>NIK:</label>
+                <input type="text" name="nik" value="{{ adopter.nik }}" class="form-control" readonly>
+            </div>
+        {% else %}
+            <div class="mb-3">
+                <label>Nama Organisasi:</label>
+                <input type="text" name="nama" value="{{ hewan.adopter }}" class="form-control" readonly>
+            </div>
+            <div class="mb-3">
+                <label>NPP:</label>
+                <input type="text" name="npp" value="{{ adopter.npp }}" class="form-control" readonly>
+            </div>
+        {% endif %}
+
+        <div class="mb-3">
+            <label>Alamat:</label>
+            <input type="text" name="alamat" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Kontak:</label>
+            <input type="text" name="kontak" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Nama Hewan:</label>
+            <input type="text" value="{{ hewan.nama }}" class="form-control" readonly>
+        </div>
+
+        <div class="mb-3">
+            <label>Jenis:</label>
+            <input type="text" value="{{ hewan.spesies }}" class="form-control" readonly>
+        </div>
 
         <div class="mb-3">
             <label>Nominal Kontribusi (Rp):</label>
             <input type="number" name="nominal" class="form-control" required>
         </div>
-        
+
         <div class="mb-3">
             <label>Perpanjang Periode:</label>
             <select name="periode" class="form-select" required>
@@ -36,8 +118,10 @@
             </select>
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit Form</button>
-        <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-secondary">Batal</a>
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <button type="submit" class="btn btn-primary">Submit Form</button>
+            <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-secondary">Batal</a>
+        </div>
     </form>
 </div>
 {% endblock %}

@@ -13,6 +13,7 @@ DAFTAR_HEWAN = [
         'kondisi': 'Sehat',
         'foto': 'https://thaka.bing.com/th/id/OIP.zFfSIR-hFqqY84hA9vrCPQHaFj?rs=1&pid=ImgDetMain',
         'status_adopsi': 'Diadopsi',
+        'habitat' : 'Hujan Tropis',
         'adopter': 'Budi Santoso',
         'tanggal_mulai': '2025-01-01',
         'tanggal_akhir': '2025-12-31',
@@ -25,7 +26,8 @@ DAFTAR_HEWAN = [
         'spesies': 'Panda Amerika Selatan',
         'kondisi': 'Sehat',
         'foto': 'https://th.bing.com/th/id/R.d0d586fd70a04bbde58462061468f792?rik=v%2fES7so2k2%2b9gw&riu=http%3a%2f%2f2.bp.blogspot.com%2f-aHBXLcUidp0%2fVJpA6eCxphI%2fAAAAAAAAAtc%2fXWr7uA6X6q8%2fs1600%2fSweet-Panda-pandas-12538504-1600-1200.jpg&ehk=EnRvyhDOFQqeG8dEP2M%2bfG3k0py5uWJUDuyVIB73KjI%3d&risl=&pid=ImgRaw&r=0',
-        'status_adopsi': 'Diadopsi',  
+        'status_adopsi': 'Diadopsi',
+        'habitat' : 'Hujan Rambu',  
         'adopter': 'Rio Ayu Lestari',
         'tanggal_mulai': '2024-03-05',
         'tanggal_akhir': '2024-07-05',
@@ -39,6 +41,7 @@ DAFTAR_HEWAN = [
         'kondisi': 'Sehat',
         'foto': 'https://th.bing.com/th/id/OIP.Z7H7v0mawF5676CTPx7gpQHaEK?rs=1&pid=ImgDetMain',
         'status_adopsi': 'Tidak Diadopsi',
+        'habitat' : 'Hujan Tropis',
         'adopter': '',
         'tanggal_mulai': '',
         'tanggal_akhir': '',
@@ -53,6 +56,7 @@ DAFTAR_HEWAN = [
         'foto': 'https://th.bing.com/th/id/OIP.h3lzKhnxU6twe_POtVQMywHaGg?w=1000&h=879&rs=1&pid=ImgDetMain',
         'status_adopsi': 'Tidak Diadopsi',
         'adopter': '',
+        'habitat' : 'Domestik',
         'tanggal_mulai': '',
         'tanggal_akhir': '',
         'nominal': '',
@@ -75,33 +79,18 @@ def admin_detail_adopsi(request, id_hewan):
     }
     return render(request, 'adopsi/admin_detail_adopsi.html', context)
 
+# Data adopter yang sudah terverifikasi
 DAFTAR_PENGUNJUNG_ADOPTER = [
-    {
-        'username': 'pengunjung123',
-        'tipe_adopter': 'Individu',
-        'nama_adopter': 'Budi Santoso',
-        'nik': '1234567890123456',  
-    },
-    {
-        'username': 'Rio Ayu Lestari',
-        'tipe_adopter': 'Individu',
-        'nama_adopter': 'Rio Ayu Lestari',
-        'nik': '9876543210987654',  
-    },
-    {
-        'username': 'organisasi_xyz',
-        'tipe_adopter': 'Organisasi',
-        'nama_adopter': 'Yayasan XYZ',
-        'npp': 'YAY001234',  
-    },
+    {'username': 'pengunjung123', 'tipe_adopter': 'Individu', 'nama_adopter': 'Budi Santoso', 'nik': '1234567890123456'},
+    {'username': 'rio.lestari', 'tipe_adopter': 'Individu', 'nama_adopter': 'Rio Ayu Lestari', 'nik': '9876543210987654'},
+    {'username': 'organisasi_xyz', 'tipe_adopter': 'Organisasi', 'nama_adopter': 'Yayasan XYZ', 'npp': 'YAY001234'}
 ]
 
 def admin_form_adopsi(request, id_hewan):
     hewan = next((h for h in DAFTAR_HEWAN if h['id'] == id_hewan), None)
     if not hewan:
         return render(request, '404.html')
-
-    # Cek apakah username ada dalam DAFTAR_PENGUNJUNG_ADOPTER
+        
     username_adopter = request.session.get('username_adopter')
 
     adopter = next((a for a in DAFTAR_PENGUNJUNG_ADOPTER if a['username'] == username_adopter), None)
@@ -125,13 +114,11 @@ def admin_form_adopsi(request, id_hewan):
         telepon = request.POST.get('telepon')
         nominal = request.POST.get('nominal')
         periode = request.POST.get('periode')
-
-        # Validasi sederhana
+        
         if not all([nama, nik, alamat, email, telepon, nominal, periode]):
             messages.error(request, 'Semua field wajib diisi!')
             return HttpResponseRedirect(reverse('adopsi:admin_form_adopsi', args=[id_hewan]))
 
-        # Update data hewan
         hewan['adopter'] = nama
         hewan['tanggal_mulai'] = '2025-04-28'  
         hewan['tanggal_akhir'] = '2026-04-28'  
@@ -140,18 +127,23 @@ def admin_form_adopsi(request, id_hewan):
         hewan['status_adopsi'] = 'Diadopsi'
 
         messages.success(request, 'Adopsi berhasil didaftarkan!')
-        return HttpResponseRedirect(reverse('adopsi:admin_program_adopsi', args=[id_hewan]))
-
+        return HttpResponseRedirect(reverse('adopsi:admin_program_adopsi'))
     context = {
         'hewan': hewan,
         'tipe_adopter': tipe_adopter,
         'username_adopter': username_adopter,
-        'adopter': adopter  # menambahkan adopter ke context
+        'adopter': adopter  
     }
     return render(request, 'adopsi/admin_form_adopsi.html', context)
 
 # Dummy daftar username yang sudah jadi 'pengunjung'
-DAFTAR_PENGUNJUNG = ['dewi.nugroho', 'mira.handayani', 'rio.lestari', 'Budi Santoso']
+DAFTAR_PENGUNJUNG = [
+    {'username': 'pengunjung123', 'nama': 'Budi Santoso'},
+    {'username': 'rio.lestari', 'nama': 'Rio Ayu Lestari'},
+    {'username': 'dewi.nugroho', 'nama': 'Dewi Nugroho'},
+    {'username': 'mira.handayani', 'nama': 'Mira Handayani'},
+    {'username': 'organisasi_xyz', 'nama': 'Yayasan XYZ'}
+]
 
 def admin_pendataan_adopter(request, id_hewan):
     hewan = next((h for h in DAFTAR_HEWAN if h['id'] == id_hewan), None)
@@ -161,17 +153,33 @@ def admin_pendataan_adopter(request, id_hewan):
     if request.method == 'POST':
         username = request.POST.get('username')
         tipe_adopter = request.POST.get('tipe_adopter')
-        if username in DAFTAR_PENGUNJUNG:
+        pengunjung = next((p for p in DAFTAR_PENGUNJUNG if p['username'] == username), None)
+        
+        if pengunjung:
             request.session['tipe_adopter'] = tipe_adopter
             request.session['username_adopter'] = username
+            adopter = next((a for a in DAFTAR_PENGUNJUNG_ADOPTER if a['username'] == username), None)
+            
+            if not adopter:
+                new_adopter = {
+                    'username': username,
+                    'tipe_adopter': tipe_adopter,
+                    'nama_adopter': pengunjung['nama'],
+                    'nik': '1234567890123456' if tipe_adopter == 'Individu' else None,
+                    'npp': 'NPP12345' if tipe_adopter == 'Organisasi' else None
+                }
+                DAFTAR_PENGUNJUNG_ADOPTER.append(new_adopter)
+            
             return HttpResponseRedirect(reverse('adopsi:admin_form_adopsi', args=[id_hewan]))
         else:
             messages.error(request, 'Username tidak ditemukan atau bukan pengunjung!')
 
     context = {
-        'hewan': hewan
+        'hewan': hewan,
+        'daftar_pengunjung': DAFTAR_PENGUNJUNG  
     }
     return render(request, 'adopsi/admin_pendataan_adopter.html', context)
+
 
 def hentikan_adopsi(request, id_hewan):
     hewan = next((h for h in DAFTAR_HEWAN if h['id'] == id_hewan), None)
@@ -195,23 +203,33 @@ def adopter_lihat_adopsi(request, id_hewan):
     if not hewan:
         return render(request, '404.html')
 
-    username_adopter = request.user.username
+    username_adopter = "Budi Santoso"
 
-    if hewan['adopter'] != username_adopter:
-        messages.error(request, "Anda tidak memiliki akses ke hewan ini.")
-        return HttpResponseRedirect(reverse('adopsi:adopter_program_adopsi', args=[id_hewan]))
+    # if hewan['adopter'] != username_adopter:
+    #     messages.error(request, "Anda tidak memiliki akses ke hewan ini.")
+    #     return HttpResponseRedirect(reverse('adopsi:adopter_program_adopsi', args=[id_hewan]))
     context = {
         'hewan': hewan
     }
     return render(request, 'adopsi/adopter_lihat_adopsi.html', context)
 
 def adopter_program_adopsi(request):
-    username = request.user.username
-    
+    username = "Budi Santoso"
     hewan_diadopsi = [
         hewan for hewan in DAFTAR_HEWAN 
         if hewan['adopter'] == username and hewan['status_adopsi'] == 'Diadopsi'
     ]
+   
+    rocky = next((h for h in DAFTAR_HEWAN if h['nama'] == 'Rocky'), None)
+    if rocky and rocky not in hewan_diadopsi:
+        rocky_copy = rocky.copy()
+        rocky_copy['adopter'] = username
+        rocky_copy['status_adopsi'] = 'Diadopsi'
+        rocky_copy['tanggal_mulai'] = '2025-03-15'
+        rocky_copy['tanggal_akhir'] = '2025-09-15'
+        rocky_copy['nominal'] = '3500000'
+        rocky_copy['status_pembayaran'] = 'lunas'
+        hewan_diadopsi.append(rocky_copy)
     
     context = {
         'hewan_diadopsi': hewan_diadopsi,
@@ -219,14 +237,11 @@ def adopter_program_adopsi(request):
     }
     return render(request, 'adopsi/adopter_program_adopsi.html', context)
 
-
 def adopter_pantau_kondisi(request, id_hewan):
-    # cari hewan
     hewan = next((h for h in DAFTAR_HEWAN if h['id'] == id_hewan), None)
     if not hewan:
         return render(request, '404.html')
 
-    # dummy rekam medis
     DUMMY_REKAM_MEDIS = [
         {'tanggal': '2025-05-05', 'diagnosis': 'Infeksi', 'pengobatan': 'Obat B', 'status': 'Sakit Ringan', 'catatan': 'Observasi rutin'},
         {'tanggal': '2025-06-01', 'diagnosis': 'Cedera', 'pengobatan': 'Obat A', 'status': 'Sehat', 'catatan': 'Kontrol 1 minggu'},
@@ -327,70 +342,16 @@ def hentikan_adopsi_adopter(request, id_hewan):
 
 # Tambahan dummy data adopter
 DAFTAR_ADOPTER = [
-    {
-        'id': 1,
-        'nama': 'Bambang',
-        'total_kontribusi': 5000000,
-        'alamat': 'Jl. Mawar No. 1',
-        'kontak': '081234567890',
-        'riwayat_adopsi': [
-            {
-                'id': 'h1',
-                'nama_hewan': 'Melly',
-                'jenis_hewan': 'Gajah',
-                'tanggal_mulai': '2025-02-26',
-                'tanggal_akhir': '2025-08-26',
-                'nominal': 850000,
-                'status': 'Sedang Berlangsung'
-            },
-            {
-                'id': 'h2',
-                'nama_hewan': 'Simba',
-                'jenis_hewan': 'Singa',
-                'tanggal_mulai': '2024-07-10',
-                'tanggal_akhir': '2024-10-10',
-                'nominal': 1500000,
-                'status': 'Berakhir'
-            },
-        ]
-    },
-    {
-        'id': 2,
-        'nama': 'Cindy',
-        'total_kontribusi': 3500000,
-        'alamat': 'Jl. Melati No. 2',
-        'kontak': '082345678901',
-        'riwayat_adopsi': [
-            {
-                'id': 'h3',
-                'nama_hewan': 'Nala',
-                'jenis_hewan': 'Zebra',
-                'tanggal_mulai': '2023-12-12',
-                'tanggal_akhir': '2024-12-12',
-                'nominal': 1200000,
-                'status': 'Berakhir'
-            },
-            {
-                'id': 'h4',
-                'nama_hewan': 'Rio',
-                'jenis_hewan': 'Harimau',
-                'tanggal_mulai': '2023-01-01',
-                'tanggal_akhir': '2023-07-01',
-                'nominal': 800000,
-                'status': 'Berakhir'
-            },
-        ]
-    },
+    {'id': 1, 'nama': 'Bambang', 'total_kontribusi': 5000000, 'alamat': 'Jl. Mawar No. 1', 'kontak': '081234567890', 'riwayat_adopsi': [{'id': 'h1', 'nama_hewan': 'Melly', 'jenis_hewan': 'Gajah', 'tanggal_mulai': '2025-02-26', 'tanggal_akhir': '2025-08-26', 'nominal': 850000, 'status': 'Sedang Berlangsung'}, {'id': 'h2', 'nama_hewan': 'Simba', 'jenis_hewan': 'Singa', 'tanggal_mulai': '2024-07-10', 'tanggal_akhir': '2024-10-10', 'nominal': 1500000, 'status': 'Berakhir'}]},
+    {'id': 2, 'nama': 'Cindy', 'total_kontribusi': 3500000, 'alamat': 'Jl. Melati No. 2', 'kontak': '082345678901', 'riwayat_adopsi': [{'id': 'h3', 'nama_hewan': 'Nala', 'jenis_hewan': 'Zebra', 'tanggal_mulai': '2023-12-12', 'tanggal_akhir': '2024-12-12', 'nominal': 1200000, 'status': 'Berakhir'}, {'id': 'h4', 'nama_hewan': 'Rio', 'jenis_hewan': 'Harimau', 'tanggal_mulai': '2023-01-01', 'tanggal_akhir': '2023-07-01', 'nominal': 800000, 'status': 'Berakhir'}]}
 ]
 
-# Views daftar adopter
 def admin_list_adopter(request):
     context = {
         'admin_list_adopter': DAFTAR_ADOPTER
     }
     return render(request, 'adopsi/admin_list_adopter.html', context)
 
-# View detail riwayat adopsi adopter
 def admin_riwayat_adopsi(request, id_adopter):
     adopter = next((a for a in DAFTAR_ADOPTER if a['id'] == id_adopter), None)
     if not adopter:
@@ -400,7 +361,6 @@ def admin_riwayat_adopsi(request, id_adopter):
     }
     return render(request, 'adopsi/admin_riwayat_adopsi.html', context)
 
-# Hapus satu adopter
 def hapus_adopter(request, id_adopter):
     global DAFTAR_ADOPTER
     adopter = next((a for a in DAFTAR_ADOPTER if a['id'] == id_adopter), None)
@@ -414,7 +374,6 @@ def hapus_adopter(request, id_adopter):
     
     return redirect('adopsi:admin_list_adopter')
 
-# Hapus satu riwayat adopsi (hewan saja)
 def hapus_riwayat_adopsi(request, id_adopter, id_adopsi):
     adopter = next((a for a in DAFTAR_ADOPTER if a['id'] == id_adopter), None)
     if not adopter:

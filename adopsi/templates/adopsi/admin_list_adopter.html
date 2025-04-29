@@ -1,47 +1,125 @@
 {% extends 'base.html' %}
 {% block title %}Daftar Adopter{% endblock %}
-{% block content %}
-<div class="container mt-5">
-    <h2>Daftar Adopter</h2>
-    <table class="table table-bordered mt-3">
-        <thead class="table-light">
-            <tr>
-                <th>Nama Adopter</th>
-                <th>Total Kontribusi</th>
-                <th>Riwayat Adopsi</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for adopter in admin_list_adopter %}
-            <tr>
-                <td>{{ adopter.nama }}</td>
-                <td>Rp{{ adopter.total_kontribusi}}</td>
-                <td><a href="{% url 'adopsi:admin_riwayat_adopsi' adopter.id %}">[Lihat Detail]</a></td>
-                <td>
-                    <button type="button" class="btn btn-sm btn-link text-danger" data-bs-toggle="modal" data-bs-target="#hapusAdopterModal{{ adopter.id }}">[Hapus]</button>
 
-                    <!-- Modal Hapus Adopter -->
-                    <div class="modal fade" id="hapusAdopterModal{{ adopter.id }}" tabindex="-1" aria-labelledby="hapusAdopterLabel{{ adopter.id }}" aria-hidden="true">
-                      <div class="modal-dialog">
-                        <div class="modal-content">
-                          <div class="modal-body text-center">
-                            <p>Yakin ingin menghapus adopter <strong>{{ adopter.nama }}</strong>?</p>
-                            <div class="d-flex justify-content-center gap-3">
-                              <form method="post" action="{% url 'adopsi:hapus_adopter' adopter.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-danger">Ya, Hapus</button>
-                              </form>
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+        background: linear-gradient(to right, #e4f0f5, #fcefe3);
+    }
+
+    .container {
+        margin-top: 60px;
+    }
+
+    h2 {
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 40px;
+        color: #444;
+    }
+
+    .table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    thead {
+        background: #5cff47;
+        color: white;
+    }
+
+    th, td {
+        text-align: center;
+        vertical-align: middle !important;
+        font-size: 15px;
+        padding: 16px;
+    }
+
+    a {
+        text-decoration: none;
+        color: #5cff47;
+        font-weight: 600;
+    }
+
+    a:hover {
+        color: #4adb3b;
+    }
+
+    .btn-link.text-danger {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .modal-content {
+        border-radius: 20px;
+    }
+
+    .modal-body {
+        font-size: 16px;
+        font-weight: 500;
+    }
+
+    .btn-danger, .btn-secondary {
+        border-radius: 30px;
+        padding: 8px 18px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+    .btn-danger:hover, .btn-secondary:hover {
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="container">
+    <h2>Daftar Adopter</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nama Adopter</th>
+                    <th>Total Kontribusi</th>
+                    <th>Riwayat Adopsi</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adopter in admin_list_adopter %}
+                <tr>
+                    <td>{{ adopter.nama }}</td>
+                    <td>Rp{{ adopter.total_kontribusi }}</td>
+                    <td><a href="{% url 'adopsi:admin_riwayat_adopsi' adopter.id %}">[Lihat Detail]</a></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-link text-danger" data-bs-toggle="modal" data-bs-target="#hapusAdopterModal{{ adopter.id }}">[Hapus]</button>
+
+                        <!-- Modal Hapus Adopter -->
+                        <div class="modal fade" id="hapusAdopterModal{{ adopter.id }}" tabindex="-1" aria-labelledby="hapusAdopterLabel{{ adopter.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-body text-center">
+                                        <p>Yakin ingin menghapus adopter <strong>{{ adopter.nama }}</strong>?</p>
+                                        <div class="d-flex justify-content-center gap-3">
+                                            <form method="post" action="{% url 'adopsi:hapus_adopter' adopter.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+                                            </form>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                          </div>
                         </div>
-                      </div>
-                    </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

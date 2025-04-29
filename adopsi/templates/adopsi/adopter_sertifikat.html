@@ -3,19 +3,87 @@
 {% block title %}Sertifikat Adopsi{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow">
-        <div class="card-body text-center">
-            <h2 class="mb-4">Sertifikat Adopsi</h2>
-            <p><strong>Nomor Sertifikat:</strong> {{ nomor_sertifikat }}</p>
-            <p><strong>Nama Adopter:</strong> {{ hewan.adopter }}</p>
-            <p><strong>Nama Hewan:</strong> {{ hewan.nama }}</p>
-            <p><strong>Spesies:</strong> {{ hewan.spesies }}</p>
-            <p><strong>Tanggal Mulai Adopsi:</strong> {{ tanggal_sertifikat }}</p>
-            <hr>
-            <p class="mt-3">Terima kasih telah berkontribusi dalam menjaga kelestarian satwa!</p>
-            <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-secondary mt-4">Kembali</a>
-        </div>
+<style>
+    .certificate-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 50px;
+        background: #fffef9;
+        border: 10px solid #d4af37;
+        border-radius: 16px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.1);
+        font-family: 'Georgia', serif;
+        position: relative;
+    }
+
+    .certificate-container h2 {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .certificate-container p {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #444;
+    }
+
+    .certificate-seal {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 80px;
+    }
+
+    .certificate-signature {
+        margin-top: 50px;
+        text-align: right;
+        font-style: italic;
+        font-size: 16px;
+    }
+
+    .certificate-footer {
+        text-align: center;
+        font-size: 14px;
+        color: #888;
+        margin-top: 40px;
+    }
+
+    .btn-custom-back {
+        margin-top: 30px;
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 25px;
+        background-color: #6c757d;
+        color: white;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .btn-custom-back:hover {
+        background-color: #5a6268;
+        transform: scale(1.03);
+    }
+</style>
+
+<div class="certificate-container text-center">
+    <img src="https://cdn-icons-png.flaticon.com/512/3176/3176365.png" alt="Seal" class="certificate-seal">
+    <h2>SERTIFIKAT ADOPSI</h2>
+    <p><strong>Nomor Sertifikat:</strong> {{ nomor_sertifikat }}</p>
+    <p><strong>Nama Adopter:</strong> {{ hewan.adopter }}</p>
+    <p><strong>Nama Hewan:</strong> {{ hewan.nama }}</p>
+    <p><strong>Spesies:</strong> {{ hewan.spesies }}</p>
+    <p><strong>Tanggal Mulai Adopsi:</strong> {{ tanggal_sertifikat }}</p>
+    
+    <div class="certificate-signature">
+        — Admin Penyelamat Satwa —
     </div>
+
+    <div class="certificate-footer">
+        Terima kasih telah berkontribusi dalam menjaga kelestarian satwa! 🌿
+    </div>
+
+    <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn-custom-back">Kembali</a>
 </div>
 {% endblock %}

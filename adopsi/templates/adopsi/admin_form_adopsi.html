@@ -3,34 +3,37 @@
 {% block title %}Form Adopsi Satwa{% endblock %}
 
 {% block content %}
+<!-- Add Quicksand font to the head section -->
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+
 <div class="container mt-5">
-    <div class="card shadow-lg">
-        <div class="card-header">
-            <h5 class="mb-0">Form Adopsi Satwa</h5>
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0" style="font-family: 'Quicksand', sans-serif;">Form Adopsi Satwa</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="font-family: 'Quicksand', sans-serif;">
             {% if tipe_adopter == 'Individu' %}
             <form method="post">
                 {% csrf_token %}
                 <p>Pihak di bawah ini,</p>
                 <div class="mb-3">
-                    <label class="form-label">Nama</label>
+                    <label class="form-label fw-bold">Nama</label>
                     <input type="text" class="form-control" name="nama_adopter" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">NIK</label>
+                    <label class="form-label fw-bold">NIK</label>
                     <input type="text" class="form-control" name="nik" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Alamat</label>
+                    <label class="form-label fw-bold">Alamat</label>
                     <input type="text" class="form-control" name="alamat" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
+                    <label class="form-label fw-bold">Email</label>
                     <input type="email" class="form-control" name="email" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Nomor Telepon</label>
+                    <label class="form-label fw-bold">Nomor Telepon</label>
                     <input type="text" class="form-control" name="telepon" required>
                 </div>
  
@@ -42,12 +45,12 @@
                 <p>Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
 
                 <div class="mb-3">
-                    <label class="form-label">Nominal Kontribusi (Rp)</label>
+                    <label class="form-label fw-bold">Nominal Kontribusi (Rp)</label>
                     <input type="number" class="form-control" name="nominal" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">untuk periode adopsi selama (bulan)</label>
+                    <label class="form-label fw-bold">Untuk periode adopsi selama (bulan)</label>
                     <select class="form-select" name="periode" required>
                         <option value="3">3 Bulan</option>
                         <option value="6">6 Bulan</option>
@@ -56,8 +59,8 @@
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">Submit Form</button>
-                    <a href="{% url 'adopsi:daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
+                    <button type="submit" class="btn btn-success" style="border-radius: 10px;">Submit Form</button>
+                    <a href="{% url 'adopsi:admin_program_adopsi' %}" class="btn btn-outline-secondary ms-2" style="border-radius: 10px;">Batal</a>
                 </div>
             </form>
 
@@ -66,25 +69,25 @@
                 {% csrf_token %}
                 <p>Pihak di bawah ini, selaku organisasi/perusahaan</p>
                 <div class="mb-3">
-                    <label class="form-label">Nama Organisasi</label>
+                    <label class="form-label fw-bold">Nama Organisasi</label>
                     <input type="text" class="form-control" name="nama_organisasi" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">NPP</label>
+                    <label class="form-label fw-bold">NPP</label>
                     <input type="text" class="form-control" name="npp" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Alamat</label>
+                    <label class="form-label fw-bold">Alamat</label>
                     <input type="text" class="form-control" name="alamat" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
+                    <label class="form-label fw-bold">Email</label>
                     <input type="email" class="form-control" name="email" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Nomor Telepon</label>
+                    <label class="form-label fw-bold">Nomor Telepon</label>
                     <input type="text" class="form-control" name="telepon" required>
-                </div>                
+                </div>                 
 
                 <hr>
 
@@ -94,12 +97,12 @@
                 <p>Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
 
                 <div class="mb-3">
-                    <label class="form-label">Nominal Kontribusi (Rp)</label>
+                    <label class="form-label fw-bold">Nominal Kontribusi (Rp)</label>
                     <input type="number" class="form-control" name="nominal" required>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">untuk periode adopsi selama (bulan)</label>
+                    <label class="form-label fw-bold">Untuk periode adopsi selama (bulan)</label>
                     <select class="form-select" name="periode" required>
                         <option value="3">3 Bulan</option>
                         <option value="6">6 Bulan</option>
@@ -108,8 +111,8 @@
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">Submit Form</button>
-                    <a href="{% url 'adopsi:daftar_hewan' %}" class="btn btn-secondary ms-2">Batal</a>
+                    <button type="submit" class="btn btn-success" style="border-radius: 10px;">Submit Form</button>
+                    <a href="{% url 'adopsi:admin_program_adopsi' %}" class="btn btn-outline-secondary ms-2" style="border-radius: 10px;">Batal</a>
                 </div>
             </form>
             {% endif %}

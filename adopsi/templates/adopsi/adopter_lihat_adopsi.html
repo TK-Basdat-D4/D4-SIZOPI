@@ -3,48 +3,135 @@
 {% block title %}Informasi Hewan Adopsi{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="modal-dialog">
-        <div class="modal-content shadow-lg">
-            <div class="modal-header">
-                <h5 class="modal-title">Informasi Hewan Adopsi</h5>
-                <a href="{% url 'adopsi:adopter_program_adopsi' %}" class="btn-close"></a>
-            </div>
-            <div class="modal-body text-center">
-                <img src="{{ hewan.foto }}" class="img-fluid mb-3" alt="Foto {{ hewan.nama }}" style="max-height: 300px; object-fit: cover;">
-                <p><strong>Nama Hewan:</strong> {{ hewan.nama }}</p>
-                <p><strong>Jenis Hewan:</strong> {{ hewan.spesies }}</p>
-                <p><strong>Habitat:</strong> (informasi habitat belum tersedia)</p> <!-- nanti bisa diisi kalau ada -->
-                <p><strong>Tanggal Mulai Adopsi:</strong> {{ hewan.tanggal_mulai }}</p>
-                <p><strong>Tanggal Akhir Adopsi:</strong> {{ hewan.tanggal_akhir }}</p>
-            </div>
-            <div class="modal-footer flex-wrap">
-                <a href="{% url 'adopsi:adopter_pantau_kondisi' hewan.id %}" class="btn btn-primary">Pantau Kondisi Hewan</a>
-                <a href="{% url 'adopsi:adopter_sertifikat' hewan.id %}" class="btn btn-success">Lihat Sertifikat Adopsi</a>
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#hentikanAdopsiModal">
-                    Hentikan Adopsi
-                </button>
-                <a href="{% url 'adopsi:adopter_perpanjang_adopsi' hewan.id %}" class="btn btn-warning">Perpanjang Periode Adopsi</a>
-            </div>
-        </div>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+        background: linear-gradient(to right, #e4f0f5, #fcefe3);
+    }
+
+    .pet-card {
+        max-width: 400px;
+        margin: 50px auto;
+        background: white;
+        border-radius: 40px 40px 30px 30px;
+        box-shadow: 0 15px 45px rgba(0,0,0,0.1);
+        overflow: hidden;
+        animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pet-header {
+        background: linear-gradient(135deg, #5cff4771, #5cff4771);
+        padding: 30px 20px;
+        text-align: center;
+        position: relative;
+    }
+
+    .pet-header img {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 6px solid white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .pet-info {
+        padding: 25px 30px;
+        text-align: center;
+    }
+
+    .pet-info h2 {
+        font-weight: 700;
+        margin-top: 10px;
+    }
+
+    .pet-info p {
+        font-size: 14px;
+        color: #555;
+        margin: 4px 0;
+    }
+
+    .btn-rounded {
+        border-radius: 30px;
+        padding: 8px 18px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: 0.3s;
+    }
+
+    .btn-rounded:hover {
+        transform: scale(1.05);
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        padding: 20px;
+    }
+
+    .back-btn {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: white;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+        color: #555;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+</style>
+
+<div class="pet-card">
+    <div class="pet-header">
+        <a href="{% url 'adopsi:adopter_program_adopsi' %}" class="back-btn">&larr;</a>
+        <img src="{{ hewan.foto }}" alt="Foto {{ hewan.nama }}">
+    </div>
+
+    <div class="pet-info">
+        <h2>{{ hewan.nama }}</h2>
+        <p><strong>Spesies:</strong> {{ hewan.spesies }}</p>
+        <p><strong>Tanggal mulai adopsi:</strong> {{ hewan.tanggal_mulai }}</p>
+        <p><strong>Tanggal akhr adopsi:</strong> {{ hewan.tanggal_akhir }}</p>
+        <p><strong>Habitat:</strong> {{ hewan.habitat }}</p>
+    </div>
+
+    <div class="action-buttons">
+        <a href="{% url 'adopsi:adopter_pantau_kondisi' hewan.id %}" class="btn btn-outline-primary btn-rounded">Pantau</a>
+        <a href="{% url 'adopsi:adopter_sertifikat' hewan.id %}" class="btn btn-outline-success btn-rounded">Sertifikat</a>
+        <a href="{% url 'adopsi:adopter_perpanjang_adopsi' hewan.id %}" class="btn btn-outline-warning btn-rounded">Perpanjang</a>
+        <button type="button" class="btn btn-outline-danger btn-rounded" data-bs-toggle="modal" data-bs-target="#hentikanAdopsiModal">
+            Hentikan
+        </button>
     </div>
 </div>
 
-<!-- Modal Konfirmasi Hentikan Adopsi -->
-<div class="modal fade" id="hentikanAdopsiModal" tabindex="-1" aria-labelledby="hentikanAdopsiLabel" aria-hidden="true">
+<!-- Modal -->
+<div class="modal fade" id="hentikanAdopsiModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-body text-center">
-        <p>Apakah Anda yakin ingin menghentikan adopsi ini?</p>
-        <div class="d-flex justify-content-center gap-3">
-          <form method="post" action="{% url 'adopsi:hentikan_adopsi_adopter' hewan.id %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Iya, Hentikan</button>
-          </form>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-        </div>
+    <div class="modal-content p-4 rounded-4">
+      <p class="text-center mb-3">Yakin ingin menghentikan adopsi ini?</p>
+      <div class="d-flex justify-content-center gap-3">
+        <form method="post" action="{% url 'adopsi:hentikan_adopsi_adopter' hewan.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-rounded">Ya</button>
+        </form>
+        <button type="button" class="btn btn-secondary btn-rounded" data-bs-dismiss="modal">Batal</button>
       </div>
     </div>
   </div>
 </div>
+
 {% endblock %}

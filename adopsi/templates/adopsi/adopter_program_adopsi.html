@@ -3,50 +3,108 @@
 {% block title %}Program Adopsi Satwa: Bantu Mereka dengan Cinta{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow-lg mb-4">
-        <div class="card-header bg-success text-white">
-            <h4 class="mb-0">Program Adopsi Satwa: Bantu Mereka dengan Cinta</h4>
-        </div>
-        <div class="card-body">
-            <div class="text-center mb-4">
-                <!-- Area untuk ilustrasi jika ada -->
-                <p class="text-muted">[Bisa Tambahkan Ilustrasi Kalau Mau]</p>
-            </div>
-            
-            <p>Terima kasih telah mewujudkan kepedulian Anda terhadap satwa dengan menjadi adopter simbolis! Dapatkan sertifikat digital dan laporan berkala tentang kondisi hewan yang Anda dukung.</p>
-            
-            <h5 class="mt-4 mb-3">Hewan yang Sedang Anda Adopsi</h5>
-            
-            {% if hewan_diadopsi %}
-                <div class="row">
-                    {% for hewan in hewan_diadopsi %}
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ hewan.nama }}</h5>
-                                    <p class="card-text">{{ hewan.spesies }}</p>
-                                    <p class="card-text">Kondisi terbaru: {{ hewan.kondisi }}</p>
-                                    <div class="text-end">
-                                        <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-sm btn-primary">Lihat Detail</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="alert alert-info">
-                    Anda belum mengadopsi satwa. Silakan kunjungi halaman daftar hewan untuk mulai mengadopsi.
-                </div>
-                <div class="text-center mt-3">
-                    <a href="{% url 'adopsi:admin_program_adopsi' %}" class="btn btn-primary">Lihat Daftar Hewan</a>
-                </div>
-            {% endif %}
-        </div>
-        <div class="card-footer text-muted text-end">
-            {{ forloop.counter }} dari {{ hewan_diadopsi|length }}
-        </div>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+    }
+
+    .hewan-card {
+        background-size: cover;
+        background-position: center;
+        border-radius: 20px;
+        height: 250px;
+        color: white;
+        padding: 20px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .hewan-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .hewan-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.1));
+        border-radius: 20px;
+        z-index: 1;
+    }
+
+    .hewan-card-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .btn-detail {
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #2a2a2a;
+        font-weight: 600;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 2;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-detail:hover {
+        background-color: #ffd700;
+        color: #2a2a2a;
+    }
+
+    .section-title {
+        font-weight: bold;
+        font-size: 1.7rem;
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+        color: #666;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Halo {{ username }} 👋</h2>
+        <p class="subtitle">Terima kasih telah menjadi adopter simbolis. Pantau kondisi dan dukunganmu di sini.</p>
     </div>
+
+    {% if hewan_diadopsi %}
+        <h4 class="section-title">Hewan yang Sedang Anda Adopsi</h4>
+        <div class="row mt-4">
+            {% for hewan in hewan_diadopsi %}
+                <div class="col-md-6 mb-4">
+                    <div class="hewan-card shadow" style="background-image: url('{{ hewan.foto }}');">
+                        <div class="hewan-card-overlay"></div>
+                        <div class="hewan-card-content">
+                            <h4>{{ hewan.nama }}</h4>
+                            <p>{{ hewan.spesies }}</p>
+                            <p>Kondisi terbaru: {{ hewan.kondisi }}</p>
+                        </div>
+                        <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="btn btn-detail">Lihat Detail</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            Anda belum mengadopsi satwa. Yuk mulai dari sekarang!
+        </div>
+        <div class="text-center mt-3">
+            <a href="{% url 'adopsi:admin_program_adopsi' %}" class="btn btn-primary">Lihat Daftar Hewan</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
