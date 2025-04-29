@@ -2,121 +2,127 @@
 
 {% block title %}Form Adopsi Satwa{% endblock %}
 
-{% block content %}
-<!-- Add Quicksand font to the head section -->
+{% block extra_css %}
+<!-- Quicksand Font -->
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+    }
+</style>
+{% endblock %}
 
-<div class="container mt-5">
-    <div class="card shadow-lg border-0 rounded-3">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0" style="font-family: 'Quicksand', sans-serif;">Form Adopsi Satwa</h5>
-        </div>
-        <div class="card-body" style="font-family: 'Quicksand', sans-serif;">
-            {% if tipe_adopter == 'Individu' %}
-            <form method="post">
-                {% csrf_token %}
-                <p>Pihak di bawah ini,</p>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nama</label>
-                    <input type="text" class="form-control" name="nama_adopter" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">NIK</label>
-                    <input type="text" class="form-control" name="nik" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Alamat</label>
-                    <input type="text" class="form-control" name="alamat" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Email</label>
-                    <input type="email" class="form-control" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nomor Telepon</label>
-                    <input type="text" class="form-control" name="telepon" required>
-                </div>
- 
-                <hr>
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-100 px-4 py-10">
+    <div class="w-full max-w-3xl bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        <h2 class="text-2xl font-semibold text-green-700 text-center">Form Adopsi Satwa</h2>
 
-                <p>Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
-                <p>Nama: {{ hewan.nama }}</p>
-                <p>Jenis: {{ hewan.spesies }}</p>
-                <p>Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
+        {% if tipe_adopter == 'Individu' %}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <p class="text-gray-600">Pihak di bawah ini,</p>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nominal Kontribusi (Rp)</label>
-                    <input type="number" class="form-control" name="nominal" required>
-                </div>
+            <div>
+                <label class="block font-medium text-gray-700">Nama</label>
+                <input type="text" name="nama_adopter" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">NIK</label>
+                <input type="text" name="nik" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">Alamat</label>
+                <input type="text" name="alamat" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">Email</label>
+                <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">Nomor Telepon</label>
+                <input type="text" name="telepon" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Untuk periode adopsi selama (bulan)</label>
-                    <select class="form-select" name="periode" required>
-                        <option value="3">3 Bulan</option>
-                        <option value="6">6 Bulan</option>
-                        <option value="12">12 Bulan</option>
-                    </select>
-                </div>
+            <hr class="my-4">
 
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success" style="border-radius: 10px;">Submit Form</button>
-                    <a href="{% url 'adopsi:admin_program_adopsi' %}" class="btn btn-outline-secondary ms-2" style="border-radius: 10px;">Batal</a>
-                </div>
-            </form>
+            <p class="text-gray-600">Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+            <p><strong>Nama:</strong> {{ hewan.nama }}</p>
+            <p><strong>Jenis:</strong> {{ hewan.spesies }}</p>
+            <p class="text-gray-600">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
 
-            {% elif tipe_adopter == 'Organisasi' %}
-            <form method="post">
-                {% csrf_token %}
-                <p>Pihak di bawah ini, selaku organisasi/perusahaan</p>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nama Organisasi</label>
-                    <input type="text" class="form-control" name="nama_organisasi" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">NPP</label>
-                    <input type="text" class="form-control" name="npp" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Alamat</label>
-                    <input type="text" class="form-control" name="alamat" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Email</label>
-                    <input type="email" class="form-control" name="email" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nomor Telepon</label>
-                    <input type="text" class="form-control" name="telepon" required>
-                </div>                 
+            <div>
+                <label class="block font-medium text-gray-700">Nominal Kontribusi (Rp)</label>
+                <input type="number" name="nominal" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
 
-                <hr>
+            <div>
+                <label class="block font-medium text-gray-700">Untuk periode adopsi selama (bulan)</label>
+                <select name="periode" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                    <option value="3">3 Bulan</option>
+                    <option value="6">6 Bulan</option>
+                    <option value="12">12 Bulan</option>
+                </select>
+            </div>
 
-                <p>Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
-                <p>Nama: {{ hewan.nama }}</p>
-                <p>Jenis: {{ hewan.spesies }}</p>
-                <p>Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow">Submit</button>
+                <a href="{% url 'adopsi:admin_program_adopsi' %}" class="border border-gray-400 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100">Batal</a>
+            </div>
+        </form>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nominal Kontribusi (Rp)</label>
-                    <input type="number" class="form-control" name="nominal" required>
-                </div>
+        {% elif tipe_adopter == 'Organisasi' %}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <p class="text-gray-600">Pihak di bawah ini, selaku organisasi/perusahaan</p>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Untuk periode adopsi selama (bulan)</label>
-                    <select class="form-select" name="periode" required>
-                        <option value="3">3 Bulan</option>
-                        <option value="6">6 Bulan</option>
-                        <option value="12">12 Bulan</option>
-                    </select>
-                </div>
+            <div>
+                <label class="block font-medium text-gray-700">Nama Organisasi</label>
+                <input type="text" name="nama_organisasi" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">NPP</label>
+                <input type="text" name="npp" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">Alamat</label>
+                <input type="text" name="alamat" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">Email</label>
+                <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+            <div>
+                <label class="block font-medium text-gray-700">Nomor Telepon</label>
+                <input type="text" name="telepon" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
 
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success" style="border-radius: 10px;">Submit Form</button>
-                    <a href="{% url 'adopsi:admin_program_adopsi' %}" class="btn btn-outline-secondary ms-2" style="border-radius: 10px;">Batal</a>
-                </div>
-            </form>
-            {% endif %}
-        </div>
+            <hr class="my-4">
+
+            <p class="text-gray-600">Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+            <p><strong>Nama:</strong> {{ hewan.nama }}</p>
+            <p><strong>Jenis:</strong> {{ hewan.spesies }}</p>
+            <p class="text-gray-600">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
+
+            <div>
+                <label class="block font-medium text-gray-700">Nominal Kontribusi (Rp)</label>
+                <input type="number" name="nominal" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+            </div>
+
+            <div>
+                <label class="block font-medium text-gray-700">Untuk periode adopsi selama (bulan)</label>
+                <select name="periode" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                    <option value="3">3 Bulan</option>
+                    <option value="6">6 Bulan</option>
+                    <option value="12">12 Bulan</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg shadow">Submit</button>
+                <a href="{% url 'adopsi:admin_program_adopsi' %}" class="border border-gray-400 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100">Batal</a>
+            </div>
+        </form>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

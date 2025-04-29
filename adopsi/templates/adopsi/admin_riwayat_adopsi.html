@@ -7,132 +7,58 @@
 <style>
     body {
         font-family: 'Quicksand', sans-serif;
-        background: linear-gradient(to right, #e4f0f5, #fcefe3);
-    }
-
-    .container {
-        margin-top: 60px;
-    }
-
-    a {
-        text-decoration: none;
-        color: #5cff47;
-        font-weight: 600;
-        display: inline-block;
-        margin-bottom: 20px;
-    }
-
-    a:hover {
-        color: #4adb3b;
-    }
-
-    h2 {
-        text-align: center;
-        font-weight: 700;
-        margin-bottom: 20px;
-        color: #444;
-    }
-
-    p {
-        font-size: 16px;
-        margin: 6px 0;
-        color: #555;
-    }
-
-    .table {
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    thead {
-        background: #5cff47;
-        color: white;
-    }
-
-    th, td {
-        text-align: center;
-        vertical-align: middle !important;
-        font-size: 15px;
-        padding: 14px;
-    }
-
-    .btn-link.text-danger {
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .modal-content {
-        border-radius: 20px;
-    }
-
-    .modal-body {
-        font-size: 16px;
-        font-weight: 500;
-    }
-
-    .btn-danger, .btn-secondary {
-        border-radius: 30px;
-        padding: 8px 18px;
-        font-weight: 600;
-        transition: 0.3s;
-    }
-
-    .btn-danger:hover, .btn-secondary:hover {
-        transform: scale(1.05);
+        background-color: #ffffff;
     }
 </style>
 
-<div class="container">
-    <a href="{% url 'adopsi:admin_list_adopter' %}">Kembali</a>
-    <h2>Riwayat Adopsi</h2>
-    <p><strong>Nama Adopter:</strong> {{ adopter.nama }}</p>
-    <p><strong>Alamat Adopter:</strong> {{ adopter.alamat }}</p>
-    <p><strong>Kontak Adopter:</strong> {{ adopter.kontak }}</p>
+<div class="max-w-5xl mx-auto px-4 py-10">
+    <h2 class="text-center text-2xl font-bold text-gray-800 mb-4">Riwayat Adopsi</h2>
 
-    <div class="table-responsive mt-4">
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Nama Hewan</th>
-                    <th>Jenis Hewan</th>
-                    <th>Tanggal Mulai Adopsi</th>
-                    <th>Tanggal Akhir Adopsi</th>
-                    <th>Nominal Kontribusi</th>
-                    <th>Aksi</th>
+    <div class="mb-6 text-gray-700">
+      <p class="mb-1"><strong>Nama Adopter:</strong> {{ adopter.nama }}</p>
+      <p class="mb-1"><strong>Alamat Adopter:</strong> {{ adopter.alamat }}</p>
+      <p class="mb-1"><strong>Kontak Adopter:</strong> {{ adopter.kontak }}</p>
+    </div>
+  
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white shadow rounded-t-xl overflow-hidden">
+            <thead class="bg-green-100">
+                <tr class="text-gray-800 text-sm font-semibold text-center">
+                    <th class="py-3 px-6 rounded-tl-xl">Nama Hewan</th>
+                    <th class="py-3 px-6">Jenis</th>
+                    <th class="py-3 px-6">Mulai</th>
+                    <th class="py-3 px-6">Berakhir</th>
+                    <th class="py-3 px-6">Kontribusi</th>
+                    <th class="py-3 px-6 rounded-tr-xl">Aksi</th>
                 </tr>
             </thead>
             <tbody>
                 {% for adopsi in adopter.riwayat_adopsi %}
-                <tr>
-                    <td>{{ adopsi.nama_hewan }}</td>
-                    <td>{{ adopsi.jenis_hewan }}</td>
-                    <td>{{ adopsi.tanggal_mulai }}</td>
-                    <td>{{ adopsi.tanggal_akhir }}</td>
-                    <td>Rp{{ adopsi.nominal }}</td>
-                    <td>
+                <tr class="text-center border-t hover:bg-green-50 transition">
+                    <td class="py-4 px-6">{{ adopsi.nama_hewan }}</td>
+                    <td class="py-4 px-6">{{ adopsi.jenis_hewan }}</td>
+                    <td class="py-4 px-6">{{ adopsi.tanggal_mulai }}</td>
+                    <td class="py-4 px-6">{{ adopsi.tanggal_akhir }}</td>
+                    <td class="py-4 px-6">Rp{{ adopsi.nominal }}</td>
+                    <td class="py-4 px-6">
                         {% if adopsi.status == 'Sedang Berlangsung' %}
-                            <span class="text-success" style="font-weight:600;">[Sedang Berlangsung]</span>
+                            <span class="text-green-600 font-semibold">[Sedang Berlangsung]</span>
                         {% else %}
-                            <button type="button" class="btn btn-sm btn-link text-danger" data-bs-toggle="modal" data-bs-target="#hapusAdopsiModal{{ adopsi.id }}">[Hapus]</button>
+                            <button onclick="document.getElementById('modal-{{ adopsi.id }}').classList.remove('hidden')" class="text-red-500 font-semibold hover:underline">[Hapus]</button>
 
-                            <!-- Modal Hapus Adopsi -->
-                            <div class="modal fade" id="hapusAdopsiModal{{ adopsi.id }}" tabindex="-1" aria-labelledby="hapusAdopsiLabel{{ adopsi.id }}" aria-hidden="true">
-                              <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                  <div class="modal-body text-center">
-                                    <p>Yakin ingin menghapus riwayat adopsi hewan <strong>{{ adopsi.nama_hewan }}</strong>?</p>
-                                    <div class="d-flex justify-content-center gap-3">
-                                      <form method="post" action="{% url 'adopsi:hapus_riwayat_adopsi' adopter.id adopsi.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger">Ya, Hapus</button>
-                                      </form>
-                                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                            <!-- Modal -->
+                            <div id="modal-{{ adopsi.id }}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                                <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
+                                    <p class="text-center text-lg mb-4">Yakin ingin menghapus adopsi <strong>{{ adopsi.nama_hewan }}</strong>?</p>
+                                    <div class="flex justify-center gap-4">
+                                        <form method="post" action="{% url 'adopsi:hapus_riwayat_adopsi' adopter.id adopsi.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-full font-semibold">Ya, Hapus</button>
+                                        </form>
+                                        <button onclick="document.getElementById('modal-{{ adopsi.id }}').classList.add('hidden')" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-5 py-2 rounded-full font-semibold">Batal</button>
                                     </div>
-                                  </div>
                                 </div>
-                              </div>
                             </div>
                         {% endif %}
                     </td>
@@ -140,6 +66,11 @@
                 {% endfor %}
             </tbody>
         </table>
+        <div class="mt-6">
+          <a href="{% url 'adopsi:admin_list_adopter' %}" class="inline-block bg-green-100 text-green-900 font-semibold px-4 py-2 rounded-md shadow hover:bg-green-200 transition">
+              Kembali
+          </a>
+        </div>
     </div>
 </div>
 {% endblock %}

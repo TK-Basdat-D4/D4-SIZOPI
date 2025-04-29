@@ -19,8 +19,9 @@
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
                         <li><a href="#" class="text-gray-700 hover:text-gray-900">Catatan Perawatan Hewan</a></li>
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
-                        <li><a href="{% url 'adopsi:admin_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a></li>
-                        <li><a href="{% url 'adopsi:admin_list_adopter' %}" class="text-gray-700 hover:text-gray-900">Kelola Data & Riwayat Adopter</a></li>
+                        <li><a href="{% url 'adopsi:admin_daftar_pengunjung' %}" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a></li>
+                        <li><a href="{% url 'adopsi:admin_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopsi</a></li>
+                        <li><a href="{% url 'adopsi:admin_list_adopter' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopter</a></li>
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'pelatih_pertunjukan' %}
                         <li><a href="#" class="text-gray-700 hover:text-gray-900">Jadwal Pertunjukan</a></li>
                     {% elif request.session.user.role == 'pengunjung' %}
@@ -55,8 +56,9 @@
             {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
                 <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Catatan Perawatan Hewan</a>
             {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
-                <a href="{% url 'adopsi:admin_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a>
-                <a href="{% url 'adopsi:admin_list_adopter' %}" class="text-gray-700 hover:text-gray-900">Kelola Data & Riwayat Adopter</a>
+                <a href="{% url 'adopsi:admin_daftar_pengunjung' %}" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a>
+                <a href="{% url 'adopsi:admin_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopsi</a>
+                <a href="{% url 'adopsi:admin_list_adopter' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopter</a>
             {% elif request.session.user.role == 'staff' and request.session.user.peran == 'pelatih_pertunjukan' %}
                 <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Jadwal Pertunjukan</a>
             {% elif request.session.user.role == 'pengunjung' %}
