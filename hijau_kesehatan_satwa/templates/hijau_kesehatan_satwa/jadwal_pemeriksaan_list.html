@@ -2,41 +2,305 @@
 
 {% block title %}Jadwal Pemeriksaan Kesehatan Hewan{% endblock %}
 
+{% block extra_css %}
+<style>
+  .table-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .btn-add {
+    background-color: #059669;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  
+  .btn-add:hover {
+    background-color: #047857;
+  }
+  
+  .btn-edit {
+    background-color: #3b82f6;
+    color: white;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .btn-edit:hover {
+    background-color: #2563eb;
+  }
+  
+  .btn-delete {
+    background-color: #ef4444;
+    color: white;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-delete:hover {
+    background-color: #dc2626;
+  }
+  
+  .pagination-link {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    background-color: #f3f4f6;
+    color: #374151;
+    transition: background-color 0.2s;
+  }
+  
+  .pagination-link:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .pagination-active {
+    background-color: #059669;
+    color: white;
+  }
+  
+  .pagination-active:hover {
+    background-color: #047857;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 50;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 90%;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .modal-close {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .modal-close:hover {
+    color: #ef4444;
+  }
+  
+  .btn-submit {
+    background-color: #059669;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn-submit:hover {
+    background-color: #047857;
+  }
+  
+  .btn-cancel {
+    background-color: #f3f4f6;
+    color: #374151;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .btn-cancel:hover {
+    background-color: #e5e7eb;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>Jadwal Pemeriksaan Kesehatan Hewan</h1>
-
-<div class="mb-3">
-    <p>Frekuensi Pemeriksaan Rutin: {{ frequency }} bulan sekali</p>
-</div>
-
-<a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_form' %}" class="btn btn-primary mb-3">+ Tambah Jadwal Pemeriksaan</a>
-
-<table class="table table-striped">
-    <thead>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Jadwal Pemeriksaan Kesehatan Hewan</h1>
+    
+    <div class="flex space-x-2">
+      <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_form' %}" class="btn-add">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Tambah Jadwal Pemeriksaan
+      </a>
+    </div>
+  </div>
+  
+  <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="text-gray-700">Frekuensi: <span class="font-semibold">{{ frequency }} bulan</span></p>
+      </div>
+      <button type="button" class="btn-edit" onclick="openEditFrequencyModal()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        Edit
+      </button>
+    </div>
+  </div>
+  
+  <div class="table-card overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead class="bg-gray-50">
         <tr>
-            <th>Tanggal Pemeriksaan Selanjutnya</th>
-            <th>Aksi</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pemeriksaan Selanjutnya</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
         {% for jadwal in jadwal_list %}
-        <tr>
-            <td>{{ jadwal.tanggal }}</td>
-            <td>
-                <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_delete' id=jadwal.id %}" 
-                   class="btn btn-danger btn-sm" 
-                   onclick="return confirm('Apakah Anda yakin ingin menghapus jadwal ini?')">Hapus</a>
-            </td>
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ jadwal.tanggal }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="status-badge">Terjadwal</span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div class="flex space-x-2">
+              <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_delete' id=jadwal.id %}" 
+                class="btn-delete" 
+                onclick="return confirm('Apakah Anda yakin ingin menghapus jadwal ini?')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </a>
+            </div>
+          </td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="2" class="text-center">Tidak ada jadwal pemeriksaan</td>
+          <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p class="text-lg font-medium">Tidak ada jadwal pemeriksaan</p>
+            <p class="mt-1">Klik tombol "Tambah Jadwal Pemeriksaan" untuk membuat jadwal baru</p>
+          </td>
         </tr>
         {% endfor %}
-    </tbody>
-</table>
-
-<div class="mt-3">
-    <a href="{% url 'register_login:profile' %}" class="btn btn-secondary">Kembali ke Profil</a>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Pagination (hanya ditampilkan jika ada data) -->
+  {% if jadwal_list %}
+  <div class="flex justify-between items-center mt-6">
+    <p class="text-sm text-gray-700">
+      Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">{{ jadwal_list|length }}</span> dari <span class="font-medium">{{ jadwal_list|length }}</span> jadwal
+    </p>
+    
+    <div class="flex space-x-2">
+      <a href="#" class="pagination-link pagination-active">1</a>
+      {% if jadwal_list|length > 10 %}
+      <a href="#" class="pagination-link">2</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+  
+  <div class="mt-8">
+    <a href="{% url 'register_login:profile' %}" class="inline-flex items-center text-gray-700 hover:text-gray-900">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Kembali ke Profil
+    </a>
+  </div>
+  
+  <!-- Modal Edit Frekuensi -->
+  <div id="editFrequencyModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="text-lg font-semibold text-gray-900">Edit Frekuensi Pemeriksaan</h3>
+        <span class="modal-close" onclick="closeEditFrequencyModal()">&times;</span>
+      </div>
+      <form action="{% url 'hijau_kesehatan_satwa:update_frequency' %}" method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+          <label for="frequency" class="block text-sm font-medium text-gray-700 mb-1">Frekuensi (dalam bulan)</label>
+          <input type="number" id="frequency" name="frequency" value="{{ frequency }}" min="1" required
+                 class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" />
+          <p class="mt-1 text-sm text-gray-500">Masukkan frekuensi pemeriksaan dalam satuan bulan</p>
+        </div>
+        <div class="flex justify-end space-x-2 mt-6">
+          <button type="button" class="btn-cancel" onclick="closeEditFrequencyModal()">Batal</button>
+          <button type="submit" class="btn-submit">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
+<script>
+  // Modal functions
+  function openEditFrequencyModal() {
+    document.getElementById('editFrequencyModal').style.display = 'block';
+  }
+  
+  function closeEditFrequencyModal() {
+    document.getElementById('editFrequencyModal').style.display = 'none';
+  }
+  
+  // Close modal when clicking outside of it
+  window.onclick = function(event) {
+    var modal = document.getElementById('editFrequencyModal');
+    if (event.target == modal) {
+      modal.style.display = 'none';
+    }
+  }
+</script>
 {% endblock %}
