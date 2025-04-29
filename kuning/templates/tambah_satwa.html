@@ -1,26 +1,116 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>Tambah Satwa</h1>
-<form method="post">
-    {% csrf_token %}
-    Nama Individu: <input type="text" name="nama"><br>
-    Spesies: <input type="text" name="spesies" required><br>
-    Asal Hewan: <input type="text" name="asal" required><br>
-    Tanggal Lahir: <input type="date" name="tanggal_lahir"><br>
-    Status Kesehatan:
-    <select name="status_kesehatan" required>
-        <option>Sehat</option>
-        <option>Sakit</option>
-        <option>Dalam Pemantauan</option>
-    </select><br>
-    Nama Habitat:
-    <select name="habitat" required>
-        {% for h in habitats %}
-        <option value="{{ h.nama }}">{{ h.nama }}</option>
-        {% endfor %}
-    </select><br>
-    URL Foto Satwa: <input type="text" name="foto" required><br>
-    <button type="submit">Tambah</button>
-    <a href="{% url 'kuning:list_satwa' %}">Batal</a>
-</form>
+<style>
+    .form-wrapper {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: #fdfdfd;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .form-wrapper h1 {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .form-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    .form-buttons button,
+    .form-buttons a {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        text-align: center;
+    }
+
+    .form-buttons button {
+        background-color: #28a745;
+        color: white;
+        cursor: pointer;
+    }
+
+    .form-buttons a {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .form-buttons button:hover,
+    .form-buttons a:hover {
+        opacity: 0.9;
+    }
+</style>
+
+<div class="form-wrapper">
+    <h1>Tambah Satwa</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="nama">Nama Individu:</label>
+            <input type="text" name="nama" required>
+        </div>
+        <div class="form-group">
+            <label for="spesies">Spesies:</label>
+            <input type="text" name="spesies" required>
+        </div>
+        <div class="form-group">
+            <label for="asal">Asal Hewan:</label>
+            <input type="text" name="asal" required>
+        </div>
+        <div class="form-group">
+            <label for="tanggal_lahir">Tanggal Lahir:</label>
+            <input type="date" name="tanggal_lahir">
+        </div>
+        <div class="form-group">
+            <label for="status_kesehatan">Status Kesehatan:</label>
+            <select name="status_kesehatan" required>
+                <option>Sehat</option>
+                <option>Sakit</option>
+                <option>Dalam Pemantauan</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="habitat">Nama Habitat:</label>
+            <select name="habitat" required>
+                {% for h in habitats %}
+                    <option value="{{ h.nama }}">{{ h.nama }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="foto">URL Foto Satwa:</label>
+            <input type="text" name="foto" required>
+        </div>
+        <div class="form-buttons">
+            <button type="submit">Tambah</button>
+            <a href="{% url 'kuning:list_satwa' %}">Batal</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

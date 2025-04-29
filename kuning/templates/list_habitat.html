@@ -1,24 +1,76 @@
-<!-- templates/kuning/list_habitat.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Daftar Habitat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        .habitat-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .habitat-card h3 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .habitat-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .habitat-card a {
+            text-decoration: none;
+            color: #007BFF;
+            margin-right: 10px;
+        }
+        .habitat-card a:hover {
+            text-decoration: underline;
+        }
+        .add-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        .add-btn:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
-    <h1>Daftar Habitat</h1>
-    <a href="{% url 'add_habitat' %}">+ Tambah Habitat</a><br><br>
+    <div class="container">
+        <h1>Daftar Habitat</h1>
+        <a href="{% url 'add_habitat' %}" class="add-btn">+ Tambah Habitat</a>
 
-    {% for habitat in habitats %}
-        <div style="border:1px solid #000; padding:10px; margin-bottom:10px;">
-            <h3>{{ habitat.nama }}</h3>
-            <p>Luas Area: {{ habitat.luas }}</p>
-            <p>Kapasitas Maksimal: {{ habitat.kapasitas }}</p>
-            <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
-            <a href="{% url 'kuning:detail_habitat' habitat.id %}">Detail</a> |
-            <a href="{% url 'kuning:edit_habitat' habitat.id %}">Edit</a> |
-            <a href="{% url 'kuning:delete_habitat' habitat.id %}">Hapus</a>
-        </div>
-    {% endfor %}
+        {% for habitat in habitats %}
+            <div class="habitat-card">
+                <h3>{{ habitat.nama }}</h3>
+                <p>Luas Area: {{ habitat.luas }} m²</p>
+                <p>Kapasitas Maksimal: {{ habitat.kapasitas }} hewan</p>
+                <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
+                <a href="{% url 'kuning:detail_habitat' habitat.id %}">Detail</a> |
+                <a href="{% url 'kuning:edit_habitat' habitat.id %}">Edit</a> |
+                <a href="{% url 'kuning:delete_habitat' habitat.id %}">Hapus</a>
+            </div>
+        {% endfor %}
+    </div>
 </body>
 </html>

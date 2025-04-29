@@ -87,7 +87,7 @@ def tambah_satwa(request):
 
 def edit_satwa(request, id):
     satwa = next((item for item in SATWA if item["id"] == id), None)
-    return render(request, 'dit_satwa.html', {'satwa': satwa, 'habitats': HABITAT})
+    return render(request, 'edit_satwa.html', {'satwa': satwa, 'habitats': HABITAT})
 
 # HABITAT
 def list_habitat(request):

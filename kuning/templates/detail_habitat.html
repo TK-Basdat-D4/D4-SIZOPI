@@ -1,37 +1,90 @@
-<!-- templates/kuning/detail_habitat.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Detail Habitat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 70%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .actions a {
+            text-decoration: none;
+            color: #007BFF;
+            margin: 0 10px;
+        }
+        .actions a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <h1>Detail Habitat: {{ habitat.nama }}</h1>
-    <p>Luas Area: {{ habitat.luas }}</p>
-    <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
-    <p>Kapasitas Maksimal: {{ habitat.kapasitas }}</p>
+    <div class="container">
+        <h1>Detail Habitat: {{ habitat.nama }}</h1>
+        <p>Luas Area: {{ habitat.luas }} m²</p>
+        <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
+        <p>Kapasitas Maksimal: {{ habitat.kapasitas }} hewan</p>
 
-    <a href="{% url 'kuning:edit_habitat' habitat.id %}">Edit Habitat</a> |
-    <a href="{% url 'kuning:delete_habitat' habitat.id %}">Hapus Habitat</a>
-    
-    <h2>Daftar Hewan dalam Habitat</h2>
-    <table border="1" cellpadding="5">
-        <tr>
-            <th>Nama Individu</th>
-            <th>Spesies</th>
-            <th>Asal</th>
-            <th>Tanggal Lahir</th>
-            <th>Status Kesehatan</th>
-        </tr>
-        {% for hewan in hewan_habitat %}
-        <tr>
-            <td>{{ hewan.nama }}</td>
-            <td>{{ hewan.spesies }}</td>
-            <td>{{ hewan.asal }}</td>
-            <td>{{ hewan.tanggal_lahir }}</td>
-            <td>{{ hewan.status_kesehatan }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+        <div class="actions">
+            <a href="{% url 'kuning:edit_habitat' habitat.id %}">Edit Habitat</a> |
+            <a href="{% url 'kuning:delete_habitat' habitat.id %}">Hapus Habitat</a>
+        </div>
+
+        <h2>Daftar Hewan dalam Habitat</h2>
+        <table>
+            <tr>
+                <th>Nama Individu</th>
+                <th>Spesies</th>
+                <th>Asal</th>
+                <th>Tanggal Lahir</th>
+                <th>Status Kesehatan</th>
+            </tr>
+            {% for hewan in hewan_habitat %}
+            <tr>
+                <td>{{ hewan.nama }}</td>
+                <td>{{ hewan.spesies }}</td>
+                <td>{{ hewan.asal }}</td>
+                <td>{{ hewan.tanggal_lahir }}</td>
+                <td>{{ hewan.status_kesehatan }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </body>
 </html>

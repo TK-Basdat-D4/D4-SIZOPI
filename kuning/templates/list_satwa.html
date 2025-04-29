@@ -1,36 +1,40 @@
 {% extends 'base.html' %}
+
 {% block content %}
-<h1>Data Satwa</h1>
-<a href="{% url 'kuning:tambah_satwa' %}">+ Tambah Satwa</a>
-<table border="1">
-    <thead>
-        <tr>
-            <th>Nama Individu</th>
-            <th>Spesies</th>
-            <th>Asal</th>
-            <th>Tanggal Lahir</th>
-            <th>Status Kesehatan</th>
-            <th>Habitat</th>
-            <th>Foto</th>
-            <th>Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for s in satwa %}
-        <tr>
-            <td>{{ s.nama }}</td>
-            <td>{{ s.spesies }}</td>
-            <td>{{ s.asal }}</td>
-            <td>{{ s.tanggal_lahir }}</td>
-            <td>{{ s.status_kesehatan }}</td>
-            <td>{{ s.habitat }}</td>
-            <td><img src="{{ s.foto }}" width="100"></td>
-            <td>
-                <a href="{% url 'kuning:edit_satwa' s.id %}">Edit</a> |
-                <a href="#">Hapus</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div style="padding: 20px; font-family: Arial, sans-serif;">
+    <h1 style="color: #2c3e50;">Data Satwa</h1>
+    <a href="{% url 'kuning:tambah_satwa' %}" style="display: inline-block; margin-bottom: 15px; padding: 8px 12px; background-color: #27ae60; color: white; text-decoration: none; border-radius: 5px;">+ Tambah Satwa</a>
+    
+    <table style="width: 100%; border-collapse: collapse; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <thead style="background-color: #2980b9; color: white;">
+            <tr>
+                <th style="padding: 10px;">Nama Individu</th>
+                <th style="padding: 10px;">Spesies</th>
+                <th style="padding: 10px;">Asal</th>
+                <th style="padding: 10px;">Tanggal Lahir</th>
+                <th style="padding: 10px;">Status Kesehatan</th>
+                <th style="padding: 10px;">Habitat</th>
+                <th style="padding: 10px;">Foto</th>
+                <th style="padding: 10px;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in satwa %}
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 10px;">{{ s.nama }}</td>
+                <td style="padding: 10px;">{{ s.spesies }}</td>
+                <td style="padding: 10px;">{{ s.asal }}</td>
+                <td style="padding: 10px;">{{ s.tanggal_lahir }}</td>
+                <td style="padding: 10px;">{{ s.status_kesehatan }}</td>
+                <td style="padding: 10px;">{{ s.habitat }}</td>
+                <td style="padding: 10px;"><img src="{{ s.foto }}" width="100" alt="Foto {{ s.nama }}"></td>
+                <td style="padding: 10px;">
+                    <a href="{% url 'kuning:edit_satwa' s.id %}" style="color: #2980b9; text-decoration: none;">Edit</a> |
+                    <a href="#" style="color: #c0392b; text-decoration: none;">Hapus</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

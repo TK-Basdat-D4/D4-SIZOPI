@@ -4,41 +4,117 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit Data Satwa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        button {
+            background-color: #27ae60;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #219150;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 25px;
+            margin-left: 15px;
+            text-decoration: none;
+            color: #c0392b;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Edit Data Satwa</h1>
-    <form method="post">
-        <label>Nama Individu:</label><br>
-        <input type="text" name="nama" value="{{ satwa.nama }}"><br><br>
+    <div class="form-container">
+        <h1>Edit Data Satwa</h1>
+        <form method="post">
+            {% csrf_token %}
+            <label>Nama Individu:</label>
+            <input type="text" name="nama" value="{{ satwa.nama }}">
 
-        <label>Spesies:</label><br>
-        <input type="text" name="spesies" value="{{ satwa.spesies }}"><br><br>
+            <label>Spesies:</label>
+            <input type="text" name="spesies" value="{{ satwa.spesies }}">
 
-        <label>Asal Hewan:</label><br>
-        <input type="text" name="asal" value="{{ satwa.asal }}"><br><br>
+            <label>Asal Hewan:</label>
+            <input type="text" name="asal" value="{{ satwa.asal }}">
 
-        <label>Tanggal Lahir:</label><br>
-        <input type="date" name="tanggal_lahir" value="{{ satwa.tanggal_lahir }}"><br><br>
+            <label>Tanggal Lahir:</label>
+            <input type="date" name="tanggal_lahir" value="{{ satwa.tanggal_lahir }}">
 
-        <label>Status Kesehatan:</label><br>
-        <select name="status_kesehatan">
-            <option value="Sehat" {% if satwa.status_kesehatan == "Sehat" %}selected{% endif %}>Sehat</option>
-            <option value="Sakit" {% if satwa.status_kesehatan == "Sakit" %}selected{% endif %}>Sakit</option>
-            <option value="Dalam Pemantauan" {% if satwa.status_kesehatan == "Dalam Pemantauan" %}selected{% endif %}>Dalam Pemantauan</option>
-        </select><br><br>
+            <label>Status Kesehatan:</label>
+            <select name="status_kesehatan">
+                <option value="Sehat" {% if satwa.status_kesehatan == "Sehat" %}selected{% endif %}>Sehat</option>
+                <option value="Sakit" {% if satwa.status_kesehatan == "Sakit" %}selected{% endif %}>Sakit</option>
+                <option value="Dalam Pemantauan" {% if satwa.status_kesehatan == "Dalam Pemantauan" %}selected{% endif %}>Dalam Pemantauan</option>
+            </select>
 
-        <label>Nama Habitat:</label><br>
-        <select name="habitat">
-            {% for habitat in habitats %}
-                <option value="{{ habitat }}" {% if habitat == satwa.habitat %}selected{% endif %}>{{ habitat }}</option>
-            {% endfor %}
-        </select><br><br>
+            <label>Nama Habitat:</label>
+            <select name="habitat">
+                {% for habitat in habitats %}
+                    <option value="{{ habitat }}" {% if habitat == satwa.habitat %}selected{% endif %}>{{ habitat.nama }}</option>
+                {% endfor %}
+            </select>
 
-        <label>URL Foto Satwa:</label><br>
-        <input type="text" name="foto" value="{{ satwa.foto }}"><br><br>
+            <label>URL Foto Satwa:</label>
+            <input type="text" name="foto" value="{{ satwa.foto }}">
 
-        <button type="submit">SIMPAN PERUBAHAN</button>
-        <a href="{% url 'kuning:list_satwa' %}">BATAL</a>
-    </form>
+            <button type="submit">SIMPAN PERUBAHAN</button>
+            <a href="{% url 'kuning:list_satwa' %}">BATAL</a>
+        </form>
+    </div>
 </body>
 </html>
