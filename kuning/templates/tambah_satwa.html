@@ -97,9 +97,9 @@
         </div>
         <div class="form-group">
             <label for="habitat">Nama Habitat:</label>
-            <select name="habitat" required>
-                {% for h in habitats %}
-                    <option value="{{ h.nama }}">{{ h.nama }}</option>
+            <select name="habitat" id="habitat">
+                {% for habitat_name in habitats %}
+                    <option value="{{ habitat_name }}" {% if satwa.habitat == habitat_name %}selected{% endif %}>{{ habitat_name }}</option>
                 {% endfor %}
             </select>
         </div>

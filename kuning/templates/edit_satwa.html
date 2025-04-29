@@ -103,9 +103,9 @@
             </select>
 
             <label>Nama Habitat:</label>
-            <select name="habitat">
-                {% for habitat in habitats %}
-                    <option value="{{ habitat }}" {% if habitat == satwa.habitat %}selected{% endif %}>{{ habitat.nama }}</option>
+            <select name="habitat" id="habitat">
+                {% for habitat_name in habitats %}
+                    <option value="{{ habitat_name }}" {% if satwa.habitat == habitat_name %}selected{% endif %}>{{ habitat_name }}</option>
                 {% endfor %}
             </select>
 

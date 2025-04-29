@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block title %}Data Satwa - Taman Safari{% endblock %}
+
 {% block content %}
 <div style="padding: 20px; font-family: Arial, sans-serif;">
     <h1 style="color: #2c3e50;">Data Satwa</h1>
@@ -25,12 +27,20 @@
                 <td style="padding: 10px;">{{ s.spesies }}</td>
                 <td style="padding: 10px;">{{ s.asal }}</td>
                 <td style="padding: 10px;">{{ s.tanggal_lahir }}</td>
-                <td style="padding: 10px;">{{ s.status_kesehatan }}</td>
+                <td style="padding: 10px;">
+                    {% if s.status_kesehatan == 'Sehat' %}
+                        <span style="color: green; font-weight: bold;">{{ s.status_kesehatan }}</span>
+                    {% elif s.status_kesehatan == 'Sakit' %}
+                        <span style="color: red; font-weight: bold;">{{ s.status_kesehatan }}</span>
+                    {% else %}
+                        <span style="color: orange; font-weight: bold;">{{ s.status_kesehatan }}</span>
+                    {% endif %}
+                </td>
                 <td style="padding: 10px;">{{ s.habitat }}</td>
-                <td style="padding: 10px;"><img src="{{ s.foto }}" width="100" alt="Foto {{ s.nama }}"></td>
+                <td style="padding: 10px;"><img src="{{ s.foto }}" width="100" alt="Foto {{ s.nama }}" onerror="this.src='https://via.placeholder.com/100x100?text=No+Image'"></td>
                 <td style="padding: 10px;">
                     <a href="{% url 'kuning:edit_satwa' s.id %}" style="color: #2980b9; text-decoration: none;">Edit</a> |
-                    <a href="#" style="color: #c0392b; text-decoration: none;">Hapus</a>
+                    <a href="{% url 'kuning:hapus_satwa' s.id %}" style="color: #c0392b; text-decoration: none;" onclick="return confirm('Apakah Anda yakin ingin menghapus data {{ s.nama }}?')">Hapus</a>
                 </td>
             </tr>
             {% endfor %}
