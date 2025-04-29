@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'hijau_kesehatan_satwa',
     'kuning',
     'adopsi',
+    'biru',
 ]
 
 MIDDLEWARE = [
