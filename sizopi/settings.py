@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'register_login',
     'hijau_kesehatan_satwa',
     'kuning',
+    'adopsi',
 ]
 
 MIDDLEWARE = [

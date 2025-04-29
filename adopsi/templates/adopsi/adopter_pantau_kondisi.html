@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Pantau Kondisi Hewan{% endblock %}
+
+{% block content %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+    }
+    .certificate-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 30px;
+        background: #fffef9;
+        border: 10px solid #d4af37;
+        border-radius: 12px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.1);
+        font-family: 'Georgia', serif;
+        position: relative;
+    }
+
+    .certificate-container h2 {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+        text-align: center;
+    }
+
+    .certificate-container p {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #444;
+        text-align: center;
+    }
+
+    .certificate-seal {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 80px;
+    }
+
+    .certificate-signature {
+        margin-top: 50px;
+        text-align: right;
+        font-style: italic;
+        font-size: 16px;
+    }
+
+    .certificate-footer {
+        text-align: center;
+        font-size: 14px;
+        color: #888;
+        margin-top: 40px;
+    }
+
+    .btn-custom-back {
+        margin-top: 30px;
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 25px;
+        background-color: #28a745; /* Green color */
+        color: white;
+        text-decoration: none;
+        transition: 0.3s;
+        text-align: center;
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 20px;
+    }
+
+    .btn-custom-back:hover {
+        background-color: #218838; /* Darker green for hover */
+        transform: scale(1.03);
+    }
+
+    /* Responsive Design for Mobile Devices */
+    @media screen and (max-width: 768px) {
+        .certificate-container {
+            padding: 20px;
+        }
+
+        .btn-custom-back {
+            bottom: 10px; /* Adjust bottom padding for mobile */
+        }
+    }
+</style>
+
+<div class="container mx-auto px-4 py-8 max-w-5xl">
+    <div class="bg-white p-8 rounded-2xl shadow-lg border border-green-100">
+        <h3 class="text-2xl font-bold text-center mb-6 text-green-800">📋 Pantau Kondisi Hewan: {{ hewan.nama }}</h3>
+        
+        <!-- Foto Hewan -->
+        <div class="text-center mb-4">
+            <img src="{{ hewan.foto }}" alt="Foto Hewan" class="w-64 h-64 object-cover rounded-lg mx-auto">
+        </div>
+
+        <p class="text-center text-lg mb-6">
+            <strong>Nama:</strong> {{ hewan.nama }} <br>
+            <strong>Jenis:</strong> {{ hewan.spesies }} <br>
+            <strong>Habitat:</strong> {{ hewan.habitat }}
+        </p>
+
+        <h4 class="text-xl font-semibold text-center mb-4">Rekam Medis Satwa</h4>
+
+        <!-- Tabel Rekam Medis -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-green-50 rounded-t-lg">
+                        <th class="px-6 py-3 text-center font-bold text-green-700 first:rounded-tl-lg last:rounded-tr-lg">Tanggal</th>
+                        <th class="px-6 py-3 text-center font-bold text-green-700">Nama Dokter</th>
+                        <th class="px-6 py-3 text-center font-bold text-green-700">Status</th>
+                        <th class="px-6 py-3 text-center font-bold text-green-700">Diagnosa</th>
+                        <th class="px-6 py-3 text-center font-bold text-green-700">Pengobatan</th>
+                        <th class="px-6 py-3 text-center font-bold text-green-700 last:rounded-tr-lg">Catatan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for rekam in rekam_medis %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 text-center">{{ rekam.tanggal }}</td>
+                            <td class="px-6 py-4 text-center">{{ rekam.nama_dokter }}</td>
+                            <td class="px-6 py-4 text-center">{{ rekam.status }}</td>
+                            <td class="px-6 py-4 text-center">{{ rekam.diagnosis }}</td>
+                            <td class="px-6 py-4 text-center">{{ rekam.pengobatan }}</td>
+                            <td class="px-6 py-4 text-center">{{ rekam.catatan }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center">Belum ada rekam medis untuk hewan ini.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-8">
+            <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" class="bg-green-100 hover:bg-green-200 text-green-800 font-semibold py-2 px-6 rounded-lg">Kembali</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
