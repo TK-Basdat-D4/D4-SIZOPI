@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Data Satwa</h1>
-<a href="{% url 'tambah_satwa' %}">+ Tambah Satwa</a>
+<a href="{% url 'kuning:tambah_satwa' %}">+ Tambah Satwa</a>
 <table border="1">
     <thead>
         <tr>
@@ -26,7 +26,7 @@
             <td>{{ s.habitat }}</td>
             <td><img src="{{ s.foto }}" width="100"></td>
             <td>
-                <a href="{% url 'edit_satwa' s.id %}">Edit</a> |
+                <a href="{% url 'kuning:edit_satwa' s.id %}">Edit</a> |
                 <a href="#">Hapus</a>
             </td>
         </tr>

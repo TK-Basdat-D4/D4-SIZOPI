@@ -80,27 +80,27 @@ HABITAT = [
 
 # SATWA
 def list_satwa(request):
-    return render(request, 'kuning/list_satwa.html', {'satwa': SATWA})
+    return render(request, 'list_satwa.html', {'satwa': SATWA})
 
 def tambah_satwa(request):
-    return render(request, 'kuning/tambah_satwa.html', {'habitats': HABITAT})
+    return render(request, 'tambah_satwa.html', {'habitats': HABITAT})
 
 def edit_satwa(request, id):
     satwa = next((item for item in SATWA if item["id"] == id), None)
-    return render(request, 'kuning/edit_satwa.html', {'satwa': satwa, 'habitats': HABITAT})
+    return render(request, 'dit_satwa.html', {'satwa': satwa, 'habitats': HABITAT})
 
 # HABITAT
 def list_habitat(request):
-    return render(request, 'kuning/list_habitat.html', {'habitat': HABITAT})
+    return render(request, 'list_habitat.html', {'habitat': HABITAT})
 
 def tambah_habitat(request):
-    return render(request, 'kuning/tambah_habitat.html')
+    return render(request, 'tambah_habitat.html')
 
 def edit_habitat(request, id):
     habitat = next((item for item in HABITAT if item["id"] == id), None)
-    return render(request, 'kuning/edit_habitat.html', {'habitat': habitat})
+    return render(request, 'edit_habitat.html', {'habitat': habitat})
 
 def detail_habitat(request, id):
     habitat = next((item for item in HABITAT if item["id"] == id), None)
     satwa_di_habitat = [s for s in SATWA if s['habitat'] == habitat['nama']]
-    return render(request, 'kuning/detail_habitat.html', {'habitat': habitat, 'satwa': satwa_di_habitat})
+    return render(request, 'detail_habitat.html', {'habitat': habitat, 'satwa': satwa_di_habitat})

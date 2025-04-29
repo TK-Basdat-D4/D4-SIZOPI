@@ -11,8 +11,8 @@
     <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
     <p>Kapasitas Maksimal: {{ habitat.kapasitas }}</p>
 
-    <a href="{% url 'edit_habitat' habitat.id %}">Edit Habitat</a> |
-    <a href="{% url 'delete_habitat' habitat.id %}">Hapus Habitat</a>
+    <a href="{% url 'kuning:edit_habitat' habitat.id %}">Edit Habitat</a> |
+    <a href="{% url 'kuning:delete_habitat' habitat.id %}">Hapus Habitat</a>
     
     <h2>Daftar Hewan dalam Habitat</h2>
     <table border="1" cellpadding="5">

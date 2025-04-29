@@ -15,9 +15,9 @@
             <p>Luas Area: {{ habitat.luas }}</p>
             <p>Kapasitas Maksimal: {{ habitat.kapasitas }}</p>
             <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
-            <a href="{% url 'detail_habitat' habitat.id %}">Detail</a> |
-            <a href="{% url 'edit_habitat' habitat.id %}">Edit</a> |
-            <a href="{% url 'delete_habitat' habitat.id %}">Hapus</a>
+            <a href="{% url 'kuning:detail_habitat' habitat.id %}">Detail</a> |
+            <a href="{% url 'kuning:edit_habitat' habitat.id %}">Edit</a> |
+            <a href="{% url 'kuning:delete_habitat' habitat.id %}">Hapus</a>
         </div>
     {% endfor %}
 </body>
