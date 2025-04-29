@@ -25,7 +25,26 @@
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'pelatih_pertunjukan' %}
                         <li><a href="#" class="text-gray-700 hover:text-gray-900">Jadwal Pertunjukan</a></li>
                     {% elif request.session.user.role == 'pengunjung' %}
-                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Informasi Kebun Binatang</a></li>
+                    <li class="relative group">
+                        <a href="#" class="text-gray-700 hover:text-gray-900 flex items-center">
+                            Informasi Kebun Binatang
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </a>
+                        
+                        <!-- Dropdown menu -->
+                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+                            <div class="py-1 rounded-md bg-white shadow-xs">
+                                <a href="{% url 'kuning:list_satwa' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-paw mr-2"></i>Data Satwa
+                                </a>
+                                <a href="{% url 'kuning:list_habitat' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-tree mr-2"></i>Habitat
+                                </a>
+                            </div>
+                        </div>
+                    </li>
                     {% endif %}
 
                     <li><a href="{% url 'register_login:profile' %}" class="text-gray-700 hover:text-gray-900">Pengaturan Profil</a></li>

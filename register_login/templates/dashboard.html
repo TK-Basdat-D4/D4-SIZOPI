@@ -36,9 +36,9 @@
                 </div>
             </div>
 
-            <!-- Informasi Spesifik Role -->
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Informasi Spesifik</h2>
+        <!-- Informasi Spesifik Role -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold mb-4">Informasi Spesifik</h2>
 
                 {% if user.role == 'pengunjung' %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -51,6 +51,19 @@
                         <div class="bg-gray-50 rounded-lg p-4">
                             <p class="text-gray-700 mb-2"><span class="font-medium">Riwayat Kunjungan:</span> Belum tersedia</p>
                             <p class="text-gray-700"><span class="font-medium">Informasi Tiket:</span> Belum tersedia</p>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Akses untuk Modul Kebun Binatang -->
+                    <div class="bg-white shadow-md rounded-lg p-6">
+                        <h2 class="text-2xl font-semibold mb-4">Informasi Kebun Binatang</h2>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="{% url 'kuning:list_satwa' %}" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-300">
+                                <i class="fas fa-paw mr-2"></i>Lihat Data Satwa
+                            </a>
+                            <a href="{% url 'kuning:list_habitat' %}" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-300">
+                                <i class="fas fa-tree mr-2"></i>Lihat Habitat
+                            </a>
                         </div>
                     </div>
 
@@ -145,6 +158,21 @@
                 {% endif %}
             </div>
         </div>
+        <!-- Tombol Akses untuk Modul Kebun Binatang -->
+        {% if user.role == 'pengunjung' %}
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h2 class="text-2xl font-semibold mb-4">Informasi Kebun Binatang</h2>
+            <div class="flex flex-wrap gap-4">
+                <a href="{% url 'kuning:list_satwa' %}" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-300">
+                    <i class="fas fa-paw mr-2"></i>Lihat Data Satwa
+                </a>
+                <a href="{% url 'kuning:list_habitat' %}" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-300">
+                    <i class="fas fa-tree mr-2"></i>Lihat Habitat
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
     </div>
 </section>
 {% endblock %}

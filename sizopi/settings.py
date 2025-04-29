@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'register_login',
     'hijau_kesehatan_satwa',
-    # 'kuning',
+    'kuning',
 ]
 
 MIDDLEWARE = [
