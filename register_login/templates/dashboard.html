@@ -17,20 +17,20 @@
                     <p class="text-gray-700"><span class="font-medium">Username:</span> {{ user.username }}</p>
                     <p class="text-gray-700"><span class="font-medium">Email:</span> {{ user.email }}</p>
                     <p class="text-gray-700"><span class="font-medium">Nomor Telepon:</span> {{ user.nomor_telepon }}</p>
-                    <p class="text-gray-700"><span class="font-medium">Peran:</span> 
+                    <p class="text-gray-700"><span class="font-medium">Peran:</span>
                         {% if user.role == 'pengunjung' %}
-                            Pengunjung
+                        Pengunjung
                         {% elif user.role == 'dokter_hewan' %}
-                            Dokter Hewan
+                        Dokter Hewan
                         {% elif user.role == 'staff' %}
-                            Staff - 
-                            {% if user.peran == 'penjaga_hewan' %}
-                                Penjaga Hewan
-                            {% elif user.peran == 'staff_administrasi' %}
-                                Staff Administrasi
-                            {% elif user.peran == 'pelatih_pertunjukan' %}
-                                Pelatih Pertunjukan
-                            {% endif %}
+                        Staff -
+                        {% if user.peran == 'penjaga_hewan' %}
+                        Penjaga Hewan
+                        {% elif user.peran == 'staff_administrasi' %}
+                        Staff Administrasi
+                        {% elif user.peran == 'pelatih_pertunjukan' %}
+                        Pelatih Pertunjukan
+                        {% endif %}
                         {% endif %}
                     </p>
                 </div>
@@ -43,141 +43,167 @@
                     <h2 class="text-2xl font-semibold mb-4">Informasi Spesifik</h2>
 
                     {% if user.role == 'pengunjung' %}
-                        <div class="grid grid-cols-1 gap-6">
-                            <p class="text-gray-700"><span class="font-medium">Alamat Lengkap:</span> {{ user.alamat }}</p>
-                            <p class="text-gray-700"><span class="font-medium">Tanggal Lahir:</span> {{ user.tanggal_lahir }}</p>
-                        </div>
-                        
-                        <div class="mt-8">
-                            <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <p class="text-gray-700 mb-2"><span class="font-medium">Riwayat Kunjungan:</span> Belum tersedia</p>
-                                <p class="text-gray-700"><span class="font-medium">Informasi Tiket:</span> Belum tersedia</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <p class="text-gray-700"><span class="font-medium">Alamat Lengkap:</span> {{ user.alamat }}</p>
+                        <p class="text-gray-700"><span class="font-medium">Tanggal Lahir:</span> {{ user.tanggal_lahir }}</p>
+                    </div>
+
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-700 mb-2"><span class="font-medium">Riwayat Kunjungan:</span> Belum tersedia</p>
+
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-medium text-gray-700">Informasi Tiket:</span>
+                                <a href="{% url 'biru:buat_reservasi_atraksi' %}"
+                                   class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
+                                    Buat Reservasi
+                                </a>
                             </div>
+
+                            {% if reservasi_terjadwal %}
+                            <ul class="list-disc pl-6 text-gray-700 space-y-2">
+                                {% for tiket in reservasi_terjadwal %}
+                                <li class="flex justify-between items-center">
+                                    <span>{{ tiket.atraksi }} — {{ tiket.tanggal }} pukul {{ tiket.jam }}</span>
+                                    <a href="{% url 'biru:detail_reservasi_atraksi' tiket.id %}"
+                                       class="text-blue-600 hover:underline text-sm ml-4">
+                                        Lihat Detail
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-gray-600">Belum ada tiket terjadwal.</p>
+                            {% endif %}
                         </div>
+                    </div>
 
                     {% elif user.role == 'dokter_hewan' %}
-                        <div class="grid grid-cols-1 gap-6">
-                            <p class="text-gray-700"><span class="font-medium">Nomor Sertifikasi Profesional:</span> {{ user.nomor_sertifikasi }}</p>
-                            <p class="text-gray-700"><span class="font-medium">Spesialisasi:</span> {{ user.spesialisasi|join:", " }}</p>
-                        </div>
-                        
-                        <div class="mt-8">
-                            <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <p class="text-gray-700"><span class="font-medium">Jumlah Hewan Ditangani:</span> Belum tersedia</p>
-                            </div>
-                        </div>
+                    <div class="grid grid-cols-1 gap-6">
+                        <p class="text-gray-700"><span class="font-medium">Nomor Sertifikasi Profesional:</span> {{ user.nomor_sertifikasi }}</p>
+                        <p class="text-gray-700"><span class="font-medium">Spesialisasi:</span> {{ user.spesialisasi|join:", " }}</p>
+                    </div>
 
-                    {% elif user.role == 'staff' and user.peran == 'penjaga_hewan' %}
-                        <div class="grid grid-cols-1 gap-6">
-                            <p class="text-gray-700"><span class="font-medium">ID Staff:</span> {{ user.staff_id }}</p>
-                            <p class="text-gray-700"><span class="font-medium">Peran:</span> Penjaga Hewan</p>
+                    <div class="mt-8">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-gray-700"><span class="font-medium">Jumlah Hewan Ditangani:</span> Belum tersedia</p>
                         </div>
-                        
-                        <div class="mt-8">
-                            <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
-                            <div class="bg-gray-50 rounded-lg p-4">
-                                <p class="text-gray-700"><span class="font-medium">Jumlah Hewan Diberi Pakan:</span> Belum tersedia</p>
-                            </div>
-                        </div>
-
-                    {% elif user.role == 'staff' and user.peran == 'staff_administrasi' %}
-                        <div class="grid grid-cols-1 gap-6">
-                            <p class="text-gray-700"><span class="font-medium">ID Staff:</span> {{ user.staff_id }}</p>
-                            <p class="text-gray-700"><span class="font-medium">Peran:</span> Staff Administrasi</p>
-                        </div>
-                        
-                        <div class="mt-8">
-                            <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
-                            <div class="bg-gray-50 rounded-lg p-4 grid grid-cols-1 gap-6">
-                                <p class="text-gray-700"><span class="font-medium">Penjualan Tiket Hari Ini:</span> Belum tersedia</p>
-                                <p class="text-gray-700"><span class="font-medium">Jumlah Pengunjung Hari Ini:</span> Belum tersedia</p>
-                                <p class="text-gray-700"><span class="font-medium">Laporan Pendapatan Mingguan:</span> Belum tersedia</p>
-                            </div>
-                        </div>
-
-                    {% elif user.role == 'staff' and user.peran == 'pelatih_pertunjukan' %}
-                        <div class="grid grid-cols-1 gap-6">
-                            <p class="text-gray-700"><span class="font-medium">ID Staff:</span> {{ user.staff_id }}</p>
-                            <p class="text-gray-700"><span class="font-medium">Peran:</span> Pelatih Pertunjukan</p>
-                        </div>
-                        
-                        <div class="mt-8">
-                            <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
-                            <div class="bg-gray-50 rounded-lg p-4 grid grid-cols-1 gap-6">
-                                <p class="text-gray-700"><span class="font-medium">Jadwal Pertunjukan Hari Ini:</span> Belum tersedia</p>
-                                <p class="text-gray-700"><span class="font-medium">Daftar Hewan Dilatih:</span> Belum tersedia</p>
-                                <p class="text-gray-700"><span class="font-medium">Status Latihan Terakhir:</span> Belum tersedia</p>
-                            </div>
-                        </div>
-
-                    {% else %}
-                        <p class="text-gray-700">Role tidak dikenali.</p>
-                    {% endif %}
-                </div>
-
-                <!-- Informasi Kebun Binatang -->
-                {% if user.role == 'pengunjung' %}
-                <div class="bg-white shadow-md rounded-lg p-6">
-                    <h2 class="text-2xl font-semibold mb-4">Informasi Kebun Binatang</h2>
-                    <div class="flex flex-col gap-4">
-                        <a href="{% url 'kuning:list_satwa' %}" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-md transition duration-300 flex items-center">
-                            <i class="fas fa-paw mr-2"></i>Lihat Data Satwa
-                        </a>
-                        <a href="{% url 'kuning:list_habitat' %}" class="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-md transition duration-300 flex items-center">
-                            <i class="fas fa-tree mr-2"></i>Lihat Habitat
-                        </a>
                     </div>
                 </div>
-                {% endif %}
+
+                {% elif user.role == 'staff' and user.peran == 'penjaga_hewan' %}
+                <div class="grid grid-cols-1 gap-6">
+                    <p class="text-gray-700"><span class="font-medium">ID Staff:</span> {{ user.staff_id }}</p>
+                    <p class="text-gray-700"><span class="font-medium">Peran:</span> Penjaga Hewan</p>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-gray-700"><span class="font-medium">Jumlah Hewan Diberi Pakan:</span> Belum tersedia</p>
+                    </div>
+                </div>
             </div>
 
-            <!-- Tombol Akses untuk Role Lain -->
-            {% if user.role == 'dokter_hewan' %}
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
-                <div class="flex flex-wrap gap-4">
-                    <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">
-                        Lihat Rekam Medis
-                    </a>
-                    <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_list' %}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">
-                        Jadwal Pemeriksaan
-                    </a>
-                </div>
-            </div>
-            {% elif user.role == 'staff' and user.peran == 'penjaga_hewan' %}
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
-                <div class="flex flex-wrap gap-4">
-                    <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">
-                        Catatan Pemberian Pakan
-                    </a>
-                </div>
-            </div>
             {% elif user.role == 'staff' and user.peran == 'staff_administrasi' %}
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
-                <div class="flex flex-wrap gap-4">
-                    <a href="#" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">
-                        Kelola Pengunjung
-                    </a>
-                    <a href="#" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">
-                        Laporan Pendapatan
-                    </a>
+            <div class="grid grid-cols-1 gap-6">
+                <p class="text-gray-700"><span class="font-medium">ID Staff:</span> {{ user.staff_id }}</p>
+                <p class="text-gray-700"><span class="font-medium">Peran:</span> Staff Administrasi</p>
+            </div>
+
+            <div class="mt-8">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
+                <div class="bg-gray-50 rounded-lg p-4 grid grid-cols-1 gap-6">
+                    <p class="text-gray-700"><span class="font-medium">Penjualan Tiket Hari Ini:</span> Belum tersedia</p>
+                    <p class="text-gray-700"><span class="font-medium">Jumlah Pengunjung Hari Ini:</span> Belum tersedia</p>
+                    <p class="text-gray-700"><span class="font-medium">Laporan Pendapatan Mingguan:</span> Belum tersedia</p>
                 </div>
             </div>
-            {% elif user.role == 'staff' and user.peran == 'pelatih_pertunjukan' %}
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
-                <div class="flex flex-wrap gap-4">
-                    <a href="#" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-300">
-                        Jadwal Pertunjukan
-                    </a>
-                </div>
-            </div>
-            {% endif %}
         </div>
+
+        {% elif user.role == 'staff' and user.peran == 'pelatih_pertunjukan' %}
+        <div class="grid grid-cols-1 gap-6">
+            <p class="text-gray-700"><span class="font-medium">ID Staff:</span> {{ user.staff_id }}</p>
+            <p class="text-gray-700"><span class="font-medium">Peran:</span> Pelatih Pertunjukan</p>
+        </div>
+
+        <div class="mt-8">
+            <h3 class="text-xl font-semibold mb-4 text-gray-700">Aktivitas Terkini</h3>
+            <div class="bg-gray-50 rounded-lg p-4 grid grid-cols-1 gap-6">
+                <p class="text-gray-700"><span class="font-medium">Jadwal Pertunjukan Hari Ini:</span> Belum tersedia</p>
+                <p class="text-gray-700"><span class="font-medium">Daftar Hewan Dilatih:</span> Belum tersedia</p>
+                <p class="text-gray-700"><span class="font-medium">Status Latihan Terakhir:</span> Belum tersedia</p>
+            </div>
+        </div>
+
+        {% else %}
+        <p class="text-gray-700">Role tidak dikenali.</p>
+        {% endif %}
+    </div>
+
+    <!-- Informasi Kebun Binatang -->
+    {% if user.role == 'pengunjung' %}
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4">Informasi Kebun Binatang</h2>
+        <div class="flex flex-col gap-4">
+            <a href="{% url 'kuning:list_satwa' %}" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-md transition duration-300 flex items-center">
+                <i class="fas fa-paw mr-2"></i>Lihat Data Satwa
+            </a>
+            <a href="{% url 'kuning:list_habitat' %}" class="bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-md transition duration-300 flex items-center">
+                <i class="fas fa-tree mr-2"></i>Lihat Habitat
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    </div>
+
+    <!-- Tombol Akses untuk Role Lain -->
+    {% if user.role == 'dokter_hewan' %}
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">
+                Lihat Rekam Medis
+            </a>
+            <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_list' %}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">
+                Jadwal Pemeriksaan
+            </a>
+        </div>
+    </div>
+    {% elif user.role == 'staff' and user.peran == 'penjaga_hewan' %}
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
+        <div class="flex flex-wrap gap-4">
+            <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">
+                Catatan Pemberian Pakan
+            </a>
+        </div>
+    </div>
+    {% elif user.role == 'staff' and user.peran == 'staff_administrasi' %}
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
+        <div class="flex flex-wrap gap-4">
+            <a href="#" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300">
+                Kelola Pengunjung
+            </a>
+            <a href="#" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-300">
+                Laporan Pendapatan
+            </a>
+        </div>
+    </div>
+    {% elif user.role == 'staff' and user.peran == 'pelatih_pertunjukan' %}
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-semibold mb-4">Akses Cepat</h2>
+        <div class="flex flex-wrap gap-4">
+            <a href="#" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-300">
+                Jadwal Pertunjukan
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    </div>
     </div>
 </section>
 {% endblock %}

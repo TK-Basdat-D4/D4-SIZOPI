@@ -19,6 +19,9 @@
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
                         <li><a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="text-gray-700 hover:text-gray-900">Catatan Perawatan Hewan</a></li>
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
+                        <li><a href="{% url 'biru:list_atraksi' %}" class="text-gray-700 hover:text-gray-900">Kelola Atraksi</a></li>
+                        <li><a href="{% url 'biru:list_wahana' %}" class="text-gray-700 hover:text-gray-900">Kelola Wahana</a></li>
+                        <li><a href="{% url 'biru:list_reservasi' %}" class="text-gray-700 hover:text-gray-900">Kelola Reservasi</a></li>
                         <li><a href="{% url 'adopsi:admin_daftar_pengunjung' %}" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a></li>
                         <li><a href="{% url 'adopsi:admin_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopsi</a></li>
                         <li><a href="{% url 'adopsi:admin_list_adopter' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopter</a></li>
@@ -32,7 +35,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </a>
-                        
+
                         <!-- Dropdown menu -->
                         <div class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
                             <div class="py-1 rounded-md bg-white shadow-xs">
@@ -74,6 +77,9 @@
             {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
                 <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="text-gray-700 hover:text-gray-900">Catatan Perawatan Hewan</a>
             {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
+                <a href="{% url 'biru:list_atraksi' %}" class="text-gray-700 hover:text-gray-900">Kelola Atraksi</a>
+                <a href="{% url 'biru:list_wahana' %}" class="text-gray-700 hover:text-gray-900">Kelola Wahana</a>
+                <a href="{% url 'biru:list_reservasi' %}" class="text-gray-700 hover:text-gray-900">Kelola Reservasi</a>
                 <a href="{% url 'adopsi:admin_daftar_pengunjung' %}" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a>
                 <a href="{% url 'adopsi:admin_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopsi</a>
                 <a href="{% url 'adopsi:admin_list_adopter' %}" class="text-gray-700 hover:text-gray-900">Kelola Adopter</a>

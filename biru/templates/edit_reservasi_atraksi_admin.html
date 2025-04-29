@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8 max-w-md">
+    <h1 class="text-2xl font-bold mb-6 text-center">Edit Reservasi</h1>
+
+    <form method="post" class="bg-white p-6 rounded-lg shadow-md">
+        {% csrf_token %}
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Nama Atraksi</label>
+            <select name="atraksi" id="atraksi-select" required
+                    class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Pilih Atraksi</option>
+                {% for atraksi in atraksi_options %}
+                <option value="{{ forloop.counter0 }}"
+                        data-lokasi="{{ atraksi.lokasi }}"
+                        data-jam="{{ atraksi.jam }}"
+                        {% if forloop.counter0 == selected_idx %}selected{% endif %}>
+                    {{ atraksi.nama }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Lokasi</label>
+            <input type="text" id="lokasi" name="lokasi" readonly
+                   class="w-full px-3 py-2 border rounded bg-gray-100">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Jam</label>
+            <input type="text" id="jam" name="jam" readonly
+                   class="w-full px-3 py-2 border rounded bg-gray-100">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Tanggal Kunjungan</label>
+            <input type="date" name="tanggal" min="{{ min_date }}" required
+                   value="{{ reservasi.tanggal }}"
+                   class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Jumlah Tiket</label>
+            <input type="number" name="jumlah_tiket" min="1" max="10" required
+                   value="{{ reservasi.jumlah_tiket }}"
+                   class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="flex justify-between mt-6">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Simpan Perubahan
+            </button>
+            <a href="{% url 'biru:list_reservasi' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                BATAL
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const atraksiSelect = document.getElementById('atraksi-select');
+        const lokasiInput = document.getElementById('lokasi');
+        const jamInput = document.getElementById('jam');
+
+        // Update location and time when attraction changes
+        atraksiSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            lokasiInput.value = selectedOption.dataset.lokasi || '';
+            jamInput.value = selectedOption.dataset.jam || '';
+        });
+
+        // Initialize fields if there's a selected option
+        if (atraksiSelect.value) {
+            const event = new Event('change');
+            atraksiSelect.dispatchEvent(event);
+        }
+    });
+</script>
+{% endblock %}

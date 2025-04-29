@@ -23,4 +23,5 @@ urlpatterns = [
     path('kesehatan_satwa/', include('hijau_kesehatan_satwa.urls')),
     path('kuning/', include('kuning.urls')),
     path('adopsi/', include('adopsi.urls')),
+    path('biru/', include('biru.urls')),
 ]
