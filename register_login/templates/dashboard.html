@@ -7,7 +7,22 @@
 <section class="py-12 bg-gray-50">
     <div class="container mx-auto px-4">
         <div class="max-w-5xl mx-auto">
-            <h1 class="text-3xl font-bold mb-8 text-gray-800 text-center">Dashboard</h1>
+            <h1 class="text-3xl font-bold mb-8 text-gray-800 text-center">
+                Dashboard  
+                {% if user.role == 'pengunjung' %}
+                    Pengunjung
+                {% elif user.role == 'dokter_hewan' %}
+                    Dokter Hewan
+                {% elif user.role == 'staff' %}
+                    {% if user.peran == 'penjaga_hewan' %}
+                        Staff Penjaga Hewan
+                    {% elif user.peran == 'staff_administrasi' %}
+                        Staff Administrasi
+                    {% elif user.peran == 'pelatih_pertunjukan' %}
+                        Staff Pelatih Pertunjukan
+                    {% endif %}
+                {% endif %}
+            </h1>
 
             <!-- Informasi Dasar Card -->
             <div class="bg-white shadow-md rounded-lg p-6 mb-8">
