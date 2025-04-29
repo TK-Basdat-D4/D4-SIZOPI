@@ -1,4 +1,4 @@
-path('adopsi/', include('adopsi.urls')),z"""
+"""
 URL configuration for sizopi project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
