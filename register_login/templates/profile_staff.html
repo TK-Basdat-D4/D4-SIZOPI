@@ -1,48 +1,55 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Staff Profile{% endblock %}
 
 {% block content %}
-<div>
-    <h1>Welcome, {{ user.nama_depan }}!</h1>
-    <h3>Staff Profile</h3>
-    
-    <div>
-        <p><strong>Username:</strong> {{ user.username }}</p>
-        <p><strong>Staff ID:</strong> {{ user.staff_id }}</p>
-        <p><strong>Name:</strong> {{ user.nama_depan }} {% if user.nama_tengah %} {{ user.nama_tengah }} {% endif %} {{ user.nama_belakang }}</p>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Phone:</strong> {{ user.nomor_telepon }}</p>
-        <p><strong>Role:</strong> 
-            {% if user.peran == 'penjaga_hewan' %}
-                Animal Keeper
-            {% elif user.peran == 'staff_administrasi' %}
-                Administrative Staff
-            {% elif user.peran == 'pelatih_pertunjukan' %}
-                Show Trainer
-            {% endif %}
-        </p>
+<div class="min-h-screen flex justify-center items-center bg-gray-100 px-4 py-12 pt-24">
+  <div class="max-w-2xl w-full bg-white p-8 rounded-xl shadow-md">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">Staff Profile</h2>
+
+    <div class="space-y-4">
+      <div class="flex justify-between">
+        <span class="text-gray-600 font-medium">Username:</span>
+        <span class="text-gray-800">{{ user.username }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-600 font-medium">Staff ID:</span>
+        <span class="text-gray-800">{{ user.staff_id }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-600 font-medium">Name:</span>
+        <span class="text-gray-800">
+          {{ user.nama_depan }}{% if user.nama_tengah %} {{ user.nama_tengah }}{% endif %} {{ user.nama_belakang }}
+        </span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-600 font-medium">Email:</span>
+        <span class="text-gray-800">{{ user.email }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-600 font-medium">Phone:</span>
+        <span class="text-gray-800">{{ user.nomor_telepon }}</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-gray-600 font-medium">Role:</span>
+        <span class="text-gray-800">
+          {% if user.peran == 'penjaga_hewan' %}Animal Keeper
+          {% elif user.peran == 'staff_administrasi' %}Administrative Staff
+          {% elif user.peran == 'pelatih_pertunjukan' %}Show Trainer
+          {% endif %}
+        </span>
+      </div>
     </div>
-    
-    <h3>Staff Options</h3>
-    {% if user.peran == 'penjaga_hewan' %}
-        <ul>
-            <li><a href="#">Animal Care Schedule</a></li>
-            <li><a href="#">Feeding Records</a></li>
-            <li><a href="#">Enclosure Maintenance</a></li>
-        </ul>
-    {% elif user.peran == 'staff_administrasi' %}
-        <ul>
-            <li><a href="#">Ticket Sales Report</a></li>
-            <li><a href="#">Staff Management</a></li>
-            <li><a href="#">Financial Reports</a></li>
-        </ul>
-    {% elif user.peran == 'pelatih_pertunjukan' %}
-        <ul>
-            <li><a href="#">Show Schedule</a></li>
-            <li><a href="#">Training Records</a></li>
-            <li><a href="#">Performance Analytics</a></li>
-        </ul>
-    {% endif %}
+
+    <div class="mt-8 flex justify-center">
+      <button
+        onclick="openUpdateModal()"
+        class="px-5 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+      >
+        Update
+      </button>
+    </div>
+  </div>
 </div>
 {% endblock %}
