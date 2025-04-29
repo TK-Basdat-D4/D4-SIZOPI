@@ -220,7 +220,7 @@ def detail_habitat(request, id):
     # Find all satwa in this habitat
     satwa_di_habitat = [s for s in SATWA if s['habitat'] == habitat['nama']]
     
-    return render(request, 'detail_habitat.html', {'habitat': habitat, 'satwa': satwa_di_habitat})
+    return render(request, 'detail_habitat.html', {'habitat': habitat, 'hewan_habitat': satwa_di_habitat})
 
 def hapus_habitat(request, id):
     global HABITAT

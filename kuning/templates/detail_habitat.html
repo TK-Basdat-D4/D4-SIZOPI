@@ -1,90 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Detail Habitat</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 70%;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        p {
-            margin: 10px 0;
-            color: #555;
-        }
-        .actions {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .actions a {
-            text-decoration: none;
-            color: #007BFF;
-            margin: 0 10px;
-        }
-        .actions a:hover {
-            text-decoration: underline;
-        }
-        table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #007BFF;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Detail Habitat: {{ habitat.nama }}</h1>
-        <p>Luas Area: {{ habitat.luas }} m²</p>
-        <p>Status Lingkungan: {{ habitat.status_lingkungan }}</p>
-        <p>Kapasitas Maksimal: {{ habitat.kapasitas }} hewan</p>
+{% extends 'base.html' %}
 
-        <div class="actions">
-            <a href="{% url 'kuning:edit_habitat' habitat.id %}">Edit Habitat</a> |
-            <a href="{% url 'kuning:delete_habitat' habitat.id %}">Hapus Habitat</a>
+{% block title %}Detail Habitat - Taman Safari{% endblock %}
+
+{% block content %}
+<div style="padding: 20px; font-family: Arial, sans-serif;">
+    <h1 style="color: #2c3e50;">Detail Habitat: {{ habitat.nama }}</h1>
+    
+    <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <p><strong>Luas Area:</strong> {{ habitat.luas_area }} m²</p>
+        <p><strong>Kapasitas Maksimal:</strong> {{ habitat.kapasitas_maksimal }} hewan</p>
+        <p><strong>Status Lingkungan:</strong> {{ habitat.status_lingkungan }}</p>
+        
+        <div style="margin-top: 15px;">
+            <a href="{% url 'kuning:list_habitat' %}" style="color: #2980b9; text-decoration: none; margin-right: 10px;">Kembali ke List</a>
+            <a href="{% url 'kuning:edit_habitat' habitat.id %}" style="color: #f39c12; text-decoration: none; margin-right: 10px;">Edit Habitat</a>
+            <a href="{% url 'kuning:hapus_habitat' habitat.id %}" style="color: #c0392b; text-decoration: none;" onclick="return confirm('Apakah Anda yakin ingin menghapus habitat {{ habitat.nama }}?')">Hapus Habitat</a>
         </div>
+    </div>
 
-        <h2>Daftar Hewan dalam Habitat</h2>
-        <table>
+    <h2 style="color: #2c3e50;">Daftar Hewan dalam Habitat</h2>
+    
+    {% if hewan_habitat %}
+    <table style="width: 100%; border-collapse: collapse; text-align: left; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <thead style="background-color: #2980b9; color: white;">
             <tr>
-                <th>Nama Individu</th>
-                <th>Spesies</th>
-                <th>Asal</th>
-                <th>Tanggal Lahir</th>
-                <th>Status Kesehatan</th>
+                <th style="padding: 10px;">Nama Individu</th>
+                <th style="padding: 10px;">Spesies</th>
+                <th style="padding: 10px;">Asal</th>
+                <th style="padding: 10px;">Tanggal Lahir</th>
+                <th style="padding: 10px;">Status Kesehatan</th>
             </tr>
+        </thead>
+        <tbody>
             {% for hewan in hewan_habitat %}
-            <tr>
-                <td>{{ hewan.nama }}</td>
-                <td>{{ hewan.spesies }}</td>
-                <td>{{ hewan.asal }}</td>
-                <td>{{ hewan.tanggal_lahir }}</td>
-                <td>{{ hewan.status_kesehatan }}</td>
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td style="padding: 10px;">{{ hewan.nama }}</td>
+                <td style="padding: 10px;">{{ hewan.spesies }}</td>
+                <td style="padding: 10px;">{{ hewan.asal }}</td>
+                <td style="padding: 10px;">{{ hewan.tanggal_lahir|default:"-" }}</td>
+                <td style="padding: 10px;">
+                    {% if hewan.status_kesehatan == 'Sehat' %}
+                        <span style="color: green; font-weight: bold;">{{ hewan.status_kesehatan }}</span>
+                    {% elif hewan.status_kesehatan == 'Sakit' %}
+                        <span style="color: red; font-weight: bold;">{{ hewan.status_kesehatan }}</span>
+                    {% else %}
+                        <span style="color: orange; font-weight: bold;">{{ hewan.status_kesehatan }}</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
-        </table>
+        </tbody>
+    </table>
+    {% else %}
+    <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <p>Tidak ada hewan yang tercatat di habitat ini.</p>
     </div>
-</body>
-</html>
+    {% endif %}
+</div>
+{% endblock %}
