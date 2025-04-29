@@ -1,89 +1,109 @@
 {% extends 'base.html' %}
 
-{% block title %}Register as Veterinarian{% endblock %}
+{% block title %}SIZOPI - Register Dokter Hewan{% endblock %}
 
 {% block content %}
-<div>
-    <h1>Register as Veterinarian</h1>
-    <p>Please fill in all required information</p>
-    
-    <form method="post">
-        {% csrf_token %}
+<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <div class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Register sebagai Dokter Hewan</h1>
+        <p class="text-gray-600 mb-8">Silakan isi semua informasi yang diperlukan</p>
         
-        <div>
-            <label for="username">Username *</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        
-        <div>
-            <label for="email">Email *</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        
-        <div>
-            <label for="password">Password *</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        
-        <div>
-            <label for="confirm_password">Konfirmasi Password *</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
-        </div>
-        
-        <div>
-            <label for="nama_depan">Nama Depan *</label>
-            <input type="text" id="nama_depan" name="nama_depan" required>
-        </div>
-        
-        <div>
-            <label for="nama_tengah">Nama Tengah</label>
-            <input type="text" id="nama_tengah" name="nama_tengah">
-        </div>
-        
-        <div>
-            <label for="nama_belakang">Nama Belakang *</label>
-            <input type="text" id="nama_belakang" name="nama_belakang" required>
-        </div>
-        
-        <div>
-            <label for="nomor_telepon">Nomor Telepon *</label>
-            <input type="tel" id="nomor_telepon" name="nomor_telepon" required>
-        </div>
-        
-        <div>
-            <label for="nomor_sertifikasi">Nomor Sertifikasi Profesional *</label>
-            <input type="text" id="nomor_sertifikasi" name="nomor_sertifikasi" required>
-        </div>
-        
-        <div>
-            <label>Spesialisasi *</label>
-            <div>
-                <input type="checkbox" id="mamalia_besar" name="mamalia_besar">
-                <label for="mamalia_besar">Mamalia Besar</label>
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                    <input type="text" id="username" name="username" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                    <input type="email" id="email" name="email" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                    <input type="password" id="password" name="password" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password *</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="nama_depan" class="block text-sm font-medium text-gray-700 mb-1">Nama Depan *</label>
+                    <input type="text" id="nama_depan" name="nama_depan" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="nama_tengah" class="block text-sm font-medium text-gray-700 mb-1">Nama Tengah</label>
+                    <input type="text" id="nama_tengah" name="nama_tengah" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="nama_belakang" class="block text-sm font-medium text-gray-700 mb-1">Nama Belakang *</label>
+                    <input type="text" id="nama_belakang" name="nama_belakang" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label for="nomor_telepon" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon *</label>
+                    <input type="tel" id="nomor_telepon" name="nomor_telepon" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="col-span-2">
+                    <label for="nomor_sertifikasi" class="block text-sm font-medium text-gray-700 mb-1">Nomor Sertifikasi Profesional *</label>
+                    <input type="text" id="nomor_sertifikasi" name="nomor_sertifikasi" required 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
             </div>
-            <div>
-                <input type="checkbox" id="reptil" name="reptil">
-                <label for="reptil">Reptil</label>
+            
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Spesialisasi *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="mamalia_besar" name="mamalia_besar" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                        <label for="mamalia_besar" class="ml-2 text-gray-700">Mamalia Besar</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="reptil" name="reptil" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                        <label for="reptil" class="ml-2 text-gray-700">Reptil</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="burung_eksotis" name="burung_eksotis" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                        <label for="burung_eksotis" class="ml-2 text-gray-700">Burung Eksotis</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="primata" name="primata" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                        <label for="primata" class="ml-2 text-gray-700">Primata</label>
+                    </div>
+                    <div class="col-span-2 flex items-center">
+                        <input type="checkbox" id="lainnya" name="lainnya" class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                        <label for="lainnya" class="ml-2 mr-2 text-gray-700">Lainnya:</label>
+                        <input type="text" id="lainnya_isian" name="lainnya_isian" 
+                            class="flex-1 px-4 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    </div>
+                </div>
             </div>
-            <div>
-                <input type="checkbox" id="burung_eksotis" name="burung_eksotis">
-                <label for="burung_eksotis">Burung Eksotis</label>
+            
+            <div class="flex justify-between items-center pt-4">
+                <a href="{% url 'register_login:choose_role' %}" 
+                   class="text-blue-600 hover:text-blue-800 font-medium">Kembali</a>
+                <button type="submit" 
+                       class="bg-blue-600 text-white py-2 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    DAFTAR
+                </button>
             </div>
-            <div>
-                <input type="checkbox" id="primata" name="primata">
-                <label for="primata">Primata</label>
-            </div>
-            <div>
-                <input type="checkbox" id="lainnya" name="lainnya">
-                <label for="lainnya">Lainnya:</label>
-                <input type="text" id="lainnya_isian" name="lainnya_isian">
-            </div>
-        </div>
-        
-        <div>
-            <button type="submit">DAFTAR</button>
-            <a href="{% url 'register_login:choose_role' %}">Kembali</a>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Daftar Rekam Medis Hewan{% endblock %}
+
+{% block content %}
+<h1>Daftar Rekam Medis Hewan</h1>
+<a href="{% url 'hijau_kesehatan_satwa:rekam_medis_form' %}" class="btn btn-primary">Tambah Rekam Medis</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tanggal</th>
+            <th>Dokter</th>
+            <th>Status</th>
+            <th>Diagnosa</th>
+            <th>Pengobatan</th>
+            <th>Catatan Tindak Lanjut</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for rekam in rekam_medis_list %}
+        <tr>
+            <td>{{ rekam.tanggal }}</td>
+            <td>{{ rekam.dokter }}</td>
+            <td>{{ rekam.status }}</td>
+            <td>{{ rekam.diagnosa }}</td>
+            <td>{{ rekam.pengobatan }}</td>
+            <td>{{ rekam.catatan_tindak_lanjut }}</td>
+            <td>
+                <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_edit' id=rekam.id %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_delete' id=rekam.id %}" 
+                   class="btn btn-danger btn-sm" 
+                   onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="text-center">Tidak ada data rekam medis</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-3">
+    <a href="{% url 'register_login:profile' %}" class="btn btn-secondary">Kembali ke Profil</a>
+</div>
+{% endblock %}
