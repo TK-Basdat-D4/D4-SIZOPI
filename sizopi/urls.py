@@ -1,4 +1,4 @@
-"""
+path('adopsi/', include('adopsi.urls')),z"""
 URL configuration for sizopi project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -19,7 +19,8 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('register_login.urls')),
-    # path('kuning/', include('kuning.urls')),
+    path('auth/', include('register_login.urls')),
+    path('kesehatan_satwa/', include('hijau_kesehatan_satwa.urls')),
+    path('kuning/', include('kuning.urls')),
     path('adopsi/', include('adopsi.urls')),
 ]

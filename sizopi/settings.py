@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'register_login',
-    # 'kuning',
+    'hijau_kesehatan_satwa',
+    'kuning',
     'adopsi',
 ]
 
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'register_login.middleware.UserAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'sizopi.urls'

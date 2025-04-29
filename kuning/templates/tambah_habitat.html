@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Tambah Habitat - Taman Safari{% endblock %}
+
+{% block content %}
+<div style="padding: 20px; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h1 style="color: #2c3e50;">Tambah Habitat</h1>
+    
+    <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 15px;">
+                <label for="nama" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Habitat:</label>
+                <input type="text" id="nama" name="nama" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="luas_area" style="display: block; margin-bottom: 5px; font-weight: bold;">Luas Area (m²):</label>
+                <input type="number" id="luas_area" name="luas_area" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="kapasitas_maksimal" style="display: block; margin-bottom: 5px; font-weight: bold;">Kapasitas Maksimal (jumlah hewan):</label>
+                <input type="number" id="kapasitas_maksimal" name="kapasitas_maksimal" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" required>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="status_lingkungan" style="display: block; margin-bottom: 5px; font-weight: bold;">Status Lingkungan:</label>
+                <textarea id="status_lingkungan" name="status_lingkungan" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px;" required></textarea>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button type="submit" style="padding: 8px 16px; background-color: #27ae60; color: white; border: none; border-radius: 4px; cursor: pointer;">Tambah Habitat</button>
+                <a href="{% url 'kuning:list_habitat' %}" style="color: #2980b9; text-decoration: none;">BATAL</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

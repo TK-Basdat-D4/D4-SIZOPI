@@ -28,7 +28,8 @@ users = [
         'email': 'siti.hidayah@vetclinic.com',
         'nomor_telepon': '081298765432',
         'nomor_sertifikasi': 'VET-2024-001',
-        'spesialisasi': ['Mamalia Besar']
+        'spesialisasi': ['Mamalia Besar'],
+        'spesialisasi_lainnya': ''
     },
     # Staff Penjaga Hewan
     {
@@ -174,7 +175,8 @@ def register_dokter(request):
             'email': email,
             'nomor_telepon': request.POST.get('nomor_telepon'),
             'nomor_sertifikasi': nomor_sertifikasi,
-            'spesialisasi': spesialisasi
+            'spesialisasi': spesialisasi,
+            'spesialisasi_lainnya': request.POST.get('lainnya_isian', '')
         }
         
         users.append(new_user)
@@ -288,3 +290,96 @@ def dashboard(request):
         return redirect('register_login:login')
     
     return render(request, 'dashboard.html', {'user': request.session['user']})
+
+def profile_settings(request):
+    """Profile settings page"""
+    if 'user' not in request.session:
+        messages.error(request, 'Silahkan login terlebih dahulu!')
+        return redirect('register_login:login')
+    
+    user = request.session['user']
+    return render(request, 'profile_settings.html', {'user': user})
+
+def update_profile(request):
+    """Update user profile information"""
+    if 'user' not in request.session:
+        messages.error(request, 'Silahkan login terlebih dahulu!')
+        return redirect('register_login:login')
+    
+    if request.method == 'POST':
+        current_user = request.session['user']
+        
+        # Find user in users list
+        for i, user in enumerate(users):
+            if user['username'] == current_user['username']:
+                # Update basic information (common for all roles)
+                users[i]['email'] = request.POST.get('email')
+                users[i]['nama_depan'] = request.POST.get('nama_depan')
+                users[i]['nama_tengah'] = request.POST.get('nama_tengah', '')
+                users[i]['nama_belakang'] = request.POST.get('nama_belakang')
+                users[i]['nomor_telepon'] = request.POST.get('nomor_telepon')
+                
+                # Update role-specific information
+                if user['role'] == 'pengunjung':
+                    users[i]['alamat'] = request.POST.get('alamat')
+                    users[i]['tanggal_lahir'] = request.POST.get('tanggal_lahir')
+                
+                elif user['role'] == 'dokter_hewan':
+                    # Update specializations
+                    spesialisasi = []
+                    if 'spesialisasi[]' in request.POST:
+                        # Handle multiple specializations
+                        if isinstance(request.POST.getlist('spesialisasi[]'), list):
+                            spesialisasi = request.POST.getlist('spesialisasi[]')
+                        else:
+                            spesialisasi = [request.POST.get('spesialisasi[]')]
+                    
+                    # Handle other specialization
+                    if request.POST.get('spesialisasi_lainnya_cb'):
+                        users[i]['spesialisasi_lainnya'] = request.POST.get('spesialisasi_lainnya', '')
+                    else:
+                        users[i]['spesialisasi_lainnya'] = ''
+                        
+                    users[i]['spesialisasi'] = spesialisasi
+                
+                # Update session
+                request.session['user'] = users[i]
+                messages.success(request, 'Profil berhasil diperbarui!')
+                return redirect('register_login:profile_settings')
+    
+    # If POST method is not used or user is not found
+    return redirect('register_login:profile_settings')
+
+def change_password(request):
+    """Change password page and functionality"""
+    if 'user' not in request.session:
+        messages.error(request, 'Silahkan login terlebih dahulu!')
+        return redirect('register_login:login')
+    
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        current_user = request.session['user']
+        
+        # Validate password
+        if current_user['password'] != current_password:
+            messages.error(request, 'Password saat ini tidak benar!')
+            return render(request, 'change_password.html')
+        
+        if new_password != confirm_password:
+            messages.error(request, 'Password baru dan konfirmasi tidak cocok!')
+            return render(request, 'change_password.html')
+        
+        # Update password
+        for i, user in enumerate(users):
+            if user['username'] == current_user['username']:
+                users[i]['password'] = new_password
+                
+                # Update session
+                request.session['user'] = users[i]
+                messages.success(request, 'Password berhasil diubah!')
+                return redirect('register_login:dashboard')
+    
+    return render(request, 'change_password.html')
