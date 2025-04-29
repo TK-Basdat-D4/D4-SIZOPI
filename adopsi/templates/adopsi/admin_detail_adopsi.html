@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Detail Adopsi Hewan{% endblock %}
+
+{% block content %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+    }
+</style>
+
+<div class="max-w-3xl mx-auto mt-10 px-6">
+    <div class="rounded-2xl shadow-xl overflow-hidden bg-white">
+        <div class="bg-gradient-to-r from-green-700 to-green-500 text-white px-6 py-4 flex justify-between items-center rounded-t-2xl">
+            <span class="text-lg font-bold">📋 Detail Adopsi Hewan</span>
+            <a href="{% url 'adopsi:admin_program_adopsi' %}" class="underline text-sm hover:text-gray-100 transition">Tutup</a>
+        </div>
+        <div class="p-6 space-y-3">
+            <p><span class="font-semibold">Nama Hewan:</span> {{ hewan.nama }}</p>
+            <p><span class="font-semibold">Jenis Hewan:</span> {{ hewan.spesies }}</p>
+            <p><span class="font-semibold">Adopter Saat Ini:</span> {{ hewan.adopter }}</p>
+            <p><span class="font-semibold">Tanggal Mulai Adopsi:</span> {{ hewan.tanggal_mulai }}</p>
+            <p><span class="font-semibold">Tanggal Akhir Adopsi:</span> {{ hewan.tanggal_akhir }}</p>
+            <p><span class="font-semibold">Nominal Kontribusi:</span> Rp {{ hewan.nominal }}</p>
+
+            <form method="post" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="statusPembayaran" class="block font-semibold mb-1">Status Pembayaran</label>
+                    <select id="statusPembayaran" name="status_pembayaran" class="w-full rounded-lg border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500">
+                        <option value="tertunda" {% if hewan.status_pembayaran == 'tertunda' %}selected{% endif %}>Tertunda</option>
+                        <option value="lunas" {% if hewan.status_pembayaran == 'lunas' %}selected{% endif %}>Lunas</option>
+                    </select>
+                </div>
+                <div class="flex justify-between">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-5 py-2 rounded-lg transition">
+                        Simpan
+                    </button>
+                    <button type="button" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2 rounded-lg transition" data-bs-toggle="modal" data-bs-target="#hentikanAdopsiModal">
+                        Hentikan Adopsi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Tailwind versi sederhana -->
+<div id="hentikanAdopsiModal" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl text-center">
+        <h2 class="text-lg font-bold mb-2">Yakin ingin menghentikan adopsi ini?</h2>
+        <p class="text-gray-600 mb-4">Tindakan ini akan mengakhiri dukungan terhadap hewan ini.</p>
+        <div class="flex justify-center gap-4 mt-4">
+            <form method="post" action="{% url 'adopsi:hentikan_adopsi' hewan.id %}">
+                {% csrf_token %}
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg">
+                    Ya, Hentikan
+                </button>
+            </form>
+            <button onclick="document.getElementById('hentikanAdopsiModal').classList.add('hidden')" class="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded-lg">Batal</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tailwind modal open & close logic
+    document.querySelectorAll('[data-bs-toggle="modal"]').forEach(button => {
+        button.addEventListener('click', () => {
+            const target = button.getAttribute('data-bs-target').replace('#', '');
+            document.getElementById(target).classList.remove('hidden');
+        });
+    });
+</script>
+{% endblock %}

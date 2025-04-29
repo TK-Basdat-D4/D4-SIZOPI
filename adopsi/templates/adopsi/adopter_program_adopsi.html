@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Program Adopsi Satwa: Bantu Mereka dengan Cinta{% endblock %}
+
+{% block content %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Quicksand', sans-serif;
+    }
+    
+    .hewan-card {
+        transition: transform 0.3s ease;
+    }
+    
+    .hewan-card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+
+<div class="container mx-auto px-4 py-10 max-w-6xl">
+    <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-800">Program Adopsi Satwa: Bantu Mereka dengan Cinta</h2>
+        <h2 class="text-3xl font-bold text-gray-800 mt-4">Halo {{ username }} 👋</h2>
+    </div>
+
+    <!-- Bagian Terima Kasih di Sebelah Kiri -->
+    <div class="flex justify-start mb-8">
+        <p class="text-lg text-gray-600 mt-2">
+            Terima kasih telah mewujudkan kepedulian Anda terhadap satwa dengan menjadi adopter simbolis! 
+            Dapatkan sertifikat digital dan laporan berkala tentang kondisi hewan yang Anda dukung.
+        </p>
+    </div>
+    
+    {% if hewan_diadopsi %}
+        <h4 class="text-2xl font-bold text-left text-green-800 mb-8">Hewan yang Sedang Anda Adopsi</h4>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for hewan in hewan_diadopsi %}
+                <div class="hewan-card h-64 rounded-2xl overflow-hidden shadow-lg relative">
+                    <!-- Background image -->
+                    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('{{ hewan.foto }}');"></div>
+                    
+                    <!-- Gradient overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                    
+                    <!-- Content -->
+                    <div class="absolute inset-0 p-6 flex flex-col justify-between">
+                        <div class="text-white">
+                            <h4 class="text-xl font-bold">{{ hewan.nama }}</h4>
+                            <p class="text-gray-200">{{ hewan.spesies }}</p>
+                            <p class="text-gray-200 mt-2">Kondisi terbaru: {{ hewan.kondisi }}</p>
+                        </div>
+                        
+                        <div class="flex justify-end mt-2">
+                            <a href="{% url 'adopsi:adopter_lihat_adopsi' hewan.id %}" 
+                            class="bg-white/90 hover:bg-yellow-300 text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors duration-300">
+                                Lihat Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-6 rounded-lg mb-6 text-center">
+            Anda belum mengadopsi satwa. Yuk mulai dari sekarang!
+        </div>
+        <div class="text-center mt-6">
+            <a href="{% url 'adopsi:admin_program_adopsi' %}" 
+            class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-xl transform transition hover:scale-105">
+                Lihat Daftar Hewan
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
