@@ -2,50 +2,169 @@
 
 {% block title %}{% if rekam_medis %}Edit{% else %}Tambah{% endif %} Rekam Medis Hewan{% endblock %}
 
-{% block content %}
-<h1>{% if rekam_medis %}Edit{% else %}Tambah{% endif %} Rekam Medis Hewan</h1>
+{% block extra_css %}
+<style>
+  .form-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+  }
+  
+  .input-field:focus {
+    border-color: #10b981;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  }
+  
+  .form-label {
+    display: block;
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  
+  .btn-primary {
+    background-color: #059669;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #047857;
+  }
+  
+  .btn-secondary {
+    background-color: #6b7280;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #4b5563;
+  }
+  
+  .btn-danger {
+    background-color: #ef4444;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-danger:hover {
+    background-color: #dc2626;
+  }
+  
+  .status-healthy {
+    background-color: #dcfce7;
+    color: #166534;
+    border-color: #86efac;
+  }
+  
+  .status-sick {
+    background-color: #fef9c3;
+    color: #854d0e;
+    border-color: #facc15;
+  }
+</style>
+{% endblock %}
 
-<form method="post" class="form">
-    {% csrf_token %}
-    
-    <div class="form-group">
-        <label for="tanggal">Tanggal Pemeriksaan:</label>
-        <input type="date" name="tanggal" id="tanggal" class="form-control" 
-               value="{{ rekam_medis.tanggal|date:'Y-m-d' }}" required>
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="max-w-3xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">
+        {% if rekam_medis %}Edit{% else %}Tambah{% endif %} Rekam Medis Hewan
+      </h1>
+      <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="text-green-600 hover:text-green-700 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        Kembali ke Daftar
+      </a>
     </div>
     
-    <div class="form-group">
-        <label for="dokter">Nama Dokter:</label>
-        <input type="text" name="dokter" id="dokter" class="form-control" 
-               value="{{ rekam_medis.dokter }}" required>
+    <div class="form-card p-6">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <div>
+          <label for="tanggal" class="form-label">Tanggal Pemeriksaan <span class="text-red-500">*</span></label>
+          <input type="date" name="tanggal" id="tanggal" class="input-field" 
+                value="{{ rekam_medis.tanggal|date:'Y-m-d' }}" required>
+        </div>
+        
+        {# Hidden field to store doctor name #}
+        <input type="hidden" name="dokter" value="Drh. {{ request.session.user.nama_depan }}">
+        
+        <div>
+          <label class="form-label">Dokter</label>
+          <div class="py-2 px-3 bg-gray-100 rounded-md text-gray-700">
+            Drh. {{ request.session.user.nama_depan }} {{ request.session.user.nama_tengah }} {{ request.session.user.nama_belakang }}
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Menggunakan nama dokter yang sedang login</p>
+        </div>
+        
+        <div>
+          <label for="status" class="form-label">Status Kesehatan <span class="text-red-500">*</span></label>
+          <div class="flex space-x-4 mt-1">
+            <label class="inline-flex items-center">
+              <input type="radio" name="status" value="Sehat" class="h-4 w-4 text-green-600" 
+                    {% if rekam_medis and rekam_medis.status == 'Sehat' %}checked{% endif %} required>
+              <span class="ml-2 px-3 py-1 rounded-full text-sm status-healthy">Sehat</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="status" value="Sakit" class="h-4 w-4 text-yellow-500" 
+                    {% if rekam_medis and rekam_medis.status == 'Sakit' %}checked{% endif %} required>
+              <span class="ml-2 px-3 py-1 rounded-full text-sm status-sick">Sakit</span>
+            </label>
+          </div>
+        </div>
+        
+        <div>
+          <label for="diagnosa" class="form-label">Diagnosa <span class="text-red-500">*</span></label>
+          <textarea name="diagnosa" id="diagnosa" class="input-field" rows="3" 
+                    placeholder="Masukkan hasil diagnosa..." required>{{ rekam_medis.diagnosa }}</textarea>
+        </div>
+        
+        <div>
+          <label for="pengobatan" class="form-label">Pengobatan <span class="text-red-500">*</span></label>
+          <textarea name="pengobatan" id="pengobatan" class="input-field" rows="3" 
+                    placeholder="Deskripsi pengobatan yang diberikan..." required>{{ rekam_medis.pengobatan }}</textarea>
+        </div>
+        
+        <div>
+          <label for="catatan_tindak_lanjut" class="form-label">Catatan Tindak Lanjut</label>
+          <textarea name="catatan_tindak_lanjut" id="catatan_tindak_lanjut" class="input-field" rows="3" 
+                    placeholder="Tindak lanjut yang diperlukan...">{{ rekam_medis.catatan_tindak_lanjut }}</textarea>
+        </div>
+        
+        <div class="flex space-x-4 pt-2">
+          <button type="submit" class="btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+            </svg>
+            Simpan Data
+          </button>
+          <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="btn-secondary">Batal</a>
+        </div>
+      </form>
     </div>
-    
-    <div class="form-group">
-        <label for="status">Status:</label>
-        <select name="status" id="status" class="form-control" required>
-            <option value="Sehat" {% if rekam_medis and rekam_medis.status == 'Sehat' %}selected{% endif %}>Sehat</option>
-            <option value="Sakit" {% if rekam_medis and rekam_medis.status == 'Sakit' %}selected{% endif %}>Sakit</option>
-        </select>
-    </div>
-    
-    <div class="form-group">
-        <label for="diagnosa">Diagnosa:</label>
-        <textarea name="diagnosa" id="diagnosa" class="form-control" required>{{ rekam_medis.diagnosa }}</textarea>
-    </div>
-    
-    <div class="form-group">
-        <label for="pengobatan">Pengobatan:</label>
-        <textarea name="pengobatan" id="pengobatan" class="form-control" required>{{ rekam_medis.pengobatan }}</textarea>
-    </div>
-    
-    <div class="form-group">
-        <label for="catatan_tindak_lanjut">Catatan Tindak Lanjut:</label>
-        <textarea name="catatan_tindak_lanjut" id="catatan_tindak_lanjut" class="form-control">{{ rekam_medis.catatan_tindak_lanjut }}</textarea>
-    </div>
-    
-    <div class="form-group">
-        <button type="submit" class="btn btn-primary">Simpan</button>
-        <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="btn btn-secondary">Kembali</a>
-    </div>
-</form>
+  </div>
+</div>
 {% endblock %}

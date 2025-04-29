@@ -2,52 +2,253 @@
 
 {% block title %}Jadwal Pemberian Pakan{% endblock %}
 
+{% block extra_css %}
+<style>
+  .table-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .btn-add {
+    background-color: #059669;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  
+  .btn-add:hover {
+    background-color: #047857;
+  }
+  
+  .btn-info {
+    background-color: #0ea5e9;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;
+  }
+  
+  .btn-info:hover {
+    background-color: #0284c7;
+  }
+  
+  .btn-edit {
+    background-color: #3b82f6;
+    color: white;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .btn-edit:hover {
+    background-color: #2563eb;
+  }
+  
+  .btn-delete {
+    background-color: #ef4444;
+    color: white;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .btn-delete:hover {
+    background-color: #dc2626;
+  }
+  
+  .btn-success {
+    background-color: #10b981;
+    color: white;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+  }
+  
+  .btn-success:hover {
+    background-color: #059669;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .status-waiting {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  .status-done {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+  
+  .pagination-link {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    background-color: #f3f4f6;
+    color: #374151;
+    transition: background-color 0.2s;
+  }
+  
+  .pagination-link:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .pagination-active {
+    background-color: #059669;
+    color: white;
+  }
+  
+  .pagination-active:hover {
+    background-color: #047857;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1>Jadwal Pemberian Pakan</h1>
-
-<div class="mb-3">
-    <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_form' %}" class="btn btn-primary">+ Tambah Jadwal Pemberian Pakan</a>
-    <a href="{% url 'hijau_kesehatan_satwa:riwayat_pemberian_pakan' %}" class="btn btn-info">Lihat Riwayat Pemberian Pakan</a>
-</div>
-
-<table class="table table-striped">
-    <thead>
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Jadwal Pemberian Pakan</h1>
+    
+    <div class="flex">
+      <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_form' %}" class="btn-add">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Tambah Jadwal Pemberian Pakan
+      </a>
+      <a href="{% url 'hijau_kesehatan_satwa:riwayat_pemberian_pakan' %}" class="btn-info">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+        Lihat Riwayat
+      </a>
+    </div>
+  </div>
+  
+  <div class="table-card overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead class="bg-gray-50">
         <tr>
-            <th>Jenis Pakan</th>
-            <th>Jumlah Pakan (gram)</th>
-            <th>Jadwal</th>
-            <th>Status</th>
-            <th>Aksi</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Pakan</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah (gram)</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
         {% for feeding in feeding_schedules %}
-        <tr>
-            <td>{{ feeding.jenis_pakan }}</td>
-            <td>{{ feeding.jumlah }}</td>
-            <td>{{ feeding.jadwal }}</td>
-            <td>{{ feeding.status }}</td>
-            <td>
-                {% if feeding.status == 'Menunggu Pemberian' %}
-                <a href="{% url 'hijau_kesehatan_satwa:beri_pakan' id=feeding.id %}" 
-                   class="btn btn-success btn-sm"
-                   onclick="return confirm('Apakah Anda yakin ingin mencatat pemberian pakan ini?')">Beri Pakan</a>
-                {% endif %}
-                <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_edit' id=feeding.id %}" class="btn btn-warning btn-sm">Edit</a>
-                <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_delete' id=feeding.id %}" 
-                   class="btn btn-danger btn-sm" 
-                   onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">Hapus</a>
-            </td>
+        <tr class="hover:bg-gray-50 transition">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ feeding.jenis_pakan }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ feeding.jumlah }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ feeding.jadwal }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            {% if feeding.status == 'Menunggu Pemberian' %}
+              <span class="status-badge status-waiting">Menunggu Pemberian</span>
+            {% else %}
+              <span class="status-badge status-done">Selesai</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <div class="flex space-x-2">
+              {% if feeding.status == 'Menunggu Pemberian' %}
+              <a href="{% url 'hijau_kesehatan_satwa:beri_pakan' id=feeding.id %}" 
+                 class="btn-success"
+                 onclick="return confirm('Apakah Anda yakin ingin mencatat pemberian pakan ini?')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Beri Pakan
+              </a>
+              {% endif %}
+              <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_edit' id=feeding.id %}" class="btn-edit">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Edit
+              </a>
+              <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_delete' id=feeding.id %}" 
+                 class="btn-delete" 
+                 onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Hapus
+              </a>
+            </div>
+          </td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="5" class="text-center">Tidak ada jadwal pemberian pakan</td>
+          <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <p class="text-lg font-medium">Tidak ada jadwal pemberian pakan</p>
+            <p class="mt-1">Klik tombol "Tambah Jadwal Pemberian Pakan" untuk membuat jadwal baru</p>
+          </td>
         </tr>
         {% endfor %}
-    </tbody>
-</table>
-
-<div class="mt-3">
-    <a href="{% url 'register_login:profile' %}" class="btn btn-secondary">Kembali ke Profil</a>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Pagination (hanya ditampilkan jika ada data) -->
+  {% if feeding_schedules %}
+  <div class="flex justify-between items-center mt-6">
+    <p class="text-sm text-gray-700">
+      Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">{{ feeding_schedules|length }}</span> dari <span class="font-medium">{{ feeding_schedules|length }}</span> jadwal
+    </p>
+    
+    <div class="flex space-x-2">
+      <a href="#" class="pagination-link pagination-active">1</a>
+      {% if feeding_schedules|length > 10 %}
+      <a href="#" class="pagination-link">2</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+  
+  <div class="mt-8">
+    <a href="{% url 'register_login:profile' %}" class="inline-flex items-center text-gray-700 hover:text-gray-900">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      Kembali ke Profil
+    </a>
+  </div>
 </div>
 {% endblock %}

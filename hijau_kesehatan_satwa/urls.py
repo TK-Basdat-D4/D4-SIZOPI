@@ -14,6 +14,7 @@ urlpatterns = [
     path('jadwal-pemeriksaan/', views.jadwal_pemeriksaan_list, name='jadwal_pemeriksaan_list'),
     path('jadwal-pemeriksaan/form/', views.jadwal_pemeriksaan_form, name='jadwal_pemeriksaan_form'),
     path('jadwal-pemeriksaan/delete/<int:id>/', views.jadwal_pemeriksaan_delete, name='jadwal_pemeriksaan_delete'),
+    path('jadwal-pemeriksaan/update-frequency/', views.update_frequency, name='update_frequency'),
 
     # Pemberian Pakan (Penjaga Hewan only)
     path('pemberian-pakan/', views.pemberian_pakan_list, name='pemberian_pakan_list'),
