@@ -48,6 +48,7 @@
                             </div>
                         </div>
                     </li>
+                    <li><a href="{% url 'adopsi:adopter_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Program Adopter</a></li>
                     {% endif %}
 
                     <li><a href="{% url 'register_login:profile' %}" class="text-gray-700 hover:text-gray-900">Pengaturan Profil</a></li>
@@ -87,6 +88,7 @@
                 <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Jadwal Pertunjukan</a>
             {% elif request.session.user.role == 'pengunjung' %}
                 <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Informasi Kebun Binatang</a>
+                <a href="{% url 'adopsi:adopter_program_adopsi' %}" class="text-gray-700 hover:text-gray-900">Program Adopter</a>
             {% endif %}
 
             <a href="{% url 'register_login:profile' %}" class="block text-gray-700 hover:text-gray-900 py-2">Pengaturan Profil</a>
