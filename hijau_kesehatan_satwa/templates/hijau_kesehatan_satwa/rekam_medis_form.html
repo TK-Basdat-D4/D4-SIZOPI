@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if rekam_medis %}Edit{% else %}Tambah{% endif %} Rekam Medis Hewan{% endblock %}
+
+{% block content %}
+<h1>{% if rekam_medis %}Edit{% else %}Tambah{% endif %} Rekam Medis Hewan</h1>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="tanggal">Tanggal Pemeriksaan:</label>
+        <input type="date" name="tanggal" id="tanggal" class="form-control" 
+               value="{{ rekam_medis.tanggal|date:'Y-m-d' }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="dokter">Nama Dokter:</label>
+        <input type="text" name="dokter" id="dokter" class="form-control" 
+               value="{{ rekam_medis.dokter }}" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="status">Status:</label>
+        <select name="status" id="status" class="form-control" required>
+            <option value="Sehat" {% if rekam_medis and rekam_medis.status == 'Sehat' %}selected{% endif %}>Sehat</option>
+            <option value="Sakit" {% if rekam_medis and rekam_medis.status == 'Sakit' %}selected{% endif %}>Sakit</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="diagnosa">Diagnosa:</label>
+        <textarea name="diagnosa" id="diagnosa" class="form-control" required>{{ rekam_medis.diagnosa }}</textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="pengobatan">Pengobatan:</label>
+        <textarea name="pengobatan" id="pengobatan" class="form-control" required>{{ rekam_medis.pengobatan }}</textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="catatan_tindak_lanjut">Catatan Tindak Lanjut:</label>
+        <textarea name="catatan_tindak_lanjut" id="catatan_tindak_lanjut" class="form-control">{{ rekam_medis.catatan_tindak_lanjut }}</textarea>
+    </div>
+    
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Simpan</button>
+        <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="btn btn-secondary">Kembali</a>
+    </div>
+</form>
+{% endblock %}

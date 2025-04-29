@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Tambah Jadwal Pemeriksaan{% endblock %}
+
+{% block content %}
+<h1>Tambah Jadwal Pemeriksaan</h1>
+
+<form method="post" class="form">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <label for="tanggal">Tanggal Pemeriksaan Selanjutnya:</label>
+        <input type="date" name="tanggal" id="tanggal" class="form-control" required>
+    </div>
+    
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Simpan</button>
+        <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_list' %}" class="btn btn-secondary">Batal</a>
+    </div>
+</form>
+{% endblock %}

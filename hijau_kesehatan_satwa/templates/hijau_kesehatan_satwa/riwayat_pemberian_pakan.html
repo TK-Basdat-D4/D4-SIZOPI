@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Riwayat Pemberian Pakan{% endblock %}
+
+{% block content %}
+<h1>Riwayat Pemberian Pakan</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nama Individu (hewan)</th>
+            <th>Spesies</th>
+            <th>Asal Hewan</th>
+            <th>Tanggal Lahir</th>
+            <th>Habitat</th>
+            <th>Status Kesehatan</th>
+            <th>Jenis Pakan</th>
+            <th>Jumlah Pakan (gram)</th>
+            <th>Jadwal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in feeding_history %}
+        <tr>
+            <td>{{ record.nama_individu }}</td>
+            <td>{{ record.spesies }}</td>
+            <td>{{ record.asal_hewan }}</td>
+            <td>{{ record.tanggal_lahir }}</td>
+            <td>{{ record.habitat }}</td>
+            <td>{{ record.status_kesehatan }}</td>
+            <td>{{ record.jenis_pakan }}</td>
+            <td>{{ record.jumlah }}</td>
+            <td>{{ record.jadwal }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9" class="text-center">Tidak ada riwayat pemberian pakan</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-3">
+    <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="btn btn-secondary">Kembali ke Daftar Pemberian Pakan</a>
+</div>
+{% endblock %}
