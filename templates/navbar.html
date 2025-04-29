@@ -15,9 +15,9 @@
                     <li><a href="{% url 'register_login:dashboard' %}" class="text-gray-700 hover:text-gray-900">Dashboard</a></li>
 
                     {% if request.session.user.role == 'dokter_hewan' %}
-                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Rekam Medis Hewan</a></li>
+                        <li><a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="text-gray-700 hover:text-gray-900">Rekam Medis Hewan</a></li>
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
-                        <li><a href="#" class="text-gray-700 hover:text-gray-900">Catatan Perawatan Hewan</a></li>
+                        <li><a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="text-gray-700 hover:text-gray-900">Catatan Perawatan Hewan</a></li>
                     {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
                         <li><a href="#" class="text-gray-700 hover:text-gray-900">Kelola Pengunjung</a></li>
                         <li><a href="#" class="text-gray-700 hover:text-gray-900">Kelola Adopsi</a></li>
@@ -51,9 +51,9 @@
             <a href="{% url 'register_login:dashboard' %}" class="block text-gray-700 hover:text-gray-900 py-2">Dashboard</a>
 
             {% if request.session.user.role == 'dokter_hewan' %}
-                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Rekam Medis Hewan</a>
+                <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="block text-gray-700 hover:text-gray-900 py-2">Rekam Medis Hewan</a>
             {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
-                <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Catatan Perawatan Hewan</a>
+                <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="text-gray-700 hover:text-gray-900">Catatan Perawatan Hewan</a>
             {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
                 <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Kelola Pengunjung</a>
                 <a href="#" class="block text-gray-700 hover:text-gray-900 py-2">Kelola Adopsi</a>
