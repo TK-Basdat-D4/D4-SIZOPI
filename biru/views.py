@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.utils.text import slugify
 from django.contrib import messages
 from datetime import datetime
+from utils.db_utils import get_db_connection
 
 # Dummy Data
 HEWAN = ['Anjing Laut', 'Gajah Sumatera', 'Burung Kakaktua', 'Lumba-lumba', 'Singa', 'Harimau', 'Beruang']
@@ -99,7 +100,7 @@ RESERVASI_ID = 2
 
 # Helper function untuk autentikasi pengguna
 def check_admin_access(request):
-    """Check if user is a logged-in doctor"""
+    """Check if user is a logged-in admin"""
     if 'user' not in request.session:
         messages.error(request, 'Silahkan login terlebih dahulu!')
         return False
@@ -111,7 +112,7 @@ def check_admin_access(request):
     return True
 
 def check_visitor_admin_access(request):
-    """Check if user is a logged-in animal keeper"""
+    """Check if user is a logged-in visitor or admin"""
     if 'user' not in request.session:
         messages.error(request, 'Silahkan login terlebih dahulu!')
         return False
@@ -125,6 +126,19 @@ def check_visitor_admin_access(request):
 def list_atraksi(request):
     if not check_admin_access(request):
         return redirect('register_login:login')
+
+    connect = get_db_connection()
+    cursor = connect.cursor()
+
+    cursor.execute("SELECT * FROM DOKTER_HEWAN")
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    connect.close()
+
+    for row in rows:
+        print(row)
 
     for a in ATRAKSI:
         a['slug'] = slugify(a['nama_atraksi'])

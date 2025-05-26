@@ -4,6 +4,12 @@
 **Basis Data D - Kelompok 4**
 ## 📋 Pembagian Fitur
 
+## Anggota Kelompok
+1. Farrel Ahmad Ilyasa (2306209441)
+2. Akhyar Rasyid Asy-syifa (2306241682)
+3. Hadyan Fachri (2306245030)
+4. Naila Zakiyyah Effendy (2306165793)
+
 | No  | Nama Fitur                                      | Role                                                   | Keterangan |
 |-----|--------------------------------------------------|--------------------------------------------------------|-------------|
 | ⬜ 1  | Navbar                                           | Semua                                                  | Semua            |
