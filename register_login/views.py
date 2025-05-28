@@ -1,6 +1,7 @@
 # Create your views here.
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from biru.views import RESERVASI
 
 # Dummy users database (in-memory storage)
 users = [
@@ -288,8 +289,20 @@ def dashboard(request):
     if 'user' not in request.session:
         messages.error(request, 'Silahkan login terlebih dahulu!')
         return redirect('register_login:login')
-    
-    return render(request, 'dashboard.html', {'user': request.session['user']})
+
+    user = request.session['user']
+
+    reservasi_terjadwal = []
+    if user['role'] == 'pengunjung':
+        reservasi_terjadwal = [
+            r for r in RESERVASI
+            if r.get('username') == user['username'] and r.get('status') == 'Terjadwal'
+        ]
+
+    return render(request, 'dashboard.html', {
+        'user': user,
+        'reservasi_terjadwal': reservasi_terjadwal,
+    })
 
 def profile_settings(request):
     """Profile settings page"""

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-center mb-2">Data Atraksi</h1>
+    <div class="flex justify-end">
+      <a href="{% url 'biru:tambah_atraksi' %}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition duration-200">
+        + Tambah Atraksi
+      </a>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
+      <thead class="bg-green-500 text-white">
+      <tr>
+        <th class="py-3 px-4 text-center">Nama Atraksi</th>
+        <th class="py-3 px-4 text-center">Lokasi</th>
+        <th class="py-3 px-4 text-center">Kapasitas</th>
+        <th class="py-3 px-4 text-center">Jadwal</th>
+        <th class="py-3 px-4 text-center">Hewan Terlibat</th>
+        <th class="py-3 px-4 text-center">Pelatih Terlibat</th>
+        <th class="py-3 px-4 text-center"></th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for atraksi in atraksi_list %}
+      <tr class="border-t hover:bg-gray-100">
+        <td class="py-3 px-4 text-left">{{ atraksi.nama_atraksi }}</td>
+        <td class="py-3 px-4 text-left">{{ atraksi.lokasi }}</td>
+        <td class="py-3 px-4 text-center">{{ atraksi.kapasitas }}</td>
+        <td class="py-3 px-4 text-center">{{ atraksi.jadwal|date:"H:i" }}</td>
+        <td class="py-3 px-4 text-left">
+          {% if atraksi.hewan_terlibat %}
+          {{ atraksi.hewan_terlibat|join:", " }}
+          {% else %}
+          <span class="text-gray-400 italic">Tidak ada hewan</span>
+          {% endif %}
+        </td>
+        <td class="py-3 px-4 text-left">
+          {% if atraksi.pelatih %}
+          {{ atraksi.pelatih|join:", " }}
+          {% else %}
+          <span class="text-gray-400 italic">Tidak ada pelatih</span>
+          {% endif %}
+        </td>
+        <td class="py-3 px-4 text-center">
+          <!-- Tombol Edit -->
+          <a href="{% url 'biru:edit_atraksi' atraksi.slug %}" class="text-yellow-500 hover:text-yellow-700 mx-1" title="Edit">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M17.414 2.586a2 2 0 00-2.828 0L6 11.172V14h2.828l8.586-8.586a2 2 0 000-2.828z"/>
+              <path fill-rule="evenodd" d="M5 13.414V16h2.586L16 7.586l-2.586-2.586L5 13.414zM3 17a1 1 0 001 1h3a1 1 0 001-1v-1H4v1z" clip-rule="evenodd"/>
+            </svg>
+          </a>
+          <!-- Tombol Delete -->
+          <a href="{% url 'biru:delete_atraksi' atraksi.slug %}" class="text-red-500 hover:text-red-700 mx-1" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus atraksi ini?')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H3.5a.5.5 0 000 1h.634l.813 10.248A2 2 0 006.944 17h6.112a2 2 0 001.997-1.752L15.866 5H16.5a.5.5 0 000-1H15V3a1 1 0 00-1-1H6zm2 5a.5.5 0 011 0v7a.5.5 0 01-1 0V7zm4 0a.5.5 0 011 0v7a.5.5 0 01-1 0V7z" clip-rule="evenodd"/>
+            </svg>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="py-4 text-center text-gray-500 italic">Tidak ada atraksi ditemukan.</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

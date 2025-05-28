@@ -41,6 +41,7 @@ media
 *.iws
 
 # IntelliJ
+.idea/
 out/
 
 # JIRA plugin
