@@ -211,6 +211,12 @@
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
             <div class="flex space-x-2">
+              <button type="button" class="btn-edit" onclick="openEditScheduleModal({{ jadwal.id }}, '{{ jadwal.tanggal }}')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Edit
+              </button>
               <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_delete' id=jadwal.id %}" 
                 class="btn-delete" 
                 onclick="return confirm('Apakah Anda yakin ingin menghapus jadwal ini?')">
@@ -283,10 +289,32 @@
       </form>
     </div>
   </div>
+
+  <!-- Modal Edit Jadwal - DIPERBAIKI -->
+  <div id="editScheduleModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="text-lg font-semibold text-gray-900">Edit Jadwal Pemeriksaan</h3>
+        <span class="modal-close" onclick="closeEditScheduleModal()">&times;</span>
+      </div>
+      <form id="editScheduleForm" method="post">
+        {% csrf_token %}
+        <div class="mb-4">
+          <label for="editScheduleDate" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Pemeriksaan</label>
+          <input type="date" id="editScheduleDate" name="tanggal" required
+                class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500" />
+        </div>
+        <div class="flex justify-end space-x-2 mt-6">
+          <button type="button" class="btn-cancel" onclick="closeEditScheduleModal()">Batal</button>
+          <button type="submit" class="btn-submit">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script>
-  // Modal functions
+  // Modal functions untuk frekuensi
   function openEditFrequencyModal() {
     document.getElementById('editFrequencyModal').style.display = 'block';
   }
@@ -294,13 +322,48 @@
   function closeEditFrequencyModal() {
     document.getElementById('editFrequencyModal').style.display = 'none';
   }
-  
-  // Close modal when clicking outside of it
+
+  // Modal functions untuk jadwal - DIPERBAIKI
+  function openEditScheduleModal(id, tanggal) {
+    console.log('Opening edit modal for ID:', id, 'Date:', tanggal); // Debug log
+    
+    const modal = document.getElementById('editScheduleModal');
+    const form = document.getElementById('editScheduleForm');
+    const dateInput = document.getElementById('editScheduleDate');
+    
+    // Set form action URL menggunakan Django URL reverse
+    form.action = "{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_edit' id=0 %}".replace('0', id);
+    
+    // Set current date value
+    dateInput.value = tanggal;
+    
+    // Show modal
+    modal.style.display = 'block';
+    
+    console.log('Form action set to:', form.action); // Debug log
+  }
+
+  function closeEditScheduleModal() {
+    document.getElementById('editScheduleModal').style.display = 'none';
+  }
+
+  // Handle modal close when clicking outside
   window.onclick = function(event) {
-    var modal = document.getElementById('editFrequencyModal');
-    if (event.target == modal) {
-      modal.style.display = 'none';
+    const frequencyModal = document.getElementById('editFrequencyModal');
+    const scheduleModal = document.getElementById('editScheduleModal');
+    
+    if (event.target == frequencyModal) {
+      frequencyModal.style.display = 'none';
+    }
+    if (event.target == scheduleModal) {
+      scheduleModal.style.display = 'none';
     }
   }
+
+  // Handle form submission dengan debugging
+  document.getElementById('editScheduleForm').addEventListener('submit', function(e) {
+    console.log('Form submitted with action:', this.action); // Debug log
+    console.log('Form data:', new FormData(this)); // Debug log
+  });
 </script>
 {% endblock %}

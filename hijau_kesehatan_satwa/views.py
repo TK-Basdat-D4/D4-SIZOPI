@@ -253,8 +253,13 @@ def jadwal_pemeriksaan_delete(request, id):
     
     return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
 
-# Tambahkan fungsi jadwal_pemeriksaan_edit di bagian jadwal pemeriksaan
+# Fungsi jadwal_pemeriksaan_edit yang diperbaiki
 def jadwal_pemeriksaan_edit(request, id):
+    """Edit jadwal pemeriksaan dengan error handling yang lebih baik"""
+    # Debug log
+    print(f"DEBUG: jadwal_pemeriksaan_edit called with ID: {id}")
+    print(f"DEBUG: Request method: {request.method}")
+    
     if not check_doctor_access(request):
         return redirect('register_login:login')
     
@@ -266,23 +271,43 @@ def jadwal_pemeriksaan_edit(request, id):
             break
     
     if not schedule_to_edit:
+        print(f"DEBUG: Schedule with ID {id} not found")
         messages.error(request, 'Jadwal tidak ditemukan!')
         return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
     
+    print(f"DEBUG: Found schedule: {schedule_to_edit}")
+    
     if request.method == 'POST':
         try:
+            new_date = request.POST.get('tanggal')
+            print(f"DEBUG: New date from POST: {new_date}")
+            
             # Update the schedule
-            schedule_to_edit.update({
-                'tanggal': request.POST.get('tanggal')
-            })
+            schedule_to_edit['tanggal'] = new_date
+            
+            print(f"DEBUG: Updated schedule: {schedule_to_edit}")
             
             messages.success(request, 'Jadwal pemeriksaan berhasil diperbarui!')
             return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
         except Exception as e:
+            print(f"DEBUG: Error updating schedule: {str(e)}")
             messages.error(request, f'Terjadi kesalahan: {str(e)}')
     
-    context = {'schedule': schedule_to_edit}
-    return render(request, 'hijau_kesehatan_satwa/jadwal_pemeriksaan_form.html', context)
+    # For GET request, return to list since we're using modal
+    return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
+
+# Tambahkan juga fungsi debug untuk melihat semua URL patterns
+def debug_urls(request):
+    """Debug function to check URL patterns"""
+    if request.method == 'GET':
+        from django.urls import reverse
+        try:
+            # Test URL generation
+            test_url = reverse('hijau_kesehatan_satwa:jadwal_pemeriksaan_edit', args=[1])
+            return HttpResponse(f"Test URL for edit: {test_url}")
+        except Exception as e:
+            return HttpResponse(f"URL Error: {str(e)}")
+    return HttpResponse("Debug URL function")
 
 # Dictionary of available animals (for demonstration)
 # In a real application, this would be fetched from the database
