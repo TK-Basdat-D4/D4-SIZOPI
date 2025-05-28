@@ -1,244 +1,417 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-import copy
-
-# Dummy Data
-SATWA = [
-    {
-        'id': 1,
-        'nama': 'Simba',
-        'spesies': 'Singa',
-        'asal': 'Afrika',
-        'tanggal_lahir': '2018-05-12',
-        'status_kesehatan': 'Sehat',
-        'habitat': 'Savana',
-        'foto': 'https://surya24.com/assets/berita/original/79029453639-penampakan-raja-_hutan.jpg',
-    },
-    {
-        'id': 2,
-        'nama': 'Melly',
-        'spesies': 'Gajah',
-        'asal': 'Sumatra',
-        'tanggal_lahir': '2015-09-22',
-        'status_kesehatan': 'Dalam Pemantauan',
-        'habitat': 'Hutan Tropis',
-        'foto': 'https://cdn.rri.co.id/berita/Takengon/o/1731248243686-images/pjl1zf2bir98gvi.jpeg',
-    },
-    {
-        'id': 3,
-        'nama': 'Rio',
-        'spesies': 'Harimau',
-        'asal': 'Kalimantan',
-        'tanggal_lahir': '2015-09-22',
-        'status_kesehatan': 'Sakit',
-        'habitat': 'Hutan Tropis',
-        'foto': 'https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSRqlFDv0i1EfNdgx1rPszk5CbLOh0KnsOBBE3_k4WfIck_WQuXlQTCHpTJMJNv2PrvGD8zNLprf6_W3AKmWDVR7A',
-    },
-    {
-        'id': 4,
-        'nama': 'Nala',
-        'spesies': 'Zebra',
-        'asal': 'Afrika',
-        'tanggal_lahir': '2020-03-01',
-        'status_kesehatan': 'Sehat',
-        'habitat': 'Savana',
-        'foto': 'https://www.treehugger.com/thmb/mIDnBoZOKmqQ74EHwi-QDbQBeRM=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/GettyImages-1043597638-49acd69677d7442588c1d8930d298a59.jpg',
-    },
-    {
-        'id': 5,
-        'nama': 'Bimo',
-        'spesies': 'Orangutan',
-        'asal': 'Kalimantan',
-        'tanggal_lahir': '2016-07-19',
-        'status_kesehatan': 'Sehat',
-        'habitat': 'Hutan Tropis',
-        'foto': 'https://cdn.betahita.id/5/8/9/7/5897.jpeg',
-    }
-]
-
-HABITAT = [
-    {
-        'id': 1,
-        'nama': 'Savana',
-        'luas_area': '5000',
-        'kapasitas_maksimal': '25',
-        'status_lingkungan': 'Suhu: 30°C, Kelembapan: 40%, Vegetasi: Rumput luas'
-    },
-    {
-        'id': 2,
-        'nama': 'Hutan Tropis',
-        'luas_area': '8200',
-        'kapasitas_maksimal': '40',
-        'status_lingkungan': 'Suhu: 28°C, Kelembapan: 85%, Pepohonan lebat'
-    },
-    {
-        'id': 3,
-        'nama': 'Padang Rumput',
-        'luas_area': '3000',
-        'kapasitas_maksimal': '15',
-        'status_lingkungan': 'Suhu: 32°C, Kelembapan: 50%, Terbuka tanpa kanopi'
-    }
-]
-
-# Helper function to get next available ID
-def get_next_satwa_id():
-    return max(satwa['id'] for satwa in SATWA) + 1 if SATWA else 1
-
-def get_next_habitat_id():
-    return max(habitat['id'] for habitat in HABITAT) + 1 if HABITAT else 1
+from utils.db_utils import get_db_connection
+import uuid
+from datetime import datetime
 
 # SATWA CRUD Operations
 def list_satwa(request):
-    # Make a copy of the data to avoid modifying the original
-    satwa_display = copy.deepcopy(SATWA)
-    return render(request, 'list_satwa.html', {'satwa': satwa_display})
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    
+    try:
+        # Query untuk mengambil semua data hewan beserta habitat
+        query = """
+            SELECT h.id, h.nama, h.spesies, h.asal_hewan, h.tanggal_lahir, 
+                   h.status_kesehatan, h.nama_habitat, h.url_foto
+            FROM sizopi.hewan h
+            ORDER BY h.nama
+        """
+        cursor.execute(query)
+        satwa_data = cursor.fetchall()
+        
+        # Convert to list of dictionaries
+        satwa = []
+        for row in satwa_data:
+            satwa.append({
+                'id': row[0],
+                'nama': row[1],
+                'spesies': row[2],
+                'asal': row[3],
+                'tanggal_lahir': row[4],
+                'status_kesehatan': row[5],
+                'habitat': row[6],
+                'foto': row[7]
+            })
+        
+        return render(request, 'list_satwa.html', {'satwa': satwa})
+    
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
 
 def tambah_satwa(request):
     if request.method == 'POST':
-        # Get form data
-        nama = request.POST.get('nama', '')
-        spesies = request.POST.get('spesies')
-        asal = request.POST.get('asal')
-        tanggal_lahir = request.POST.get('tanggal_lahir', '')
-        status_kesehatan = request.POST.get('status_kesehatan')
-        # Get only the habitat name, not the full object
-        habitat = request.POST.get('habitat')
-        foto = request.POST.get('foto', '')
+        connection = get_db_connection()
+        cursor = connection.cursor()
         
-        # Create new satwa
-        new_satwa = {
-            'id': get_next_satwa_id(),
-            'nama': nama,
-            'spesies': spesies,
-            'asal': asal,
-            'tanggal_lahir': tanggal_lahir,
-            'status_kesehatan': status_kesehatan,
-            'habitat': habitat,  # Store only the habitat name
-            'foto': foto
-        }
-        
-        # Add to list
-        SATWA.append(new_satwa)
-        
-        # Redirect to list page
-        return redirect('kuning:list_satwa')
+        try:
+            # Get form data
+            nama = request.POST.get('nama', '')
+            spesies = request.POST.get('spesies')
+            asal = request.POST.get('asal')
+            tanggal_lahir = request.POST.get('tanggal_lahir', None)
+            status_kesehatan = request.POST.get('status_kesehatan')
+            habitat = request.POST.get('habitat')
+            foto = request.POST.get('foto', '')
+            
+            # Generate UUID for new hewan
+            hewan_id = str(uuid.uuid4())
+            
+            # Convert empty string to None for date
+            if tanggal_lahir == '':
+                tanggal_lahir = None
+            
+            # Insert new hewan
+            insert_query = """
+                INSERT INTO sizopi.hewan 
+                (id, nama, spesies, asal_hewan, tanggal_lahir, status_kesehatan, nama_habitat, url_foto)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, (
+                hewan_id, nama, spesies, asal, tanggal_lahir, 
+                status_kesehatan, habitat, foto
+            ))
+            
+            connection.commit()
+            return redirect('kuning:list_satwa')
+            
+        except Exception as e:
+            connection.rollback()
+            return HttpResponse(f"Error: {str(e)}", status=500)
+        finally:
+            cursor.close()
+            connection.close()
     
     # GET request - show form
-    # Pass only habitat names for the dropdown
-    habitat_names = [h['nama'] for h in HABITAT]
-    return render(request, 'tambah_satwa.html', {'habitats': habitat_names})
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    
+    try:
+        # Get habitat names for dropdown
+        cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
+        habitat_names = [row[0] for row in habitat_data]
+        
+        return render(request, 'tambah_satwa.html', {'habitats': habitat_names})
+    
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
 
 def edit_satwa(request, id):
-    # Find satwa by id
-    satwa = next((item for item in SATWA if item["id"] == id), None)
+    connection = get_db_connection()
+    cursor = connection.cursor()
     
-    if not satwa:
-        return HttpResponse("Satwa tidak ditemukan", status=404)
-    
-    if request.method == 'POST':
-        # Update data
-        satwa['nama'] = request.POST.get('nama', '')
-        satwa['spesies'] = request.POST.get('spesies')
-        satwa['asal'] = request.POST.get('asal')
-        satwa['tanggal_lahir'] = request.POST.get('tanggal_lahir', '')
-        satwa['status_kesehatan'] = request.POST.get('status_kesehatan')
-        # Get only the habitat name, not the full object
-        satwa['habitat'] = request.POST.get('habitat')
-        satwa['foto'] = request.POST.get('foto', '')
+    try:
+        # Find satwa by id - convert string to UUID if needed
+        if isinstance(id, str):
+            hewan_id = id
+        else:
+            hewan_id = str(id)
+            
+        cursor.execute("SELECT id, nama, spesies, asal_hewan, tanggal_lahir, status_kesehatan, nama_habitat, url_foto FROM sizopi.hewan WHERE id::text = %s", (hewan_id,))
+        satwa_data = cursor.fetchone()
         
-        # Redirect to list page
-        return redirect('kuning:list_satwa')
+        if not satwa_data:
+            return HttpResponse("Satwa tidak ditemukan", status=404)
+        
+        if request.method == 'POST':
+            # Update data
+            nama = request.POST.get('nama', '')
+            spesies = request.POST.get('spesies')
+            asal = request.POST.get('asal')
+            tanggal_lahir = request.POST.get('tanggal_lahir', None)
+            status_kesehatan = request.POST.get('status_kesehatan')
+            habitat = request.POST.get('habitat')
+            foto = request.POST.get('foto', '')
+            
+            # Convert empty string to None for date
+            if tanggal_lahir == '':
+                tanggal_lahir = None
+            
+            update_query = """
+                UPDATE sizopi.hewan 
+                SET nama = %s, spesies = %s, asal_hewan = %s, tanggal_lahir = %s,
+                    status_kesehatan = %s, nama_habitat = %s, url_foto = %s
+                WHERE id::text = %s
+            """
+            cursor.execute(update_query, (
+                nama, spesies, asal, tanggal_lahir, 
+                status_kesehatan, habitat, foto, hewan_id
+            ))
+            
+            connection.commit()
+            return redirect('kuning:list_satwa')
+        
+        # GET request - show form with satwa data
+        satwa = {
+            'id': satwa_data[0],
+            'nama': satwa_data[1],
+            'spesies': satwa_data[2],
+            'asal': satwa_data[3],
+            'tanggal_lahir': satwa_data[4],
+            'status_kesehatan': satwa_data[5],
+            'habitat': satwa_data[6],
+            'foto': satwa_data[7]
+        }
+        
+        # Get habitat names for dropdown
+        cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
+        habitat_names = [row[0] for row in habitat_data]
+        
+        return render(request, 'edit_satwa.html', {'satwa': satwa, 'habitats': habitat_names})
     
-    # GET request - show form with satwa data
-    # Pass only habitat names for the dropdown
-    habitat_names = [h['nama'] for h in HABITAT]
-    return render(request, 'edit_satwa.html', {'satwa': satwa, 'habitats': habitat_names})
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
 
 def hapus_satwa(request, id):
-    global SATWA
-    # Find satwa by id and remove
-    SATWA = [item for item in SATWA if item["id"] != id]
-    return redirect('kuning:list_satwa')
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    
+    try:
+        # Convert string to UUID if needed
+        if isinstance(id, str):
+            hewan_id = id
+        else:
+            hewan_id = str(id)
+            
+        # Delete satwa
+        cursor.execute("DELETE FROM sizopi.hewan WHERE id::text = %s", (hewan_id,))
+        connection.commit()
+        
+        return redirect('kuning:list_satwa')
+    
+    except Exception as e:
+        connection.rollback()
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
 
 # HABITAT CRUD Operations
 def list_habitat(request):
-    return render(request, 'list_habitat.html', {'habitat': HABITAT})
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    
+    try:
+        # Query untuk mengambil semua data habitat
+        query = """
+            SELECT nama, luas_area, kapasitas, status
+            FROM sizopi.habitat
+            ORDER BY nama
+        """
+        cursor.execute(query)
+        habitat_data = cursor.fetchall()
+        
+        # Convert to list of dictionaries
+        habitat = []
+        for i, row in enumerate(habitat_data, 1):
+            habitat.append({
+                'id': i,  # Using index as ID for compatibility with templates
+                'nama': row[0],
+                'luas_area': str(row[1]),
+                'kapasitas_maksimal': str(row[2]),
+                'status_lingkungan': row[3]
+            })
+        
+        return render(request, 'list_habitat.html', {'habitat': habitat})
+    
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
 
 def tambah_habitat(request):
     if request.method == 'POST':
-        # Get form data
-        nama = request.POST.get('nama')
-        luas_area = request.POST.get('luas_area')
-        kapasitas_maksimal = request.POST.get('kapasitas_maksimal')
-        status_lingkungan = request.POST.get('status_lingkungan')
+        connection = get_db_connection()
+        cursor = connection.cursor()
         
-        # Create new habitat
-        new_habitat = {
-            'id': get_next_habitat_id(),
-            'nama': nama,
-            'luas_area': luas_area,
-            'kapasitas_maksimal': kapasitas_maksimal,
-            'status_lingkungan': status_lingkungan
-        }
-        
-        # Add to list
-        HABITAT.append(new_habitat)
-        
-        # Redirect to list page
-        return redirect('kuning:list_habitat')
+        try:
+            # Get form data
+            nama = request.POST.get('nama')
+            luas_area = float(request.POST.get('luas_area'))
+            kapasitas_maksimal = int(request.POST.get('kapasitas_maksimal'))
+            status_lingkungan = request.POST.get('status_lingkungan')
+            
+            # Insert new habitat
+            insert_query = """
+                INSERT INTO sizopi.habitat (nama, luas_area, kapasitas, status)
+                VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(insert_query, (nama, luas_area, kapasitas_maksimal, status_lingkungan))
+            
+            connection.commit()
+            return redirect('kuning:list_habitat')
+            
+        except Exception as e:
+            connection.rollback()
+            return HttpResponse(f"Error: {str(e)}", status=500)
+        finally:
+            cursor.close()
+            connection.close()
     
     # GET request - show form
     return render(request, 'tambah_habitat.html')
 
 def edit_habitat(request, id):
-    # Find habitat by id
-    habitat = next((item for item in HABITAT if item["id"] == id), None)
+    connection = get_db_connection()
+    cursor = connection.cursor()
     
-    if not habitat:
-        return HttpResponse("Habitat tidak ditemukan", status=404)
-    
-    if request.method == 'POST':
-        # Update data
-        habitat['nama'] = request.POST.get('nama')
-        habitat['luas_area'] = request.POST.get('luas_area')
-        habitat['kapasitas_maksimal'] = request.POST.get('kapasitas_maksimal')
-        habitat['status_lingkungan'] = request.POST.get('status_lingkungan')
+    try:
+        # Get all habitats to find the one at the specified index
+        cursor.execute("SELECT nama, luas_area, kapasitas, status FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
         
-        # Redirect to list page
-        return redirect('kuning:list_habitat')
+        if id > len(habitat_data) or id < 1:
+            return HttpResponse("Habitat tidak ditemukan", status=404)
+        
+        # Get the habitat at index (id-1)
+        habitat_row = habitat_data[id-1]
+        habitat_nama = habitat_row[0]
+        
+        if request.method == 'POST':
+            # Update data
+            nama_baru = request.POST.get('nama')
+            luas_area = float(request.POST.get('luas_area'))
+            kapasitas_maksimal = int(request.POST.get('kapasitas_maksimal'))
+            status_lingkungan = request.POST.get('status_lingkungan')
+            
+            update_query = """
+                UPDATE sizopi.habitat 
+                SET nama = %s, luas_area = %s, kapasitas = %s, status = %s
+                WHERE nama = %s
+            """
+            cursor.execute(update_query, (nama_baru, luas_area, kapasitas_maksimal, status_lingkungan, habitat_nama))
+            
+            connection.commit()
+            return redirect('kuning:list_habitat')
+        
+        # GET request - show form with habitat data
+        habitat = {
+            'id': id,
+            'nama': habitat_row[0],
+            'luas_area': str(habitat_row[1]),
+            'kapasitas_maksimal': str(habitat_row[2]),
+            'status_lingkungan': habitat_row[3]
+        }
+        
+        return render(request, 'edit_habitat.html', {'habitat': habitat})
     
-    # GET request - show form with habitat data
-    return render(request, 'edit_habitat.html', {'habitat': habitat})
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
 
 def detail_habitat(request, id):
-    # Find habitat by id
-    habitat = next((item for item in HABITAT if item["id"] == id), None)
+    connection = get_db_connection()
+    cursor = connection.cursor()
     
-    if not habitat:
-        return HttpResponse("Habitat tidak ditemukan", status=404)
+    try:
+        # Get all habitats to find the one at the specified index
+        cursor.execute("SELECT nama, luas_area, kapasitas, status FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
+        
+        if id > len(habitat_data) or id < 1:
+            return HttpResponse("Habitat tidak ditemukan", status=404)
+        
+        # Get the habitat at index (id-1)
+        habitat_row = habitat_data[id-1]
+        habitat_nama = habitat_row[0]
+        
+        habitat = {
+            'id': id,
+            'nama': habitat_row[0],
+            'luas_area': str(habitat_row[1]),
+            'kapasitas_maksimal': str(habitat_row[2]),
+            'status_lingkungan': habitat_row[3]
+        }
+        
+        # Find all satwa in this habitat
+        cursor.execute("""
+            SELECT id, nama, spesies, asal_hewan, tanggal_lahir, status_kesehatan, url_foto
+            FROM sizopi.hewan 
+            WHERE nama_habitat = %s
+        """, (habitat_nama,))
+        
+        satwa_data = cursor.fetchall()
+        satwa_di_habitat = []
+        for row in satwa_data:
+            satwa_di_habitat.append({
+                'id': row[0],
+                'nama': row[1],
+                'spesies': row[2],
+                'asal': row[3],
+                'tanggal_lahir': row[4],
+                'status_kesehatan': row[5],
+                'foto': row[6]
+            })
+        
+        return render(request, 'detail_habitat.html', {'habitat': habitat, 'hewan_habitat': satwa_di_habitat})
     
-    # Find all satwa in this habitat
-    satwa_di_habitat = [s for s in SATWA if s['habitat'] == habitat['nama']]
-    
-    return render(request, 'detail_habitat.html', {'habitat': habitat, 'hewan_habitat': satwa_di_habitat})
+    except Exception as e:
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
 
 def hapus_habitat(request, id):
-    global HABITAT
+    connection = get_db_connection()
+    cursor = connection.cursor()
     
-    # Check if any animals are living in this habitat
-    habitat = next((item for item in HABITAT if item["id"] == id), None)
-    
-    if habitat:
-        # Check if any animals are in this habitat
-        satwa_di_habitat = [s for s in SATWA if s['habitat'] == habitat['nama']]
+    try:
+        # Get all habitats to find the one at the specified index
+        cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
         
-        if satwa_di_habitat:
-            # Return error message if habitat has animals
+        if id > len(habitat_data) or id < 1:
+            return HttpResponse("Habitat tidak ditemukan", status=404)
+        
+        habitat_nama = habitat_data[id-1][0]
+        
+        # Check if any animals are living in this habitat
+        cursor.execute("SELECT COUNT(*) FROM sizopi.hewan WHERE nama_habitat = %s", (habitat_nama,))
+        count = cursor.fetchone()[0]
+        
+        if count > 0:
+            # Get all habitats for display
+            cursor.execute("SELECT nama, luas_area, kapasitas, status FROM sizopi.habitat ORDER BY nama")
+            all_habitat_data = cursor.fetchall()
+            
+            habitat = []
+            for i, row in enumerate(all_habitat_data, 1):
+                habitat.append({
+                    'id': i,
+                    'nama': row[0],
+                    'luas_area': str(row[1]),
+                    'kapasitas_maksimal': str(row[2]),
+                    'status_lingkungan': row[3]
+                })
+            
             return render(request, 'list_habitat.html', {
-                'habitat': HABITAT,
-                'error': f"Tidak dapat menghapus habitat {habitat['nama']} karena masih ada satwa yang tinggal di dalamnya."
+                'habitat': habitat,
+                'error': f"Tidak dapat menghapus habitat {habitat_nama} karena masih ada satwa yang tinggal di dalamnya."
             })
+        
+        # Delete habitat if no animals are living there
+        cursor.execute("DELETE FROM sizopi.habitat WHERE nama = %s", (habitat_nama,))
+        connection.commit()
+        
+        return redirect('kuning:list_habitat')
     
-    # Remove habitat if no animals are living there
-    HABITAT = [item for item in HABITAT if item["id"] != id]
-    return redirect('kuning:list_habitat')
+    except Exception as e:
+        connection.rollback()
+        return HttpResponse(f"Error: {str(e)}", status=500)
+    finally:
+        cursor.close()
+        connection.close()
