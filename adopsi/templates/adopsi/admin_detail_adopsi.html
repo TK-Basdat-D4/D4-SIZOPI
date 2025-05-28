@@ -24,9 +24,10 @@
             <p><span class="font-semibold">Adopter Saat Ini:</span> {{ hewan.adopter }}</p>
             <p><span class="font-semibold">Tanggal Mulai Adopsi:</span> {{ hewan.tanggal_mulai }}</p>
             <p><span class="font-semibold">Tanggal Akhir Adopsi:</span> {{ hewan.tanggal_akhir }}</p>
-            <p><span class="font-semibold">Nominal Kontribusi:</span> Rp {{ hewan.nominal }}</p>
+            <p><span class="font-semibold">Nominal Kontribusi Adopsi Ini:</span> Rp {{ hewan.nominal }}</p>
+            <p><span class="font-semibold">Total Kontribusi Adopter (Lunas):</span> Rp {{ total_kontribusi_adopter }}</p>
 
-            <form method="post" action="" class="space-y-4">
+            <form method="post" action="" class="space-y-4 mt-4">
                 {% csrf_token %}
                 <div>
                     <label for="statusPembayaran" class="block font-semibold mb-1">Status Pembayaran</label>

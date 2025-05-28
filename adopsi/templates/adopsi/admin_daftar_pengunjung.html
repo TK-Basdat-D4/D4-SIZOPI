@@ -55,14 +55,13 @@
                     </tr>
                 {% endfor %}
             </tbody>
-        </table>
+        </table>      
     </div>
 
-    <!-- Tombol Kembali di Pojok Kanan Bawah -->
     <div class="fixed bottom-20 right-8">
-        <a href="javascript:history.back()" class="px-6 py-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-colors duration-300">
-            Kembali
-        </a>
+        <a href="{% url 'adopsi:admin_tambah_pengunjung' %}" class="btn bg-green-500 text-white px-4 py-2 rounded-lg">
+            Tambah Pengunjung Baru
+        </a>  
     </div>
 </div>
 

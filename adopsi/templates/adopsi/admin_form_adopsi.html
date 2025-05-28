@@ -3,7 +3,6 @@
 {% block title %}Form Adopsi Satwa{% endblock %}
 
 {% block extra_css %}
-<!-- Quicksand Font -->
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&display=swap" rel="stylesheet">
 <style>
     body {
@@ -24,40 +23,39 @@
 
             <div>
                 <label class="block font-medium text-gray-700">Nama</label>
-                <input type="text" name="nama_adopter" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="nama_adopter" value="{{ nama }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">NIK</label>
-                <input type="text" name="nik" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="nik" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">Alamat</label>
-                <input type="text" name="alamat" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="alamat" value="{{ alamat }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">Email</label>
-                <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="email" name="email" value="{{ email }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">Nomor Telepon</label>
-                <input type="text" name="telepon" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="telepon" value="{{ telepon }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2">
             </div>
 
             <hr class="my-4">
 
-            <p class="text-gray-600">Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+            <p class="text-gray-600">Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa:</p>
             <p><strong>Nama:</strong> {{ hewan.nama }}</p>
             <p><strong>Jenis:</strong> {{ hewan.spesies }}</p>
-            <p class="text-gray-600">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
 
             <div>
                 <label class="block font-medium text-gray-700">Nominal Kontribusi (Rp)</label>
-                <input type="number" name="nominal" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="number" name="nominal" min="1" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
             </div>
 
             <div>
-                <label class="block font-medium text-gray-700">Untuk periode adopsi selama (bulan)</label>
-                <select name="periode" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <label class="block font-medium text-gray-700">Periode Adopsi (bulan)</label>
+                <select name="periode" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
                     <option value="3">3 Bulan</option>
                     <option value="6">6 Bulan</option>
                     <option value="12">12 Bulan</option>
@@ -73,44 +71,43 @@
         {% elif tipe_adopter == 'Organisasi' %}
         <form method="post" class="space-y-4">
             {% csrf_token %}
-            <p class="text-gray-600">Pihak di bawah ini, selaku organisasi/perusahaan</p>
+            <p class="text-gray-600">Pihak di bawah ini, selaku organisasi/perusahaan:</p>
 
             <div>
                 <label class="block font-medium text-gray-700">Nama Organisasi</label>
-                <input type="text" name="nama_organisasi" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="nama_organisasi" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">NPP</label>
-                <input type="text" name="npp" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="npp" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">Alamat</label>
-                <input type="text" name="alamat" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="alamat" value="{{ alamat }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">Email</label>
-                <input type="email" name="email" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="email" name="email" value="{{ email }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2">
             </div>
             <div>
                 <label class="block font-medium text-gray-700">Nomor Telepon</label>
-                <input type="text" name="telepon" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="text" name="telepon" value="{{ telepon }}" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg px-4 py-2">
             </div>
 
             <hr class="my-4">
 
-            <p class="text-gray-600">Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa</p>
+            <p class="text-gray-600">Dengan ini menyatakan kepedulian dan minat untuk mengadopsi secara simbolis satwa:</p>
             <p><strong>Nama:</strong> {{ hewan.nama }}</p>
             <p><strong>Jenis:</strong> {{ hewan.spesies }}</p>
-            <p class="text-gray-600">Adopter juga bersedia memberikan kontribusi finansial kepada pihak taman safari sebagai dukungan untuk pemeliharaan satwa:</p>
 
             <div>
                 <label class="block font-medium text-gray-700">Nominal Kontribusi (Rp)</label>
-                <input type="number" name="nominal" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <input type="number" name="nominal" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
             </div>
 
             <div>
-                <label class="block font-medium text-gray-700">Untuk periode adopsi selama (bulan)</label>
-                <select name="periode" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:border-green-400">
+                <label class="block font-medium text-gray-700">Periode Adopsi (bulan)</label>
+                <select name="periode" required class="w-full border border-gray-300 rounded-lg px-4 py-2">
                     <option value="3">3 Bulan</option>
                     <option value="6">6 Bulan</option>
                     <option value="12">12 Bulan</option>
