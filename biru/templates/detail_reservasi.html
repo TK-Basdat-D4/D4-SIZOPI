@@ -5,26 +5,37 @@
     <div class="bg-white p-6 rounded-lg shadow-md">
         <!-- Header Section -->
         <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold">DETAIL RESERVASI ATRAKSI</h1>
+            <h1 class="text-2xl font-bold">
+                DETAIL RESERVASI {{ reservasi.jenis_reservasi|upper }}
+            </h1>
         </div>
 
         <!-- Reservation Info Box -->
         <div class="border border-green-200 rounded-lg p-4 mb-6 bg-green-50">
             <div class="flex justify-between items-center mb-2">
-                <h2 class="text-xl font-semibold">{{ reservasi.atraksi }}</h2>
+                <h2 class="text-xl font-semibold">
+                    {{ reservasi.nama_atraksi }}
+                </h2>
             </div>
+
+            {% if reservasi.jenis_reservasi == 'atraksi' %}
             <div class="flex items-center text-gray-600 mb-1">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 {{ reservasi.lokasi }}
             </div>
+            {% endif %}
+
             <div class="flex items-center text-gray-600">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                {{ reservasi.tanggal }} | {{ reservasi.jam }}
+                {{ reservasi.tanggal_reservasi|date:"d-m-Y H:i" }}
             </div>
         </div>
 
@@ -34,26 +45,35 @@
                 <span class="text-gray-600">Jumlah Tiket:</span>
                 <span class="font-medium">{{ reservasi.jumlah_tiket }}</span>
             </div>
-            <div class="flex justify-between border-b pb-2">
-                <span class="text-gray-600">Waktu Reservasi:</span>
-                <span class="font-medium">{{ reservasi.waktu_reservasi }}</span>
+
+            {% if reservasi.jenis_reservasi == 'wahana' %}
+            <div class="border-b pb-2">
+                <span class="text-gray-600">Peraturan:</span>
+                <ul class="list-disc pl-6 text-sm text-gray-700">
+                    {% for rule in reservasi.peraturan %}
+                    <li>{{ rule }}</li>
+                    {% endfor %}
+                </ul>
             </div>
-            <div class="flex justify-between border-b pb-2">
-                <span class="text-gray-600">Status:</span>
-                <span class="font-medium">{{ reservasi.status }}</span>
-            </div>
+            {% endif %}
         </div>
 
         <!-- Action Buttons -->
         <div class="flex space-x-3">
-            <!-- Tombol Edit -->
-            <a href="{% url 'biru:edit_reservasi_atraksi' reservasi.id %}"
+            <a href="{% if reservasi.jenis_reservasi == 'atraksi' %}
+                         {% url 'biru:edit_reservasi_atraksi_list' reservasi.slug %}
+                     {% else %}
+                         {% url 'biru:edit_reservasi_wahana_list' reservasi.slug %}
+                     {% endif %}"
                class="flex-1 block text-center bg-yellow-300 text-yellow-900 py-2 px-4 rounded hover:bg-yellow-400 transition">
                 Edit Reservasi
             </a>
 
-            <!-- Tombol Batalkan -->
-            <form action="{% url 'biru:cancel_reservasi_atraksi' reservasi.id %}" method="post" class="flex-1">
+            <form action="{% if reservasi.jenis_reservasi == 'atraksi' %}
+                              {% url 'biru:cancel_reservasi_detail' reservasi.slug %}
+                          {% else %}
+                              {% url 'biru:cancel_reservasi_detail' reservasi.slug %}
+                          {% endif %}" method="post" class="flex-1">
                 {% csrf_token %}
                 <button type="submit"
                         onclick="return confirm('Apakah Anda yakin ingin membatalkan reservasi ini?')"
@@ -65,7 +85,7 @@
 
         <!-- Help Text -->
         <div class="mt-6 text-sm text-gray-500 text-center">
-            <p>Tunjukkan tiket ini saat masuk wahana</p>
+            <p>Tunjukkan tiket ini saat masuk fasilitas</p>
             <p>Hubungi customer service jika ada pertanyaan</p>
         </div>
     </div>

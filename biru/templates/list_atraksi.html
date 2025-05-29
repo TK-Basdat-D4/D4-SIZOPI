@@ -30,7 +30,7 @@
         <td class="py-3 px-4 text-left">{{ atraksi.nama_atraksi }}</td>
         <td class="py-3 px-4 text-left">{{ atraksi.lokasi }}</td>
         <td class="py-3 px-4 text-center">{{ atraksi.kapasitas }}</td>
-        <td class="py-3 px-4 text-center">{{ atraksi.jadwal|date:"H:i" }}</td>
+        <td class="py-3 px-4 text-center">{{ atraksi.jadwal|date:"d-m-Y H:i" }}</td>
         <td class="py-3 px-4 text-left">
           {% if atraksi.hewan_terlibat %}
           {{ atraksi.hewan_terlibat|join:", " }}

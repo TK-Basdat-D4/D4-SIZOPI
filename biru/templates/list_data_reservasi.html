@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-center mb-2">List Data Reservasi</h1>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
+            <thead class="bg-green-500 text-white">
+            <tr>
+                <th class="py-3 px-4 text-center">Jenis Reservasi</th>
+                <th class="py-3 px-4 text-center">Nama Fasilitas</th>
+                <th class="py-3 px-4 text-center">Tanggal Reservasi</th>
+                <th class="py-3 px-4 text-center">Kapasitas Tersedia</th>
+                <th class="py-3 px-4 text-center"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for fasilitas in fasilitas_list %}
+            <tr class="border-t hover:bg-gray-100">
+                <td class="py-3 px-4 text-center">{{ fasilitas.jenis_reservasi }}</td>
+                <td class="py-3 px-4 text-left">{{ fasilitas.nama_fasilitas }}</td>
+                <td class="py-3 px-4 text-center">{{ fasilitas.tanggal_reservasi|date:"d-m-Y H:i" }}</td>
+                <td class="py-3 px-4 text-center">
+                    {% if fasilitas.kapasitas_tersisa > 0 %}
+                    {{ fasilitas.kapasitas_tersisa }} dari {{ fasilitas.kapasitas_total }}
+                    {% else %}
+                    0
+                    {% endif %}
+                </td>
+                <td class="py-3 px-4 text-center">
+                    {% if fasilitas.kapasitas_tersisa > 0 %}
+                        {% if fasilitas.jenis_reservasi == "atraksi" %}
+                            <a href="{% url 'biru:buat_reservasi_atraksi' fasilitas.slug %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                                Pesan Tiket
+                            </a>
+                        {% else %}
+                            <a href="{% url 'biru:buat_reservasi_wahana' fasilitas.slug %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                                Pesan Tiket
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <button class="bg-gray-400 text-white font-semibold py-2 px-4 rounded cursor-not-allowed" disabled>
+                            Pesan Tiket
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="py-4 text-center text-gray-500 italic">Tidak ada fasilitas tersedia.</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

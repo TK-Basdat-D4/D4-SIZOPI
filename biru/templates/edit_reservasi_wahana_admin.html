@@ -8,26 +8,19 @@
         {% csrf_token %}
 
         <div class="mb-4">
-            <label class="block text-gray-700 font-medium mb-2">Nama Atraksi</label>
-            <select name="atraksi" id="atraksi-select" required
+            <label class="block text-gray-700 font-medium mb-2">Nama Wahana</label>
+            <select name="wahana" id="wahana-select" required
                     class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Pilih Atraksi</option>
-                {% for atraksi in atraksi_list %}
-                <option value="{{ atraksi.nama_atraksi }}"
-                        data-lokasi="{{ atraksi.lokasi }}"
-                        data-jam="{{ atraksi.jadwal|date:'H:i' }}"
-                        data-tanggal="{{ atraksi.jadwal|date:'Y-m-d' }}"
-                        {% if atraksi.nama_atraksi == selected_atraksi %}selected{% endif %}>
-                    {{ atraksi.nama_atraksi }}
+                {% for wahana in wahana_list %}
+                <option value="{{ wahana.nama_wahana }}"
+                        data-jam="{{ wahana.jadwal|date:'H:i' }}"
+                        data-tanggal="{{ wahana.jadwal|date:'Y-m-d' }}"
+                        {% if wahana.nama_wahana == selected_wahana %}selected{% endif %}>
+                    {{ wahana.nama_wahana }}
                 </option>
                 {% endfor %}
             </select>
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-gray-700 font-medium mb-2">Lokasi</label>
-            <input type="text" id="lokasi" name="lokasi" readonly
-                   class="w-full px-3 py-2 border rounded bg-gray-100">
         </div>
 
         <div class="mb-4">
@@ -62,21 +55,19 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const atraksiSelect = document.getElementById('atraksi-select');
-        const lokasiInput = document.getElementById('lokasi');
+        const wahanaSelect = document.getElementById('wahana-select');
         const jamInput = document.getElementById('jam');
         const tanggalInput = document.getElementById('tanggal');
 
-        atraksiSelect.addEventListener('change', function() {
+        wahanaSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
-            lokasiInput.value = selectedOption.dataset.lokasi || '';
             jamInput.value = selectedOption.dataset.jam || '';
             tanggalInput.value = selectedOption.dataset.tanggal || '';
         });
 
-        if (atraksiSelect.value) {
+        if (wahanaSelect.value) {
             const event = new Event('change');
-            atraksiSelect.dispatchEvent(event);
+            wahanaSelect.dispatchEvent(event);
         }
     });
 </script>

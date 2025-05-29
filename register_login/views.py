@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from biru.views import RESERVASI
+from biru.views import get_jumlah_pengunjung, get_jumlah_penjualan, create_reservasi_slug
 from utils.db_utils import get_db_connection
 import random
 import uuid
@@ -245,7 +245,7 @@ def register_staff(request):
                 """, (username, staff_id))
             elif peran == 'staff_administrasi':
                 cur.execute("""
-                    INSERT INTO sizopi.staf_admin (username_sa, id_staf)
+                    INSERT INTO sizopi.staff_administrasi (username_sa, id_staf)
                     VALUES (%s, %s)
                 """, (username, staff_id))
             elif peran == 'pelatih_pertunjukan':
@@ -362,7 +362,7 @@ def login(request):
                 
                 if not user_role_found:
                     try:
-                        # Check staf_admin
+                        # Check staff_administrasi
                         cur.execute("SELECT id_staf FROM sizopi.staf_admin WHERE username_sa = %s", (username,))
                         admin_data = cur.fetchone()
                         if admin_data:
@@ -450,14 +450,43 @@ def dashboard(request):
 
     reservasi_terjadwal = []
     if user['role'] == 'pengunjung':
-        reservasi_terjadwal = [
-            r for r in RESERVASI
-            if r.get('username') == user['username'] and r.get('status') == 'Terjadwal'
-        ]
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        current_username = user.get('username')
+
+        cursor.execute("""
+        SELECT *
+        FROM RESERVASI r
+        JOIN FASILITAS f ON f.nama = r.nama_fasilitas
+        WHERE r.username_p = %s
+        ORDER BY tanggal_kunjungan;
+        """, (current_username,))
+
+        result = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        reservasi_list = []
+        for row in result:
+            reservasi = {
+                'nama_fasilitas': row[1],
+                'tanggal_reservasi': row[6],
+                'slug': create_reservasi_slug(row[0], row[1], row[2])
+            }
+            reservasi_list.append(reservasi)
+
+    if user['role'] == 'staff':
+        if user['peran'] == 'staff_administrasi':
+            return render (request, 'dashboard.html', {
+                'user': user,
+                'jumlah_penjualan': get_jumlah_penjualan(),
+                'jumlah_pengunjung' : get_jumlah_pengunjung()
+            })
 
     return render(request, 'dashboard.html', {
         'user': user,
-        'reservasi_terjadwal': reservasi_terjadwal,
+        'reservasi_list': reservasi_list,
     })
 
 def profile_settings(request):
