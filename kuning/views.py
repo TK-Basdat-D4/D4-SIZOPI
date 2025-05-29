@@ -1,11 +1,26 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib import messages
 from utils.db_utils import get_db_connection
 import uuid
 from datetime import datetime
 
+# Role check functions
+def is_staff_admin(request):
+    return request.session.get('user', {}).get('role') == 'STAFF_ADMIN'
+
+def is_dokter_hewan(request):
+    return request.session.get('user', {}).get('role') == 'DOKTER_HEWAN'
+
+def is_penjaga_hewan(request):
+    return request.session.get('user', {}).get('role') == 'PENJAGA_HEWAN'
+
 # SATWA CRUD Operations
 def list_satwa(request):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk melihat data satwa.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -43,6 +58,10 @@ def list_satwa(request):
         connection.close()
 
 def tambah_satwa(request):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menambah data satwa.')
+        return redirect('register_login:dashboard')
+
     if request.method == 'POST':
         connection = get_db_connection()
         cursor = connection.cursor()
@@ -132,6 +151,10 @@ def tambah_satwa(request):
         connection.close()
 
 def edit_satwa(request, id):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk mengubah data satwa.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -248,6 +271,10 @@ def edit_satwa(request, id):
         connection.close()
 
 def hapus_satwa(request, id):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menghapus data satwa.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -273,6 +300,10 @@ def hapus_satwa(request, id):
 
 # HABITAT CRUD Operations
 def list_habitat(request):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk melihat data habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -306,6 +337,10 @@ def list_habitat(request):
         connection.close()
 
 def tambah_habitat(request):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menambah data habitat.')
+        return redirect('register_login:dashboard')
+
     if request.method == 'POST':
         connection = get_db_connection()
         cursor = connection.cursor()
@@ -338,6 +373,10 @@ def tambah_habitat(request):
     return render(request, 'tambah_habitat.html')
 
 def edit_habitat(request, id):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk mengubah data habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -388,6 +427,10 @@ def edit_habitat(request, id):
         connection.close()
 
 def detail_habitat(request, id):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk melihat detail habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -440,6 +483,10 @@ def detail_habitat(request, id):
         connection.close()
 
 def hapus_habitat(request, id):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menghapus data habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
