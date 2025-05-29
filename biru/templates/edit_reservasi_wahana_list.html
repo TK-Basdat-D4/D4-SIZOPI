@@ -2,63 +2,58 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8 max-w-md">
-    <h1 class="text-2xl font-bold mb-6 text-center">BUAT RESERVASI ATRAKSI</h1>
+    <h1 class="text-2xl font-bold mb-6 text-center">EDIT RESERVASI WAHANA</h1>
 
     <form method="post" class="bg-white p-6 rounded-lg shadow-md">
         {% csrf_token %}
 
-        <!-- Nama Atraksi -->
+        <!-- Nama Wahana -->
         <div class="mb-4">
-            <label class="block text-gray-700 font-medium mb-2">Nama Atraksi</label>
-            <input type="text" name="nama_atraksi" value="{{ atraksi.nama_atraksi }}" readonly
+            <label class="block text-gray-700 font-medium mb-2">Nama Wahana</label>
+            <input type="text" name="nama_wahana" value="{{ wahana.nama_wahana }}" readonly
                    class="w-full px-3 py-2 border rounded bg-gray-100">
         </div>
 
-        <!-- Lokasi -->
+        <!-- Peraturan -->
         <div class="mb-4">
-            <label class="block text-gray-700 font-medium mb-2">Lokasi</label>
-            <input type="text" name="lokasi" value="{{ atraksi.lokasi }}" readonly
-                   class="w-full px-3 py-2 border rounded bg-gray-100">
+            <label class="block text-gray-700 font-medium mb-2">Peraturan</label>
+            <ol class="list-decimal list-inside bg-gray-100 border rounded px-3 py-2">
+                {% for aturan in wahana.peraturan %}
+                <li>{{ aturan }}</li>
+                {% endfor %}
+            </ol>
         </div>
 
         <!-- Jam -->
         <div class="mb-4">
             <label class="block text-gray-700 font-medium mb-2">Jam</label>
-            <input type="text" name="jam" value="{{ atraksi.jadwal|time:'H:i' }}" readonly
+            <input type="text" name="jam" value="{{ wahana.jadwal|time:'H:i' }}" readonly
                    class="w-full px-3 py-2 border rounded bg-gray-100">
         </div>
 
         <!-- Tanggal -->
         <div class="mb-4">
             <label class="block text-gray-700 font-medium mb-2">Tanggal</label>
-            <input type="text" name="tanggal" value="{{ atraksi.jadwal|date:'d-m-Y' }}" readonly
+            <input type="text" name="tanggal" value="{{ wahana.jadwal|date:'d-m-Y' }}" readonly
                    class="w-full px-3 py-2 border rounded bg-gray-100">
         </div>
 
         <!-- Jumlah Tiket -->
         <div class="mb-4">
             <label class="block text-gray-700 font-medium mb-2">Jumlah Tiket</label>
-            <input type="number" name="jumlah_tiket" min="1" required
+            <input type="number" name="jumlah_tiket" min="1" value="{{ wahana.jumlah_tiket }}" required
                    class="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
 
         <!-- Tombol -->
         <div class="flex justify-between mt-6">
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                BUAT RESERVASI
+                EDIT RESERVASI
             </button>
-            <a href="{% url 'biru:list_data_reservasi' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+            <a href="{% url 'biru:list_reservasi' %}" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
                 BATAL
             </a>
         </div>
-
-        {% if messages %}
-        <ul class="mb-4">
-            {% for message in messages %}
-            <li class="text-red-600">{{ message }}</li>
-            {% endfor %}
-        </ul>
-        {% endif %}
     </form>
 </div>
 {% endblock %}

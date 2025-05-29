@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6 text-center">EDIT RESERVASI ATRAKSI</h1>
+    <h1 class="text-3xl font-bold mb-6 text-center">EDIT ATRAKSI</h1>
 
     <form method="POST" class="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl mx-auto">
         {% csrf_token %}
         <div class="mb-4">
             <label class="block mb-1">Nama Atraksi</label>
-            <input type="text" name="nama_atraksi" value="{{ atraksi.nama_atraksi }}" class="w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" value="{{ atraksi.nama_atraksi }}" class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100" readonly>
         </div>
 
         <div class="mb-4">
             <label class="block mb-1">Lokasi</label>
-            <input type="text" name="lokasi" value="{{ atraksi.lokasi }}" class="w-full border border-gray-300 rounded px-3 py-2">
+            <input type="text" value="{{ atraksi.lokasi }}" class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100" readonly>
         </div>
 
         <div class="mb-4">
@@ -21,26 +21,18 @@
         </div>
 
         <div class="mb-4">
-            <label class="block mb-1">Jadwal (Jam)</label>
-            <input type="time" name="jadwal" value="{{ atraksi.jadwal|date:'H:i' }}" class="w-full border border-gray-300 rounded px-3 py-2">
+            <label class="block mb-1">Jadwal</label>
+            <input type="datetime-local" name="jadwal" value="{{ atraksi.jadwal|date:'Y-m-d\\TH:i' }}" class="w-full border border-gray-300 rounded px-3 py-2">
         </div>
 
         <div class="mb-4">
             <label class="block mb-1">Hewan Terlibat</label>
-            <select name="hewan_terlibat" multiple class="w-full border border-gray-300 rounded px-3 py-2">
-                {% for h in hewan %}
-                <option value="{{ h }}" {% if h in atraksi.hewan_terlibat %}selected{% endif %}>{{ h }}</option>
-                {% endfor %}
-            </select>
+            <input type="text" value="{{ atraksi.hewan_terlibat|join:', ' }}" class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100" readonly>
         </div>
 
         <div class="mb-4">
             <label class="block mb-1">Pelatih</label>
-            <select name="pelatih" multiple class="w-full border border-gray-300 rounded px-3 py-2">
-                {% for p in pelatih %}
-                <option value="{{ p }}" {% if p in atraksi.pelatih %}selected{% endif %}>{{ p }}</option>
-                {% endfor %}
-            </select>
+            <input type="text" value="{{ atraksi.pelatih|join:', ' }}" class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100" readonly>
         </div>
 
         <div class="text-center">

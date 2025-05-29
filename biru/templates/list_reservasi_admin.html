@@ -6,16 +6,11 @@
         <h1 class="text-3xl font-bold text-center mb-2">Daftar Reservasi</h1>
     </div>
 
-    <div class="flex justify-end mb-4">
-        <a href="{% url 'biru:list_data_reservasi' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
-            + Buat Reservasi
-        </a>
-    </div>
-
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden">
             <thead class="bg-green-500 text-white">
             <tr>
+                <th class="py-3 px-4 text-center">Username Pengunjung</th>
                 <th class="py-3 px-4 text-center">Jenis Reservasi</th>
                 <th class="py-3 px-4 text-center">Nama Fasilitas</th>
                 <th class="py-3 px-4 text-center">Tanggal Reservasi</th>
@@ -27,6 +22,7 @@
             <tbody>
             {% for reservasi in reservasi_list %}
             <tr class="border-t hover:bg-gray-100">
+                <td class="py-3 px-4 text-left">{{ reservasi.username }}</td>
                 <td class="py-3 px-4 text-center">{{ reservasi.jenis_reservasi }}</td>
                 <td class="py-3 px-4 text-left">{{ reservasi.nama_fasilitas }}</td>
                 <td class="py-3 px-4 text-center">{{ reservasi.tanggal_reservasi|date:"d-m-Y H:i" }}</td>
@@ -35,10 +31,10 @@
                 <td class="py-3 px-4 text-center">
                     <!-- Tombol Edit -->
                     {% if reservasi.jenis_reservasi == "atraksi" %}
-                        <a href="{% url 'biru:edit_reservasi_atraksi_list' reservasi.slug %}" class="text-yellow-500 hover:text-yellow-700 mx-1" title="Edit">
+                    <a href="{% url 'biru:edit_reservasi_atraksi_admin' reservasi.slug %}" class="text-yellow-500 hover:text-yellow-700 mx-1" title="Edit">
                     {% elif reservasi.jenis_reservasi == "wahana" %}
                         <!-- JANGAN LUPA EDIT -->
-                        <a href="{% url 'biru:edit_reservasi_wahana_list' reservasi.slug %}" class="text-yellow-500 hover:text-yellow-700 mx-1" title="Edit">
+                    <a href="{% url 'biru:edit_reservasi_wahana_admin' reservasi.slug %}" class="text-yellow-500 hover:text-yellow-700 mx-1" title="Edit">
                     {% endif %}
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M17.414 2.586a2 2 0 00-2.828 0L6 11.172V14h2.828l8.586-8.586a2 2 0 000-2.828z"/>
@@ -46,7 +42,7 @@
                         </svg>
                     </a>
                     <!-- Tombol Delete -->
-                    <a href="{% url 'biru:cancel_reservasi_list' reservasi.slug %}" class="text-red-500 hover:text-red-700 mx-1" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin membatalkan reservasi ini?')">
+                    <a href="{% url 'biru:cancel_reservasi_admin' reservasi.slug %}" class="text-red-500 hover:text-red-700 mx-1" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin membatalkan reservasi ini?')">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H3.5a.5.5 0 000 1h.634l.813 10.248A2 2 0 006.944 17h6.112a2 2 0 001.997-1.752L15.866 5H16.5a.5.5 0 000-1H15V3a1 1 0 00-1-1H6zm2 5a.5.5 0 011 0v7a.5.5 0 01-1 0V7zm4 0a.5.5 0 011 0v7a.5.5 0 01-1 0V7z" clip-rule="evenodd"/>
                         </svg>

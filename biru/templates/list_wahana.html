@@ -27,7 +27,7 @@
             <tr class="border-t hover:bg-gray-100">
                 <td class="py-3 px-4 text-left">{{ wahana.nama_wahana }}</td>
                 <td class="py-3 px-4 text-center">{{ wahana.kapasitas }}</td>
-                <td class="py-3 px-4 text-center">{{ wahana.jadwal|date:"H:i" }}</td>
+                <td class="py-3 px-4 text-center">{{ wahana.jadwal|date:"d-m-Y H:i" }}</td>
                 <td class="py-3 px-4 text-left">
                     <ol class="list-decimal pl-5">
                         {% for peraturan in wahana.peraturan %}

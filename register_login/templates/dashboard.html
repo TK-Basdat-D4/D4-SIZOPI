@@ -103,18 +103,18 @@
         
                                     <div class="flex justify-between items-center mb-2">
                                         <span class="font-medium text-gray-700">Informasi Tiket:</span>
-                                        <a href="{% url 'biru:buat_reservasi_atraksi' %}"
+                                        <a href="{% url 'biru:list_data_reservasi' %}"
                                            class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition">
                                             Buat Reservasi
                                         </a>
                                     </div>
         
-                                    {% if reservasi_terjadwal %}
+                                    {% if reservasi_list %}
                                     <ul class="list-disc pl-6 text-gray-700 space-y-2">
-                                        {% for tiket in reservasi_terjadwal %}
+                                        {% for tiket in reservasi_list %}
                                         <li class="flex justify-between items-center">
-                                            <span>{{ tiket.atraksi }} — {{ tiket.tanggal }} pukul {{ tiket.jam }}</span>
-                                            <a href="{% url 'biru:detail_reservasi_atraksi' tiket.id %}"
+                                            <span>{{ tiket.nama_fasilitas }} — {{ tiket.tanggal_reservasi }}</span>
+                                            <a href="{% url 'biru:detail_reservasi' tiket.slug %}"
                                                class="text-blue-600 hover:underline text-sm ml-4">
                                                 Lihat Detail
                                             </a>
@@ -172,8 +172,14 @@
                                     {% if user.peran == 'penjaga_hewan' %}
                                         <p class="text-gray-700"><span class="font-medium">Jumlah Hewan Diberi Pakan:</span> <span class="font-bold">Belum tersedia</span></p>
                                     {% elif user.peran == 'staff_administrasi' %}
-                                        <p class="text-gray-700 mb-2"><span class="font-medium">Penjualan Tiket Hari Ini:</span> <span class="font-bold">Belum tersedia</span></p>
-                                        <p class="text-gray-700 mb-2"><span class="font-medium">Jumlah Pengunjung Hari Ini:</span> <span class="font-bold">Belum tersedia</span></p>
+                                        <p class="text-gray-700 mb-2">
+                                            <span class="font-medium">Penjualan Tiket Hari Ini:</span>
+                                            <span class="font-bold">{{ jumlah_penjualan }}</span>
+                                        </p>
+                                        <p class="text-gray-700 mb-2">
+                                            <span class="font-medium">Jumlah Pengunjung Hari Ini:</span>
+                                            <span class="font-bold">{{ jumlah_pengunjung }}</span>
+                                        </p>
                                         <p class="text-gray-700"><span class="font-medium">Laporan Pendapatan Mingguan:</span> <span class="font-bold">Belum tersedia</span></p>
                                     {% elif user.peran == 'pelatih_pertunjukan' %}
                                         <p class="text-gray-700 mb-2"><span class="font-medium">Jadwal Pertunjukan Hari Ini:</span> <span class="font-bold">Belum tersedia</span></p>
