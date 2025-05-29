@@ -1,11 +1,26 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib import messages
 from utils.db_utils import get_db_connection
 import uuid
 from datetime import datetime
 
+# Role check functions
+def is_staff_admin(request):
+    return request.session.get('user', {}).get('role') == 'STAFF_ADMIN'
+
+def is_dokter_hewan(request):
+    return request.session.get('user', {}).get('role') == 'DOKTER_HEWAN'
+
+def is_penjaga_hewan(request):
+    return request.session.get('user', {}).get('role') == 'PENJAGA_HEWAN'
+
 # SATWA CRUD Operations
 def list_satwa(request):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk melihat data satwa.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -43,6 +58,10 @@ def list_satwa(request):
         connection.close()
 
 def tambah_satwa(request):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menambah data satwa.')
+        return redirect('register_login:dashboard')
+
     if request.method == 'POST':
         connection = get_db_connection()
         cursor = connection.cursor()
@@ -80,7 +99,35 @@ def tambah_satwa(request):
             
         except Exception as e:
             connection.rollback()
-            return HttpResponse(f"Error: {str(e)}", status=500)
+            error_message = str(e)
+            
+            # Clean up error message
+            if "CONTEXT:" in error_message:
+                error_message = error_message.split("CONTEXT:")[0]
+            if "PL/pgSQL function" in error_message:
+                error_message = error_message.split("PL/pgSQL function")[0]
+            error_message = error_message.strip()
+            
+            # Get habitat names for dropdown (needed to re-render the form)
+            cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+            habitat_data = cursor.fetchall()
+            habitat_names = [row[0] for row in habitat_data]
+            
+            # Re-render form with error message
+            context = {
+                'error_message': error_message,
+                'habitats': habitat_names,
+                'satwa': {
+                    'nama': nama,
+                    'spesies': spesies,
+                    'asal': asal,
+                    'tanggal_lahir': tanggal_lahir,
+                    'status_kesehatan': status_kesehatan,
+                    'habitat': habitat,
+                    'foto': foto
+                }
+            }
+            return render(request, 'tambah_satwa.html', context)
         finally:
             cursor.close()
             connection.close()
@@ -104,6 +151,10 @@ def tambah_satwa(request):
         connection.close()
 
 def edit_satwa(request, id):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk mengubah data satwa.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -120,6 +171,11 @@ def edit_satwa(request, id):
         if not satwa_data:
             return HttpResponse("Satwa tidak ditemukan", status=404)
         
+        # Get habitat names for dropdown
+        cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
+        habitat_names = [row[0] for row in habitat_data]
+        
         if request.method == 'POST':
             # Update data
             nama = request.POST.get('nama', '')
@@ -134,6 +190,10 @@ def edit_satwa(request, id):
             if tanggal_lahir == '':
                 tanggal_lahir = None
             
+            # Get old values for comparison
+            old_status = satwa_data[5]
+            old_habitat = satwa_data[6]
+            
             update_query = """
                 UPDATE sizopi.hewan 
                 SET nama = %s, spesies = %s, asal_hewan = %s, tanggal_lahir = %s,
@@ -146,6 +206,25 @@ def edit_satwa(request, id):
             ))
             
             connection.commit()
+            
+            # Check if status_kesehatan or habitat changed
+            if old_status != status_kesehatan or old_habitat != habitat:
+                success_message = f'SUKSES: Riwayat perubahan status kesehatan dari "{old_status}" menjadi "{status_kesehatan}" atau habitat dari "{old_habitat}" menjadi "{habitat}" telah dicatat.'
+                return render(request, 'edit_satwa.html', {
+                    'success_message': success_message,
+                    'satwa': {
+                        'id': hewan_id,
+                        'nama': nama,
+                        'spesies': spesies,
+                        'asal': asal,
+                        'tanggal_lahir': tanggal_lahir,
+                        'status_kesehatan': status_kesehatan,
+                        'habitat': habitat,
+                        'foto': foto
+                    },
+                    'habitats': habitat_names
+                })
+            
             return redirect('kuning:list_satwa')
         
         # GET request - show form with satwa data
@@ -160,20 +239,42 @@ def edit_satwa(request, id):
             'foto': satwa_data[7]
         }
         
-        # Get habitat names for dropdown
+        return render(request, 'edit_satwa.html', {'satwa': satwa, 'habitats': habitat_names})
+    
+    except Exception as e:
+        connection.rollback()
+        error_message = str(e)
+        
+        # Get habitat names for dropdown (needed to re-render the form)
         cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
         habitat_data = cursor.fetchall()
         habitat_names = [row[0] for row in habitat_data]
         
-        return render(request, 'edit_satwa.html', {'satwa': satwa, 'habitats': habitat_names})
-    
-    except Exception as e:
-        return HttpResponse(f"Error: {str(e)}", status=500)
+        # Re-render form with error message
+        context = {
+            'error_message': error_message,
+            'satwa': {
+                'id': hewan_id,
+                'nama': nama if 'nama' in locals() else satwa_data[1],
+                'spesies': spesies if 'spesies' in locals() else satwa_data[2],
+                'asal': asal if 'asal' in locals() else satwa_data[3],
+                'tanggal_lahir': tanggal_lahir if 'tanggal_lahir' in locals() else satwa_data[4],
+                'status_kesehatan': status_kesehatan if 'status_kesehatan' in locals() else satwa_data[5],
+                'habitat': habitat if 'habitat' in locals() else satwa_data[6],
+                'foto': foto if 'foto' in locals() else satwa_data[7]
+            },
+            'habitats': habitat_names
+        }
+        return render(request, 'edit_satwa.html', context)
     finally:
         cursor.close()
         connection.close()
 
 def hapus_satwa(request, id):
+    if not (is_dokter_hewan(request) or is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menghapus data satwa.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -199,6 +300,10 @@ def hapus_satwa(request, id):
 
 # HABITAT CRUD Operations
 def list_habitat(request):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk melihat data habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -232,6 +337,10 @@ def list_habitat(request):
         connection.close()
 
 def tambah_habitat(request):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menambah data habitat.')
+        return redirect('register_login:dashboard')
+
     if request.method == 'POST':
         connection = get_db_connection()
         cursor = connection.cursor()
@@ -264,6 +373,10 @@ def tambah_habitat(request):
     return render(request, 'tambah_habitat.html')
 
 def edit_habitat(request, id):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk mengubah data habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -314,6 +427,10 @@ def edit_habitat(request, id):
         connection.close()
 
 def detail_habitat(request, id):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk melihat detail habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     
@@ -366,6 +483,10 @@ def detail_habitat(request, id):
         connection.close()
 
 def hapus_habitat(request, id):
+    if not (is_penjaga_hewan(request) or is_staff_admin(request)):
+        messages.error(request, 'Anda tidak memiliki akses untuk menghapus data habitat.')
+        return redirect('register_login:dashboard')
+
     connection = get_db_connection()
     cursor = connection.cursor()
     

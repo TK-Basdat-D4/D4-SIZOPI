@@ -1,116 +1,143 @@
 {% extends 'base.html' %}
 {% block content %}
-<style>
-    .form-wrapper {
-        max-width: 500px;
-        margin: 40px auto;
-        padding: 30px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        background-color: #fdfdfd;
-        font-family: 'Segoe UI', sans-serif;
-    }
+<div class="form-container">
+    <h1>Tambah Data Satwa</h1>
+    
+    {% if error_message %}
+    <div class="error-message">
+        {{ error_message }}
+    </div>
+    {% endif %}
 
-    .form-wrapper h1 {
-        text-align: center;
-        margin-bottom: 25px;
-    }
+    {% if success_message %}
+    <div class="success-message">
+        {{ success_message }}
+    </div>
+    {% endif %}
 
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .form-group label {
-        font-weight: bold;
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .form-group input,
-    .form-group select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-    }
-
-    .form-buttons {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-    }
-
-    .form-buttons button,
-    .form-buttons a {
-        padding: 10px 16px;
-        border: none;
-        border-radius: 6px;
-        text-decoration: none;
-        text-align: center;
-    }
-
-    .form-buttons button {
-        background-color: #28a745;
-        color: white;
-        cursor: pointer;
-    }
-
-    .form-buttons a {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    .form-buttons button:hover,
-    .form-buttons a:hover {
-        opacity: 0.9;
-    }
-</style>
-
-<div class="form-wrapper">
-    <h1>Tambah Satwa</h1>
     <form method="post">
         {% csrf_token %}
-        <div class="form-group">
-            <label for="nama">Nama Individu:</label>
-            <input type="text" name="nama" required>
-        </div>
-        <div class="form-group">
-            <label for="spesies">Spesies:</label>
-            <input type="text" name="spesies" required>
-        </div>
-        <div class="form-group">
-            <label for="asal">Asal Hewan:</label>
-            <input type="text" name="asal" required>
-        </div>
-        <div class="form-group">
-            <label for="tanggal_lahir">Tanggal Lahir:</label>
-            <input type="date" name="tanggal_lahir">
-        </div>
-        <div class="form-group">
-            <label for="status_kesehatan">Status Kesehatan:</label>
-            <select name="status_kesehatan" required>
-                <option>Sehat</option>
-                <option>Sakit</option>
-                <option>Dalam Pemantauan</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="habitat">Nama Habitat:</label>
-            <select name="habitat" id="habitat">
-                {% for habitat_name in habitats %}
-                    <option value="{{ habitat_name }}" {% if satwa.habitat == habitat_name %}selected{% endif %}>{{ habitat_name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label for="foto">URL Foto Satwa:</label>
-            <input type="text" name="foto" required>
-        </div>
-        <div class="form-buttons">
-            <button type="submit">Tambah</button>
-            <a href="{% url 'kuning:list_satwa' %}">Batal</a>
-        </div>
+        <label>Nama Individu:</label>
+        <input type="text" name="nama" value="{{ satwa.nama|default:'' }}" required>
+
+        <label>Spesies:</label>
+        <input type="text" name="spesies" value="{{ satwa.spesies|default:'' }}" required>
+
+        <label>Asal Hewan:</label>
+        <input type="text" name="asal" value="{{ satwa.asal|default:'' }}" required>
+
+        <label>Tanggal Lahir:</label>
+        <input type="date" name="tanggal_lahir" value="{{ satwa.tanggal_lahir|default:'' }}">
+
+        <label>Status Kesehatan:</label>
+        <select name="status_kesehatan" required>
+            <option value="Sehat" {% if satwa.status_kesehatan == "Sehat" %}selected{% endif %}>Sehat</option>
+            <option value="Sakit" {% if satwa.status_kesehatan == "Sakit" %}selected{% endif %}>Sakit</option>
+            <option value="Dalam Pemantauan" {% if satwa.status_kesehatan == "Dalam Pemantauan" %}selected{% endif %}>Dalam Pemantauan</option>
+        </select>
+
+        <label>Nama Habitat:</label>
+        <select name="habitat" id="habitat" required>
+            {% for habitat_name in habitats %}
+                <option value="{{ habitat_name }}" {% if satwa.habitat == habitat_name %}selected{% endif %}>{{ habitat_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label>URL Foto Satwa:</label>
+        <input type="text" name="foto" value="{{ satwa.foto|default:'' }}">
+
+        <button type="submit">SIMPAN</button>
+        <a href="{% url 'kuning:list_satwa' %}">BATAL</a>
     </form>
 </div>
+
+<style>
+    .form-container {
+        background-color: #ffffff;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        margin: 40px auto;
+    }
+
+    h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        font-size: 24px;
+    }
+
+    .error-message {
+        background-color: #ffebee;
+        color: #c62828;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid #ef9a9a;
+        text-align: center;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .success-message {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid #a5d6a7;
+        text-align: center;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    label {
+        font-weight: 500;
+        display: block;
+        margin-top: 20px;
+        margin-bottom: 6px;
+        color: #333;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    button {
+        background-color: #27ae60;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 25px;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #219150;
+    }
+
+    a {
+        display: inline-block;
+        margin-top: 25px;
+        margin-left: 15px;
+        text-decoration: none;
+        color: #c0392b;
+        font-weight: bold;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+</style>
 {% endblock %}

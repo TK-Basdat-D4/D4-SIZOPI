@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}SIZOPI - Sistem Informasi Zoo Pintar{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen bg-gray-50">
     <header>
         {% include 'navbar.html' %}
     </header>
@@ -16,8 +17,27 @@
         {% if messages %}
             <div class="container mx-auto px-4 py-4">
                 {% for message in messages %}
-                    <div class="p-4 mb-4 text-white bg-{{ message.tags }}-500 rounded">
-                        {{ message }}
+                    <div class="p-4 mb-4 rounded-lg flex items-start
+                        {% if message.tags == 'error' or message.tags == 'danger' %} 
+                            bg-red-100 text-red-800 border-l-4 border-red-500
+                        {% elif message.tags == 'success' %} 
+                            bg-green-100 text-green-800 border-l-4 border-green-500
+                        {% elif message.tags == 'warning' %}
+                            bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500
+                        {% else %}
+                            bg-blue-100 text-blue-800 border-l-4 border-blue-500
+                        {% endif %}">
+                        <i class="fas 
+                            {% if message.tags == 'error' or message.tags == 'danger' %} 
+                                fa-exclamation-circle mr-3
+                            {% elif message.tags == 'success' %} 
+                                fa-check-circle mr-3
+                            {% elif message.tags == 'warning' %}
+                                fa-exclamation-triangle mr-3
+                            {% else %}
+                                fa-info-circle mr-3
+                            {% endif %}"></i>
+                        <span>{{ message }}</span>
                     </div>
                 {% endfor %}
             </div>
