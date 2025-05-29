@@ -1,37 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
-
-# In-memory storage for medical records
-medical_records = [
-    {
-        'id': 1,
-        'tanggal': '2025-04-01',
-        'dokter': 'Drh. Andi',
-        'status': 'Sehat',
-        'diagnosa': 'Tidak ada keluhan',
-        'pengobatan': 'Tidak diperlukan',
-        'catatan_tindak_lanjut': 'Periksa rutin 3 bulan ke depan'
-    },
-    {
-        'id': 2,
-        'tanggal': '2025-03-25',
-        'dokter': 'Drh. Budi',
-        'status': 'Sakit',
-        'diagnosa': 'Infeksi pencernaan',
-        'pengobatan': 'Antibiotik dan diet lunak',
-        'catatan_tindak_lanjut': 'Pantau selama 1 minggu'
-    },
-    {
-        'id': 3,
-        'tanggal': '2025-02-20',
-        'dokter': 'Drh. Clara',
-        'status': 'Sakit',
-        'diagnosa': 'Luka gores di kaki kanan',
-        'pengobatan': 'Pembersihan luka dan salep antiseptik',
-        'catatan_tindak_lanjut': 'Lihat kembali dalam 5 hari'
-    }
-]  
+from utils.db_utils import get_db_connection
 
 # Helper functions remain the same
 def check_doctor_access(request):
@@ -65,103 +35,635 @@ def rekam_medis_list(request):
     if not check_doctor_access(request):
         return redirect('register_login:login')
     
-    # Sort records by date in descending order
-    sorted_list = sorted(medical_records, key=lambda x: x['tanggal'], reverse=True)
-    context = {
-        'rekam_medis_list': sorted_list
-    }
-    return render(request, 'hijau_kesehatan_satwa/rekam_medis_list.html', context)
+    try:
+        # Get database connection
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        
+        # Execute the SQL query
+        query = """
+        SELECT
+          cm.id_hewan,
+          CONCAT_WS(' ', p.nama_depan, p.nama_tengah, p.nama_belakang) AS nama_dokter,
+          cm.tanggal_pemeriksaan,
+          cm.diagnosis,
+          cm.pengobatan,
+          cm.status_kesehatan,
+          cm.catatan_tindak_lanjut
+        FROM
+          catatan_medis cm
+        JOIN
+          dokter_hewan dh ON cm.username_dh = dh.username_dh
+        JOIN
+          pengguna p ON dh.username_dh = p.username
+        ORDER BY
+          cm.tanggal_pemeriksaan DESC;
+        """
+        
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        
+        # Convert query results to list of dictionaries
+        rekam_medis_list = []
+        for i, row in enumerate(rows, 1):
+            rekam_medis_list.append({
+                'id': i,  # Generate sequential ID for template compatibility
+                'id_hewan': row[0],
+                'dokter': row[1],
+                'tanggal': row[2].strftime('%Y-%m-%d') if row[2] else '',
+                'diagnosa': row[3],
+                'pengobatan': row[4],
+                'status': row[5],
+                'catatan_tindak_lanjut': row[6]
+            })
+        
+        # Close database connection
+        cursor.close()
+        connection.close()
+        
+        context = {
+            'rekam_medis_list': rekam_medis_list
+        }
+        return render(request, 'hijau_kesehatan_satwa/rekam_medis_list.html', context)
+        
+    except Exception as e:
+        # Handle database errors
+        messages.error(request, f'Terjadi kesalahan saat mengambil data: {str(e)}')
+        
+        # Close connection if it exists
+        try:
+            if 'cursor' in locals():
+                cursor.close()
+            if 'connection' in locals():
+                connection.close()
+        except:
+            pass
+        
+        # Return empty list on error
+        context = {
+            'rekam_medis_list': []
+        }
+        return render(request, 'hijau_kesehatan_satwa/rekam_medis_list.html', context)
 
 def rekam_medis_form(request):
+    print("=== DEBUG REKAM MEDIS FORM START ===")
+    print(f"Request method: {request.method}")
+    print(f"User in session: {'user' in request.session}")
+    
     if not check_doctor_access(request):
+        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     if request.method == 'POST':
+        print("=== DEBUG POST REQUEST ===")
+        connection = None
+        cursor = None
+        
         try:
-            # Generate new ID
-            if not medical_records:
-                new_id = 1
+            # Get database connection
+            connection = get_db_connection()
+            cursor = connection.cursor()
+            print("DEBUG: Database connection established")
+            
+            # Get current user (doctor)
+            current_user = request.session.get('user', {})
+            username_dh = current_user.get('username', '')
+            print(f"DEBUG: Current user: {current_user}")
+            print(f"DEBUG: Username DH: {username_dh}")
+            
+            # Get form data
+            id_hewan = request.POST.get('id_hewan')
+            tanggal_pemeriksaan = request.POST.get('tanggal')
+            diagnosis = request.POST.get('diagnosa')
+            pengobatan = request.POST.get('pengobatan')
+            status_kesehatan = request.POST.get('status')
+            catatan_tindak_lanjut = request.POST.get('catatan_tindak_lanjut', '')
+            
+            print("=== DEBUG FORM DATA ===")
+            print(f"id_hewan: {id_hewan}")
+            print(f"tanggal_pemeriksaan: {tanggal_pemeriksaan}")
+            print(f"diagnosis: {diagnosis}")
+            print(f"pengobatan: {pengobatan}")
+            print(f"status_kesehatan: {status_kesehatan}")
+            print(f"catatan_tindak_lanjut: {catatan_tindak_lanjut}")
+            
+            # Validate required fields
+            if not id_hewan:
+                print("DEBUG: Validation failed - id_hewan is empty")
+                messages.error(request, 'Silahkan pilih hewan yang akan diperiksa!')
+                return redirect('hijau_kesehatan_satwa:rekam_medis_form')
+            
+            if not tanggal_pemeriksaan:
+                print("DEBUG: Validation failed - tanggal_pemeriksaan is empty")
+                messages.error(request, 'Tanggal pemeriksaan wajib diisi!')
+                return redirect('hijau_kesehatan_satwa:rekam_medis_form')
+            
+            # Validate UUID format for id_hewan
+            try:
+                import uuid
+                uuid.UUID(id_hewan)
+                print("DEBUG: UUID validation passed")
+            except ValueError:
+                print("DEBUG: Invalid UUID format")
+                messages.error(request, 'Format ID hewan tidak valid!')
+                return redirect('hijau_kesehatan_satwa:rekam_medis_form')
+            
+            print("DEBUG: Form validation passed")
+            
+            # Start fresh transaction
+            connection.autocommit = False
+            print("DEBUG: Autocommit disabled, starting transaction")
+            
+            # Verify the animal exists first
+            verify_query = "SELECT COUNT(*) FROM hewan WHERE id = %s"
+            print(f"DEBUG: Verifying animal exists: {verify_query}")
+            cursor.execute(verify_query, [id_hewan])
+            animal_count = cursor.fetchone()[0]
+            
+            if animal_count == 0:
+                print("DEBUG: Animal not found")
+                connection.rollback()
+                messages.error(request, 'Hewan yang dipilih tidak ditemukan!')
+                return redirect('hijau_kesehatan_satwa:rekam_medis_form')
+            
+            print(f"DEBUG: Animal found, count: {animal_count}")
+            
+            # Insert new medical record using raw SQL
+            insert_query = """
+            INSERT INTO catatan_medis (
+                id_hewan, 
+                username_dh, 
+                tanggal_pemeriksaan, 
+                diagnosis, 
+                pengobatan, 
+                status_kesehatan, 
+                catatan_tindak_lanjut
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            print("=== DEBUG SQL EXECUTION ===")
+            print(f"SQL Query: {insert_query}")
+            print(f"Parameters: [{id_hewan}, {username_dh}, {tanggal_pemeriksaan}, {diagnosis}, {pengobatan}, {status_kesehatan}, {catatan_tindak_lanjut}]")
+            
+            cursor.execute(insert_query, [
+                id_hewan,
+                username_dh,
+                tanggal_pemeriksaan,
+                diagnosis,
+                pengobatan,
+                status_kesehatan,
+                catatan_tindak_lanjut
+            ])
+            print("DEBUG: SQL executed successfully")
+            
+            # Commit the transaction
+            connection.commit()
+            print("DEBUG: Transaction committed successfully")
+            
+            # Check for trigger messages after commit (optional)
+            trigger_message = ""
+            try:
+                cursor.execute("SELECT current_setting('trigger_message', true)")
+                result = cursor.fetchone()
+                if result and result[0] and result[0] != '':
+                    trigger_message = result[0]
+                print(f"DEBUG: Trigger message: {trigger_message}")
+            except Exception as trigger_error:
+                print(f"DEBUG: No trigger message or error getting it: {trigger_error}")
+                trigger_message = ""
+            
+            # Display success message
+            if trigger_message and trigger_message.strip():
+                messages.success(request, f'Data rekam medis hewan berhasil disimpan! {trigger_message}')
+                print("DEBUG: Success message with trigger")
             else:
-                new_id = max(record['id'] for record in medical_records) + 1
+                messages.success(request, 'Data rekam medis hewan berhasil disimpan!')
+                print("DEBUG: Success message without trigger")
             
-            # Get the doctor name from the form
-            # If it's empty (old form without hidden field), use the session data
-            dokter = request.POST.get('dokter')
-            if not dokter and 'user' in request.session:
-                # Format with "dr." prefix
-                dokter = f"dr. {request.session['user'].get('nama_lengkap', '')}"
-            
-            # Create new record
-            new_record = {
-                'id': new_id,
-                'tanggal': request.POST.get('tanggal'),
-                'dokter': dokter,
-                'status': request.POST.get('status'),
-                'diagnosa': request.POST.get('diagnosa'),
-                'pengobatan': request.POST.get('pengobatan'),
-                'catatan_tindak_lanjut': request.POST.get('catatan_tindak_lanjut', '')
-            }
-            
-            medical_records.append(new_record)
-            messages.success(request, 'Data rekam medis hewan berhasil disimpan!')
+            print("=== DEBUG: Redirecting to list ===")
             return redirect('hijau_kesehatan_satwa:rekam_medis_list')
+            
         except Exception as e:
-            messages.error(request, f'Terjadi kesalahan: {str(e)}')
+            # Handle database errors
+            print(f"=== DEBUG ERROR ===")
+            print(f"Error type: {type(e).__name__}")
+            print(f"Error message: {str(e)}")
+            print(f"Error details: {repr(e)}")
+            
+            # Rollback transaction on error
+            if connection:
+                try:
+                    connection.rollback()
+                    print("DEBUG: Transaction rolled back")
+                except Exception as rollback_error:
+                    print(f"DEBUG: Error during rollback: {rollback_error}")
+            
+            messages.error(request, f'Terjadi kesalahan saat menyimpan data: {str(e)}')
+            
+        finally:
+            # Always close connection
+            try:
+                if cursor:
+                    cursor.close()
+                    print("DEBUG: Cursor closed")
+                if connection:
+                    connection.close()
+                    print("DEBUG: Connection closed")
+            except Exception as cleanup_error:
+                print(f"DEBUG: Error in cleanup: {cleanup_error}")
     
-    return render(request, 'hijau_kesehatan_satwa/rekam_medis_form.html')
+    # For GET request, fetch available animals from database
+    print("=== DEBUG GET REQUEST - Fetching animals ===")
+    connection = None
+    cursor = None
+    
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        print("DEBUG: Database connection for animals established")
+        
+        # Query to get all animals with correct field names
+        animals_query = """
+            SELECT 
+                id,
+                nama,
+                spesies,
+                asal_hewan,
+                tanggal_lahir,
+                nama_habitat,
+                status_kesehatan
+            FROM hewan
+            ORDER BY nama;
+        """
+        
+        print(f"DEBUG: Animals query: {animals_query}")
+        cursor.execute(animals_query)
+        animals_data = cursor.fetchall()
+        print(f"DEBUG: Found {len(animals_data)} animals")
+        
+        # Convert to list of dictionaries
+        animals = []
+        for i, animal in enumerate(animals_data):
+            animal_dict = {
+                'id_hewan': str(animal[0]),  # Convert UUID to string for template
+                'nama_individu': animal[1],
+                'spesies': animal[2],
+                'asal_hewan': animal[3],
+                'tanggal_lahir': animal[4].strftime('%Y-%m-%d') if animal[4] else '',
+                'habitat_id': animal[5],
+                'status_kesehatan': animal[6]
+            }
+            animals.append(animal_dict)
+            if i < 5:  # Only print first 5 to reduce log spam
+                print(f"DEBUG: Animal {i+1}: {animal_dict}")
+
+        print("DEBUG: Animals data fetched successfully")
+        
+        context = {'animals': animals}
+        print(f"DEBUG: Context prepared with {len(animals)} animals")
+        print("=== DEBUG REKAM MEDIS FORM END ===")
+        return render(request, 'hijau_kesehatan_satwa/rekam_medis_form.html', context)
+        
+    except Exception as e:
+        # Handle database errors when fetching animals
+        print(f"=== DEBUG ERROR FETCHING ANIMALS ===")
+        print(f"Error: {str(e)}")
+        messages.error(request, f'Terjadi kesalahan saat mengambil data hewan: {str(e)}')
+        
+        context = {'animals': []}
+        return render(request, 'hijau_kesehatan_satwa/rekam_medis_form.html', context)
+        
+    finally:
+        # Always close connection for GET request too
+        try:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+            print("DEBUG: GET request - Database connection closed")
+        except Exception as cleanup_error:
+            print(f"DEBUG: Error in GET cleanup: {cleanup_error}")
 
 def rekam_medis_edit(request, id):
+    print(f"=== DEBUG REKAM MEDIS EDIT START - ID: {id} ===")
+    print(f"Request method: {request.method}")
+    
     if not check_doctor_access(request):
-        return redirect('register_login:login')
-    
-    # Find the record to edit
-    record_to_edit = None
-    for record in medical_records:
-        if record['id'] == int(id):
-            record_to_edit = record
-            break
-    
-    if not record_to_edit:
-        messages.error(request, 'Data tidak ditemukan!')
-        return redirect('hijau_kesehatan_satwa:rekam_medis_list')
-    
-    if request.method == 'POST':
-        try:
-            # Get the doctor name from the form
-            dokter = request.POST.get('dokter', record_to_edit['dokter'])
-            
-            # Update the record
-            record_to_edit.update({
-                'tanggal': request.POST.get('tanggal'),
-                'dokter': dokter,
-                'status': request.POST.get('status'),
-                'diagnosa': request.POST.get('diagnosa'),
-                'pengobatan': request.POST.get('pengobatan'),
-                'catatan_tindak_lanjut': request.POST.get('catatan_tindak_lanjut', '')
-            })
-            
-            messages.success(request, 'Data rekam medis hewan berhasil diperbarui!')
-            return redirect('hijau_kesehatan_satwa:rekam_medis_list')
-        except Exception as e:
-            messages.error(request, f'Terjadi kesalahan: {str(e)}')
-    
-    context = {'rekam_medis': record_to_edit}
-    return render(request, 'hijau_kesehatan_satwa/rekam_medis_form.html', context)
-
-def rekam_medis_delete(request, id):
-    if not check_doctor_access(request):
+        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     try:
-        # Find and remove the record
-        for i, record in enumerate(medical_records):
-            if record['id'] == int(id):
-                medical_records.pop(i)
-                messages.success(request, 'Data rekam medis hewan berhasil dihapus!')
-                break
+        # Get database connection
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        print("DEBUG: Database connection established")
+        
+        if request.method == 'POST':
+            print("=== DEBUG POST REQUEST - EDIT ===")
+            
+            # Get form data
+            id_hewan = request.POST.get('id_hewan')
+            tanggal_pemeriksaan = request.POST.get('tanggal')
+            diagnosis = request.POST.get('diagnosa')
+            pengobatan = request.POST.get('pengobatan')
+            status_kesehatan = request.POST.get('status')
+            catatan_tindak_lanjut = request.POST.get('catatan_tindak_lanjut', '')
+            
+            print("=== DEBUG FORM DATA - EDIT ===")
+            print(f"id_hewan: {id_hewan}")
+            print(f"tanggal_pemeriksaan: {tanggal_pemeriksaan}")
+            print(f"diagnosis: {diagnosis}")
+            print(f"pengobatan: {pengobatan}")
+            print(f"status_kesehatan: {status_kesehatan}")
+            print(f"catatan_tindak_lanjut: {catatan_tindak_lanjut}")
+            
+            # Get the specific record to update based on sequential ID
+            get_record_query = """
+            SELECT id_hewan, tanggal_pemeriksaan
+            FROM catatan_medis
+            ORDER BY tanggal_pemeriksaan DESC
+            LIMIT 1 OFFSET %s
+            """
+            
+            offset = int(id) - 1
+            print(f"DEBUG: Getting record with offset: {offset}")
+            cursor.execute(get_record_query, [offset])
+            record = cursor.fetchone()
+            print(f"DEBUG: Found record: {record}")
+            
+            if record:
+                old_id_hewan, old_tanggal = record
+                print(f"DEBUG: Old record - id_hewan: {old_id_hewan}, tanggal: {old_tanggal}")
+                
+                update_query = """
+                UPDATE catatan_medis 
+                SET 
+                    tanggal_pemeriksaan = %s,
+                    diagnosis = %s,
+                    pengobatan = %s,
+                    status_kesehatan = %s,
+                    catatan_tindak_lanjut = %s
+                WHERE id_hewan = %s AND tanggal_pemeriksaan = %s
+                """
+                
+                print("=== DEBUG UPDATE SQL ===")
+                print(f"SQL Query: {update_query}")
+                print(f"Parameters: [{tanggal_pemeriksaan}, {diagnosis}, {pengobatan}, {status_kesehatan}, {catatan_tindak_lanjut}, {old_id_hewan}, {old_tanggal}]")
+                
+                cursor.execute(update_query, [
+                    tanggal_pemeriksaan,
+                    diagnosis,
+                    pengobatan,
+                    status_kesehatan,
+                    catatan_tindak_lanjut,
+                    old_id_hewan,
+                    old_tanggal
+                ])
+                print(f"DEBUG: Rows affected: {cursor.rowcount}")
+                
+                # Commit the transaction
+                connection.commit()
+                print("DEBUG: Transaction committed")
+                
+                # Check for trigger messages using a more robust approach
+                trigger_message = ""
+                try:
+                    # Try to get custom message first
+                    cursor.execute("SELECT COALESCE(current_setting('trigger_message', true), '')")
+                    result = cursor.fetchone()
+                    if result and result[0]:
+                        trigger_message = result[0]
+                    print(f"DEBUG: Trigger message: {trigger_message}")
+                except Exception as trigger_error:
+                    print(f"DEBUG: Error getting trigger message: {trigger_error}")
+                    # If trigger message fails, just continue without it
+                
+                # Display success message and any trigger messages
+                if trigger_message and trigger_message.strip():
+                    messages.success(request, f'Data rekam medis hewan berhasil diperbarui! {trigger_message}')
+                    print("DEBUG: Success message with trigger")
+                else:
+                    messages.success(request, 'Data rekam medis hewan berhasil diperbarui!')
+                    print("DEBUG: Success message without trigger")
+            else:
+                print("DEBUG: Record not found for update")
+                messages.error(request, 'Data tidak ditemukan!')
+            
+            # Close database connection
+            cursor.close()
+            connection.close()
+            print("DEBUG: Database connection closed")
+            
+            return redirect('hijau_kesehatan_satwa:rekam_medis_list')
+            
+        else:
+            # GET request - fetch the record to edit and available animals
+            print("=== DEBUG GET REQUEST - EDIT ===")
+            fetch_query = """
+            SELECT
+              cm.id_hewan,
+              CONCAT_WS(' ', p.nama_depan, p.nama_tengah, p.nama_belakang) AS nama_dokter,
+              cm.tanggal_pemeriksaan,
+              cm.diagnosis,
+              cm.pengobatan,
+              cm.status_kesehatan,
+              cm.catatan_tindak_lanjut
+            FROM
+              catatan_medis cm
+            JOIN
+              dokter_hewan dh ON cm.username_dh = dh.username_dh
+            JOIN
+              pengguna p ON dh.username_dh = p.username
+            ORDER BY
+              cm.tanggal_pemeriksaan DESC
+            LIMIT 1 OFFSET %s
+            """
+            
+            offset = int(id) - 1
+            print(f"DEBUG: Fetching record with offset: {offset}")
+            cursor.execute(fetch_query, [offset])
+            row = cursor.fetchone()
+            print(f"DEBUG: Fetched record: {row}")
+            
+            if row:
+                record_to_edit = {
+                    'id_hewan': str(row[0]),  # Convert UUID to string
+                    'dokter': row[1],
+                    'tanggal': row[2].strftime('%Y-%m-%d') if row[2] else '',
+                    'diagnosa': row[3],
+                    'pengobatan': row[4],
+                    'status': row[5],
+                    'catatan_tindak_lanjut': row[6]
+                }
+                print(f"DEBUG: Record to edit: {record_to_edit}")
+                
+                # Also fetch available animals for dropdown
+                animals_query = """
+                    SELECT 
+                        id, nama, spesies, asal_hewan, tanggal_lahir, nama_habitat, status_kesehatan
+                    FROM hewan
+                    ORDER BY nama;
+                """
+                
+                cursor.execute(animals_query)
+                animals_data = cursor.fetchall()
+                print(f"DEBUG: Found {len(animals_data)} animals for dropdown")
+                
+                animals = []
+                for animal in animals_data:
+                    animals.append({
+                        'id_hewan': str(animal[0]),
+                        'nama_individu': animal[1],
+                        'spesies': animal[2],
+                        'asal_hewan': animal[3],
+                        'tanggal_lahir': animal[4].strftime('%Y-%m-%d') if animal[4] else '',
+                        'habitat_id': animal[5],
+                        'status_kesehatan': animal[6]
+                    })
+
+                cursor.close()
+                connection.close()
+                print("DEBUG: Database connection closed")
+                
+                context = {
+                    'rekam_medis': record_to_edit,
+                    'animals': animals
+                }
+                print("=== DEBUG REKAM MEDIS EDIT END ===")
+                return render(request, 'hijau_kesehatan_satwa/rekam_medis_form.html', context)
+            else:
+                cursor.close()
+                connection.close()
+                print("DEBUG: Record not found for edit")
+                messages.error(request, 'Data tidak ditemukan!')
+                return redirect('hijau_kesehatan_satwa:rekam_medis_list')
+            
     except Exception as e:
+        # Handle database errors
+        print(f"=== DEBUG ERROR - EDIT ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print(f"Error details: {repr(e)}")
+        
+        # Rollback transaction if still active
+        try:
+            if 'connection' in locals():
+                connection.rollback()
+                print("DEBUG: Transaction rolled back")
+        except Exception as rollback_error:
+            print(f"DEBUG: Error in rollback: {rollback_error}")
+        
         messages.error(request, f'Terjadi kesalahan: {str(e)}')
+        
+        # Close connection if it exists
+        try:
+            if 'cursor' in locals():
+                cursor.close()
+                print("DEBUG: Cursor closed in error handling")
+            if 'connection' in locals():
+                connection.close()
+                print("DEBUG: Connection closed in error handling")
+        except Exception as cleanup_error:
+            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+        
+        return redirect('hijau_kesehatan_satwa:rekam_medis_list')
     
+def rekam_medis_delete(request, id):
+    print(f"=== DEBUG REKAM MEDIS DELETE START - ID: {id} ===")
+    
+    if not check_doctor_access(request):
+        print("DEBUG: Access denied - redirecting to login")
+        return redirect('register_login:login')
+    
+    try:
+        # Get database connection
+        connection = get_db_connection()
+        cursor = connection.cursor()
+        print("DEBUG: Database connection established")
+        
+        # Delete medical record using raw SQL
+        # First, get the record details for proper deletion
+        fetch_query = """
+        SELECT id_hewan, tanggal_pemeriksaan
+        FROM catatan_medis
+        ORDER BY tanggal_pemeriksaan DESC
+        LIMIT 1 OFFSET %s
+        """
+        
+        offset = int(id) - 1
+        print(f"DEBUG: Getting record to delete with offset: {offset}")
+        cursor.execute(fetch_query, [offset])
+        record = cursor.fetchone()
+        print(f"DEBUG: Found record to delete: {record}")
+        
+        if record:
+            id_hewan, tanggal_pemeriksaan = record
+            print(f"DEBUG: Deleting record - id_hewan: {id_hewan}, tanggal: {tanggal_pemeriksaan}")
+            
+            # Delete the specific record
+            delete_query = """
+            DELETE FROM catatan_medis 
+            WHERE id_hewan = %s AND tanggal_pemeriksaan = %s
+            """
+            
+            print("=== DEBUG DELETE SQL ===")
+            print(f"SQL Query: {delete_query}")
+            print(f"Parameters: [{id_hewan}, {tanggal_pemeriksaan}]")
+            
+            cursor.execute(delete_query, [id_hewan, tanggal_pemeriksaan])
+            print(f"DEBUG: Rows affected: {cursor.rowcount}")
+            
+            # Check if there are any notices from triggers
+            try:
+                cursor.execute("SELECT get_trigger_message()")
+                trigger_result = cursor.fetchone()
+                print(f"DEBUG: Trigger result: {trigger_result}")
+            except Exception as trigger_error:
+                print(f"DEBUG: Error getting trigger message: {trigger_error}")
+                trigger_result = None
+            
+            # Commit the transaction
+            connection.commit()
+            print("DEBUG: Transaction committed")
+            
+            # Display success message and any trigger messages
+            if trigger_result and trigger_result[0]:
+                messages.success(request, f'Data rekam medis hewan berhasil dihapus! {trigger_result[0]}')
+                print("DEBUG: Success message with trigger")
+            else:
+                messages.success(request, 'Data rekam medis hewan berhasil dihapus!')
+                print("DEBUG: Success message without trigger")
+        else:
+            print("DEBUG: Record not found for deletion")
+            messages.error(request, 'Data tidak ditemukan!')
+        
+        # Close database connection
+        cursor.close()
+        connection.close()
+        print("DEBUG: Database connection closed")
+        
+    except Exception as e:
+        # Handle database errors
+        print(f"=== DEBUG ERROR - DELETE ===")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print(f"Error details: {repr(e)}")
+        
+        messages.error(request, f'Terjadi kesalahan saat menghapus data: {str(e)}')
+        
+        # Close connection if it exists
+        try:
+            if 'cursor' in locals():
+                cursor.close()
+                print("DEBUG: Cursor closed in error handling")
+            if 'connection' in locals():
+                connection.rollback()
+                connection.close()
+                print("DEBUG: Connection rolled back and closed in error handling")
+        except Exception as cleanup_error:
+            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+    
+    print("=== DEBUG REKAM MEDIS DELETE END ===")
     return redirect('hijau_kesehatan_satwa:rekam_medis_list')
 
 # Jadwal Pemeriksaan Kesehatan - for doctors only
