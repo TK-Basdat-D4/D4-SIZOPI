@@ -304,11 +304,11 @@
                     </li>
                     <li>
                         <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-lg transition-colors duration-200 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                            </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                        </svg>
                             Rekam Medis
-                        </a>
+                    </a>
                     </li>
                 {% elif request.session.user.role == 'staff' and request.session.user.peran == 'penjaga_hewan' %}
                     <li class="relative group">
@@ -341,11 +341,11 @@
                     </li>
                     <li>
                         <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-lg transition-colors duration-200 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            Catatan Perawatan Hewan
-                        </a>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                        Catatan Perawatan Hewan
+                    </a>
                     </li>
                 {% elif request.session.user.role == 'staff' and request.session.user.peran == 'staff_administrasi' %}
                     <li class="relative group">
@@ -389,34 +389,34 @@
                         <div class="absolute left-0 mt-2 w-56 origin-top-left bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                             <div class="py-1">
                                 <a href="{% url 'biru:list_atraksi' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Kelola Atraksi
-                                </a>
+                        Kelola Atraksi
+                    </a>
                                 <a href="{% url 'biru:list_wahana' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Kelola Wahana
-                                </a>
+                        Kelola Wahana
+                    </a>
                                 <a href="{% url 'biru:list_reservasi' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Kelola Reservasi
-                                </a>
+                        Kelola Reservasi
+                    </a>
                                 <a href="{% url 'adopsi:admin_daftar_pengunjung' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Kelola Pengunjung
-                                </a>
+                        Kelola Pengunjung
+                    </a>
                                 <a href="{% url 'adopsi:admin_program_adopsi' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Kelola Adopsi
-                                </a>
+                        Kelola Adopsi
+                    </a>
                                 <a href="{% url 'adopsi:admin_list_adopter' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    Kelola Adopter
-                                </a>
+                        Kelola Adopter
+                    </a>
                             </div>
                         </div>
                     </li>
                 {% elif request.session.user.role == 'staff' and request.session.user.peran == 'pelatih_pertunjukan' %}
                     <li>
-                        <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
-                            </svg>
-                            Jadwal Pertunjukan
-                        </a>
+                    <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                        </svg>
+                        Jadwal Pertunjukan
+                    </a>
                     </li>
                 {% elif request.session.user.role == 'pengunjung' %}
                     <div class="px-3 py-2 text-sm font-medium text-gray-500">Informasi Kebun Binatang</div>

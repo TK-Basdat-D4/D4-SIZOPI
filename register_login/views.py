@@ -30,23 +30,7 @@ def register_pengunjung(request):
             conn = get_db_connection()
             cur = conn.cursor()
             
-            # Check if username already exists
-            cur.execute("SELECT username FROM sizopi.pengguna WHERE username = %s", (username,))
-            if cur.fetchone():
-                messages.error(request, 'Username sudah terdaftar!')
-                cur.close()
-                conn.close()
-                return render(request, 'register_pengunjung.html')
-            
-            # Check if email already exists
-            cur.execute("SELECT email FROM sizopi.pengguna WHERE email = %s", (email,))
-            if cur.fetchone():
-                messages.error(request, 'Email sudah terdaftar!')
-                cur.close()
-                conn.close()
-                return render(request, 'register_pengunjung.html')
-            
-            # Insert into pengguna table
+            # Insert into pengguna table (trigger akan memeriksa duplikasi)
             cur.execute("""
                 INSERT INTO sizopi.pengguna (username, email, password, nama_depan, nama_tengah, nama_belakang, no_telepon)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -78,7 +62,16 @@ def register_pengunjung(request):
             return redirect('register_login:login')
             
         except Exception as e:
-            messages.error(request, f'Terjadi kesalahan: {str(e)}')
+            conn.rollback()
+            # Bersihkan pesan error dari database
+            error_msg = str(e)
+            if 'Username "' in error_msg and '" sudah digunakan' in error_msg:
+                # Ambil hanya bagian pesan yang penting
+                error_msg = error_msg.split('CONTEXT:')[0].strip()
+                if error_msg.startswith('ERROR:  '):
+                    error_msg = error_msg[8:]
+            messages.error(request, error_msg)
+            
             if 'cur' in locals():
                 cur.close()
             if 'conn' in locals():
