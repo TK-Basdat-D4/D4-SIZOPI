@@ -30,6 +30,24 @@
             margin-bottom: 30px;
         }
 
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #ef9a9a;
+        }
+
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #a5d6a7;
+        }
+
         label {
             font-weight: 500;
             display: block;
@@ -81,6 +99,19 @@
 <body>
     <div class="form-container">
         <h1>Edit Data Satwa</h1>
+        
+        {% if error_message %}
+        <div class="error-message">
+            {{ error_message }}
+        </div>
+        {% endif %}
+
+        {% if success_message %}
+        <div class="success-message">
+            {{ success_message }}
+        </div>
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
             <label>Nama Individu:</label>

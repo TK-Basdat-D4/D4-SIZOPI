@@ -80,7 +80,35 @@ def tambah_satwa(request):
             
         except Exception as e:
             connection.rollback()
-            return HttpResponse(f"Error: {str(e)}", status=500)
+            error_message = str(e)
+            
+            # Clean up error message
+            if "CONTEXT:" in error_message:
+                error_message = error_message.split("CONTEXT:")[0]
+            if "PL/pgSQL function" in error_message:
+                error_message = error_message.split("PL/pgSQL function")[0]
+            error_message = error_message.strip()
+            
+            # Get habitat names for dropdown (needed to re-render the form)
+            cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+            habitat_data = cursor.fetchall()
+            habitat_names = [row[0] for row in habitat_data]
+            
+            # Re-render form with error message
+            context = {
+                'error_message': error_message,
+                'habitats': habitat_names,
+                'satwa': {
+                    'nama': nama,
+                    'spesies': spesies,
+                    'asal': asal,
+                    'tanggal_lahir': tanggal_lahir,
+                    'status_kesehatan': status_kesehatan,
+                    'habitat': habitat,
+                    'foto': foto
+                }
+            }
+            return render(request, 'tambah_satwa.html', context)
         finally:
             cursor.close()
             connection.close()
@@ -134,6 +162,10 @@ def edit_satwa(request, id):
             if tanggal_lahir == '':
                 tanggal_lahir = None
             
+            # Get old values for comparison
+            old_status = satwa_data[5]
+            old_habitat = satwa_data[6]
+            
             update_query = """
                 UPDATE sizopi.hewan 
                 SET nama = %s, spesies = %s, asal_hewan = %s, tanggal_lahir = %s,
@@ -146,6 +178,25 @@ def edit_satwa(request, id):
             ))
             
             connection.commit()
+            
+            # Check if status_kesehatan or habitat changed
+            if old_status != status_kesehatan or old_habitat != habitat:
+                success_message = f"SUKSES: Riwayat perubahan status kesehatan dari \"{old_status}\" menjadi \"{status_kesehatan}\" atau habitat dari \"{old_habitat}\" menjadi \"{habitat}\" telah dicatat."
+                return render(request, 'edit_satwa.html', {
+                    'success_message': success_message,
+                    'satwa': {
+                        'id': hewan_id,
+                        'nama': nama,
+                        'spesies': spesies,
+                        'asal': asal,
+                        'tanggal_lahir': tanggal_lahir,
+                        'status_kesehatan': status_kesehatan,
+                        'habitat': habitat,
+                        'foto': foto
+                    },
+                    'habitats': habitat_names
+                })
+            
             return redirect('kuning:list_satwa')
         
         # GET request - show form with satwa data
@@ -168,7 +219,30 @@ def edit_satwa(request, id):
         return render(request, 'edit_satwa.html', {'satwa': satwa, 'habitats': habitat_names})
     
     except Exception as e:
-        return HttpResponse(f"Error: {str(e)}", status=500)
+        connection.rollback()
+        error_message = str(e)
+        
+        # Get habitat names for dropdown (needed to re-render the form)
+        cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
+        habitat_names = [row[0] for row in habitat_data]
+        
+        # Re-render form with error message
+        context = {
+            'error_message': error_message,
+            'satwa': {
+                'id': hewan_id,
+                'nama': nama if 'nama' in locals() else satwa_data[1],
+                'spesies': spesies if 'spesies' in locals() else satwa_data[2],
+                'asal': asal if 'asal' in locals() else satwa_data[3],
+                'tanggal_lahir': tanggal_lahir if 'tanggal_lahir' in locals() else satwa_data[4],
+                'status_kesehatan': status_kesehatan if 'status_kesehatan' in locals() else satwa_data[5],
+                'habitat': habitat if 'habitat' in locals() else satwa_data[6],
+                'foto': foto if 'foto' in locals() else satwa_data[7]
+            },
+            'habitats': habitat_names
+        }
+        return render(request, 'edit_satwa.html', context)
     finally:
         cursor.close()
         connection.close()
