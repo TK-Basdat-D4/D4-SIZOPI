@@ -35,23 +35,48 @@ EXECUTE FUNCTION check_duplicate_animal();
 CREATE OR REPLACE FUNCTION log_animal_changes()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Mencatat perubahan status kesehatan
+    -- Log perubahan status kesehatan
     IF NEW.status_kesehatan IS DISTINCT FROM OLD.status_kesehatan THEN
-        INSERT INTO sizopi.RIWAYAT_SATWA (id_hewan, kolom_diubah, nilai_lama, nilai_baru)
-        VALUES (NEW.id, 'status_kesehatan', OLD.status_kesehatan, NEW.status_kesehatan);
+        INSERT INTO sizopi.RIWAYAT_SATWA (
+            id_hewan,
+            tanggal_perubahan,
+            kolom_diubah,
+            nilai_lama,
+            nilai_baru
+        ) VALUES (
+            NEW.id,
+            CURRENT_TIMESTAMP,
+            'status_kesehatan',
+            OLD.status_kesehatan,
+            NEW.status_kesehatan
+        );
     END IF;
-
-    -- Mencatat perubahan habitat
+    
+    -- Log perubahan habitat
     IF NEW.nama_habitat IS DISTINCT FROM OLD.nama_habitat THEN
-        INSERT INTO sizopi.RIWAYAT_SATWA (id_hewan, kolom_diubah, nilai_lama, nilai_baru)
-        VALUES (NEW.id, 'nama_habitat', OLD.nama_habitat, NEW.nama_habitat);
+        INSERT INTO sizopi.RIWAYAT_SATWA (
+            id_hewan,
+            tanggal_perubahan,
+            kolom_diubah,
+            nilai_lama,
+            nilai_baru
+        ) VALUES (
+            NEW.id,
+            CURRENT_TIMESTAMP,
+            'nama_habitat',
+            OLD.nama_habitat,
+            NEW.nama_habitat
+        );
     END IF;
 
-    -- Menampilkan pesan sukses
+    -- Tampilkan pesan sukses dengan format yang tepat
     IF NEW.status_kesehatan IS DISTINCT FROM OLD.status_kesehatan OR 
        NEW.nama_habitat IS DISTINCT FROM OLD.nama_habitat THEN
-        RAISE NOTICE 'SUKSES: Riwayat perubahan status kesehatan dari "%" menjadi "%" atau habitat dari "%" menjadi "%" telah dicatat.',
-            OLD.status_kesehatan, NEW.status_kesehatan, OLD.nama_habitat, NEW.nama_habitat;
+        RAISE NOTICE E'SUKSES: Riwayat perubahan status kesehatan dari "%" menjadi "%" atau habitat dari "%" menjadi "%" telah dicatat.',
+            COALESCE(OLD.status_kesehatan, '-'),
+            COALESCE(NEW.status_kesehatan, '-'),
+            COALESCE(OLD.nama_habitat, '-'),
+            COALESCE(NEW.nama_habitat, '-');
     END IF;
 
     RETURN NEW;
@@ -61,4 +86,6 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE TRIGGER tr_log_animal_changes
 AFTER UPDATE ON sizopi.hewan
 FOR EACH ROW
+WHEN (NEW.status_kesehatan IS DISTINCT FROM OLD.status_kesehatan 
+   OR NEW.nama_habitat IS DISTINCT FROM OLD.nama_habitat)
 EXECUTE FUNCTION log_animal_changes(); 

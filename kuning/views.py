@@ -148,6 +148,11 @@ def edit_satwa(request, id):
         if not satwa_data:
             return HttpResponse("Satwa tidak ditemukan", status=404)
         
+        # Get habitat names for dropdown
+        cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
+        habitat_data = cursor.fetchall()
+        habitat_names = [row[0] for row in habitat_data]
+        
         if request.method == 'POST':
             # Update data
             nama = request.POST.get('nama', '')
@@ -181,7 +186,7 @@ def edit_satwa(request, id):
             
             # Check if status_kesehatan or habitat changed
             if old_status != status_kesehatan or old_habitat != habitat:
-                success_message = f"SUKSES: Riwayat perubahan status kesehatan dari \"{old_status}\" menjadi \"{status_kesehatan}\" atau habitat dari \"{old_habitat}\" menjadi \"{habitat}\" telah dicatat."
+                success_message = f'SUKSES: Riwayat perubahan status kesehatan dari "{old_status}" menjadi "{status_kesehatan}" atau habitat dari "{old_habitat}" menjadi "{habitat}" telah dicatat.'
                 return render(request, 'edit_satwa.html', {
                     'success_message': success_message,
                     'satwa': {
@@ -210,11 +215,6 @@ def edit_satwa(request, id):
             'habitat': satwa_data[6],
             'foto': satwa_data[7]
         }
-        
-        # Get habitat names for dropdown
-        cursor.execute("SELECT nama FROM sizopi.habitat ORDER BY nama")
-        habitat_data = cursor.fetchall()
-        habitat_names = [row[0] for row in habitat_data]
         
         return render(request, 'edit_satwa.html', {'satwa': satwa, 'habitats': habitat_names})
     
