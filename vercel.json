@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "sizopi/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "sizopi/wsgi.py"
+    }
+  ]
+}

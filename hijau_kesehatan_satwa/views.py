@@ -107,16 +107,10 @@ def rekam_medis_list(request):
         return render(request, 'hijau_kesehatan_satwa/rekam_medis_list.html', context)
 
 def rekam_medis_form(request):
-    print("=== DEBUG REKAM MEDIS FORM START ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_doctor_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     if request.method == 'POST':
-        print("=== DEBUG POST REQUEST ===")
         connection = None
         cursor = None
         
@@ -124,13 +118,10 @@ def rekam_medis_form(request):
             # Get database connection
             connection = get_db_connection()
             cursor = connection.cursor()
-            print("DEBUG: Database connection established")
             
             # Get current user (doctor)
             current_user = request.session.get('user', {})
             username_dh = current_user.get('username', '')
-            print(f"DEBUG: Current user: {current_user}")
-            print(f"DEBUG: Username DH: {username_dh}")
             
             # Get form data
             id_hewan = request.POST.get('id_hewan')
@@ -140,22 +131,12 @@ def rekam_medis_form(request):
             status_kesehatan = request.POST.get('status')
             catatan_tindak_lanjut = request.POST.get('catatan_tindak_lanjut', '')
             
-            print("=== DEBUG FORM DATA ===")
-            print(f"id_hewan: {id_hewan}")
-            print(f"tanggal_pemeriksaan: {tanggal_pemeriksaan}")
-            print(f"diagnosis: {diagnosis}")
-            print(f"pengobatan: {pengobatan}")
-            print(f"status_kesehatan: {status_kesehatan}")
-            print(f"catatan_tindak_lanjut: {catatan_tindak_lanjut}")
-            
             # Validate required fields
             if not id_hewan:
-                print("DEBUG: Validation failed - id_hewan is empty")
                 messages.error(request, 'Silahkan pilih hewan yang akan diperiksa!')
                 return redirect('hijau_kesehatan_satwa:rekam_medis_form')
             
             if not tanggal_pemeriksaan:
-                print("DEBUG: Validation failed - tanggal_pemeriksaan is empty")
                 messages.error(request, 'Tanggal pemeriksaan wajib diisi!')
                 return redirect('hijau_kesehatan_satwa:rekam_medis_form')
             
@@ -163,31 +144,25 @@ def rekam_medis_form(request):
             try:
                 import uuid
                 uuid.UUID(id_hewan)
-                print("DEBUG: UUID validation passed")
             except ValueError:
-                print("DEBUG: Invalid UUID format")
                 messages.error(request, 'Format ID hewan tidak valid!')
                 return redirect('hijau_kesehatan_satwa:rekam_medis_form')
             
-            print("DEBUG: Form validation passed")
-            
             # Start fresh transaction
             connection.autocommit = False
-            print("DEBUG: Autocommit disabled, starting transaction")
             
             # Verify the animal exists first
             verify_query = "SELECT COUNT(*) FROM hewan WHERE id = %s"
-            print(f"DEBUG: Verifying animal exists: {verify_query}")
             cursor.execute(verify_query, [id_hewan])
             animal_count = cursor.fetchone()[0]
             
             if animal_count == 0:
-                print("DEBUG: Animal not found")
                 connection.rollback()
                 messages.error(request, 'Hewan yang dipilih tidak ditemukan!')
                 return redirect('hijau_kesehatan_satwa:rekam_medis_form')
             
-            print(f"DEBUG: Animal found, count: {animal_count}")
+            # Reset trigger message sebelum insert
+            cursor.execute("SELECT reset_trigger_message()")
             
             # Insert new medical record using raw SQL
             insert_query = """
@@ -202,10 +177,6 @@ def rekam_medis_form(request):
             ) VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             
-            print("=== DEBUG SQL EXECUTION ===")
-            print(f"SQL Query: {insert_query}")
-            print(f"Parameters: [{id_hewan}, {username_dh}, {tanggal_pemeriksaan}, {diagnosis}, {pengobatan}, {status_kesehatan}, {catatan_tindak_lanjut}]")
-            
             cursor.execute(insert_query, [
                 id_hewan,
                 username_dh,
@@ -215,73 +186,59 @@ def rekam_medis_form(request):
                 status_kesehatan,
                 catatan_tindak_lanjut
             ])
-            print("DEBUG: SQL executed successfully")
             
-            # Commit the transaction
+            # Commit the transaction (ini akan memicu trigger)
             connection.commit()
-            print("DEBUG: Transaction committed successfully")
             
-            # Check for trigger messages after commit (optional)
+            # Check for trigger messages after commit
             trigger_message = ""
             try:
-                cursor.execute("SELECT current_setting('trigger_message', true)")
+                cursor.execute("SELECT get_trigger_message()")
                 result = cursor.fetchone()
-                if result and result[0] and result[0] != '':
-                    trigger_message = result[0]
-                print(f"DEBUG: Trigger message: {trigger_message}")
-            except Exception as trigger_error:
-                print(f"DEBUG: No trigger message or error getting it: {trigger_error}")
-                trigger_message = ""
+                if result and result[0] and result[0].strip():
+                    trigger_message = result[0].strip()
+            except Exception as e:
+                # Jika gagal ambil pesan trigger, lanjutkan tanpa error
+                print(f"Warning: Could not retrieve trigger message: {e}")
             
             # Display success message
-            if trigger_message and trigger_message.strip():
-                messages.success(request, f'Data rekam medis hewan berhasil disimpan! {trigger_message}')
-                print("DEBUG: Success message with trigger")
+            base_message = 'Data rekam medis hewan berhasil disimpan!'
+            if trigger_message:
+                messages.success(request, f'{base_message} {trigger_message}')
             else:
-                messages.success(request, 'Data rekam medis hewan berhasil disimpan!')
-                print("DEBUG: Success message without trigger")
+                messages.success(request, base_message)
             
-            print("=== DEBUG: Redirecting to list ===")
             return redirect('hijau_kesehatan_satwa:rekam_medis_list')
             
         except Exception as e:
             # Handle database errors
-            print(f"=== DEBUG ERROR ===")
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            print(f"Error details: {repr(e)}")
-            
             # Rollback transaction on error
             if connection:
                 try:
                     connection.rollback()
-                    print("DEBUG: Transaction rolled back")
-                except Exception as rollback_error:
-                    print(f"DEBUG: Error during rollback: {rollback_error}")
+                except Exception:
+                    pass
             
             messages.error(request, f'Terjadi kesalahan saat menyimpan data: {str(e)}')
+            return redirect('hijau_kesehatan_satwa:rekam_medis_form')
             
         finally:
             # Always close connection
             try:
                 if cursor:
                     cursor.close()
-                    print("DEBUG: Cursor closed")
                 if connection:
                     connection.close()
-                    print("DEBUG: Connection closed")
-            except Exception as cleanup_error:
-                print(f"DEBUG: Error in cleanup: {cleanup_error}")
+            except Exception:
+                pass
     
     # For GET request, fetch available animals from database
-    print("=== DEBUG GET REQUEST - Fetching animals ===")
     connection = None
     cursor = None
     
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection for animals established")
         
         # Query to get all animals with correct field names
         animals_query = """
@@ -297,14 +254,12 @@ def rekam_medis_form(request):
             ORDER BY nama;
         """
         
-        print(f"DEBUG: Animals query: {animals_query}")
         cursor.execute(animals_query)
         animals_data = cursor.fetchall()
-        print(f"DEBUG: Found {len(animals_data)} animals")
         
         # Convert to list of dictionaries
         animals = []
-        for i, animal in enumerate(animals_data):
+        for animal in animals_data:
             animal_dict = {
                 'id_hewan': str(animal[0]),  # Convert UUID to string for template
                 'nama_individu': animal[1],
@@ -315,20 +270,12 @@ def rekam_medis_form(request):
                 'status_kesehatan': animal[6]
             }
             animals.append(animal_dict)
-            if i < 5:  # Only print first 5 to reduce log spam
-                print(f"DEBUG: Animal {i+1}: {animal_dict}")
 
-        print("DEBUG: Animals data fetched successfully")
-        
         context = {'animals': animals}
-        print(f"DEBUG: Context prepared with {len(animals)} animals")
-        print("=== DEBUG REKAM MEDIS FORM END ===")
         return render(request, 'hijau_kesehatan_satwa/rekam_medis_form.html', context)
         
     except Exception as e:
         # Handle database errors when fetching animals
-        print(f"=== DEBUG ERROR FETCHING ANIMALS ===")
-        print(f"Error: {str(e)}")
         messages.error(request, f'Terjadi kesalahan saat mengambil data hewan: {str(e)}')
         
         context = {'animals': []}
@@ -341,27 +288,19 @@ def rekam_medis_form(request):
                 cursor.close()
             if connection:
                 connection.close()
-            print("DEBUG: GET request - Database connection closed")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Error in GET cleanup: {cleanup_error}")
+        except Exception:
+            pass
 
 def rekam_medis_edit(request, id):
-    print(f"=== DEBUG REKAM MEDIS EDIT START - ID: {id} ===")
-    print(f"Request method: {request.method}")
-    
     if not check_doctor_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     try:
         # Get database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection established")
         
         if request.method == 'POST':
-            print("=== DEBUG POST REQUEST - EDIT ===")
-            
             # Get form data
             id_hewan = request.POST.get('id_hewan')
             tanggal_pemeriksaan = request.POST.get('tanggal')
@@ -370,13 +309,8 @@ def rekam_medis_edit(request, id):
             status_kesehatan = request.POST.get('status')
             catatan_tindak_lanjut = request.POST.get('catatan_tindak_lanjut', '')
             
-            print("=== DEBUG FORM DATA - EDIT ===")
-            print(f"id_hewan: {id_hewan}")
-            print(f"tanggal_pemeriksaan: {tanggal_pemeriksaan}")
-            print(f"diagnosis: {diagnosis}")
-            print(f"pengobatan: {pengobatan}")
-            print(f"status_kesehatan: {status_kesehatan}")
-            print(f"catatan_tindak_lanjut: {catatan_tindak_lanjut}")
+            # Start transaction
+            connection.autocommit = False
             
             # Get the specific record to update based on sequential ID
             get_record_query = """
@@ -387,14 +321,14 @@ def rekam_medis_edit(request, id):
             """
             
             offset = int(id) - 1
-            print(f"DEBUG: Getting record with offset: {offset}")
             cursor.execute(get_record_query, [offset])
             record = cursor.fetchone()
-            print(f"DEBUG: Found record: {record}")
             
             if record:
                 old_id_hewan, old_tanggal = record
-                print(f"DEBUG: Old record - id_hewan: {old_id_hewan}, tanggal: {old_tanggal}")
+                
+                # Reset trigger message sebelum update
+                cursor.execute("SELECT reset_trigger_message()")
                 
                 update_query = """
                 UPDATE catatan_medis 
@@ -407,10 +341,6 @@ def rekam_medis_edit(request, id):
                 WHERE id_hewan = %s AND tanggal_pemeriksaan = %s
                 """
                 
-                print("=== DEBUG UPDATE SQL ===")
-                print(f"SQL Query: {update_query}")
-                print(f"Parameters: [{tanggal_pemeriksaan}, {diagnosis}, {pengobatan}, {status_kesehatan}, {catatan_tindak_lanjut}, {old_id_hewan}, {old_tanggal}]")
-                
                 cursor.execute(update_query, [
                     tanggal_pemeriksaan,
                     diagnosis,
@@ -420,46 +350,38 @@ def rekam_medis_edit(request, id):
                     old_id_hewan,
                     old_tanggal
                 ])
-                print(f"DEBUG: Rows affected: {cursor.rowcount}")
                 
                 # Commit the transaction
                 connection.commit()
-                print("DEBUG: Transaction committed")
                 
-                # Check for trigger messages using a more robust approach
+                # Check for trigger messages
                 trigger_message = ""
                 try:
-                    # Try to get custom message first
-                    cursor.execute("SELECT COALESCE(current_setting('trigger_message', true), '')")
+                    cursor.execute("SELECT get_trigger_message()")
                     result = cursor.fetchone()
-                    if result and result[0]:
-                        trigger_message = result[0]
-                    print(f"DEBUG: Trigger message: {trigger_message}")
-                except Exception as trigger_error:
-                    print(f"DEBUG: Error getting trigger message: {trigger_error}")
-                    # If trigger message fails, just continue without it
+                    if result and result[0] and result[0].strip():
+                        trigger_message = result[0].strip()
+                except Exception as e:
+                    print(f"Warning: Could not retrieve trigger message: {e}")
                 
-                # Display success message and any trigger messages
-                if trigger_message and trigger_message.strip():
-                    messages.success(request, f'Data rekam medis hewan berhasil diperbarui! {trigger_message}')
-                    print("DEBUG: Success message with trigger")
+                # Display success message
+                base_message = 'Data rekam medis hewan berhasil diperbarui!'
+                if trigger_message:
+                    messages.success(request, f'{base_message} {trigger_message}')
                 else:
-                    messages.success(request, 'Data rekam medis hewan berhasil diperbarui!')
-                    print("DEBUG: Success message without trigger")
+                    messages.success(request, base_message)
             else:
-                print("DEBUG: Record not found for update")
+                connection.rollback()
                 messages.error(request, 'Data tidak ditemukan!')
             
             # Close database connection
             cursor.close()
             connection.close()
-            print("DEBUG: Database connection closed")
             
             return redirect('hijau_kesehatan_satwa:rekam_medis_list')
             
         else:
             # GET request - fetch the record to edit and available animals
-            print("=== DEBUG GET REQUEST - EDIT ===")
             fetch_query = """
             SELECT
               cm.id_hewan,
@@ -481,10 +403,8 @@ def rekam_medis_edit(request, id):
             """
             
             offset = int(id) - 1
-            print(f"DEBUG: Fetching record with offset: {offset}")
             cursor.execute(fetch_query, [offset])
             row = cursor.fetchone()
-            print(f"DEBUG: Fetched record: {row}")
             
             if row:
                 record_to_edit = {
@@ -496,7 +416,6 @@ def rekam_medis_edit(request, id):
                     'status': row[5],
                     'catatan_tindak_lanjut': row[6]
                 }
-                print(f"DEBUG: Record to edit: {record_to_edit}")
                 
                 # Also fetch available animals for dropdown
                 animals_query = """
@@ -508,7 +427,6 @@ def rekam_medis_edit(request, id):
                 
                 cursor.execute(animals_query)
                 animals_data = cursor.fetchall()
-                print(f"DEBUG: Found {len(animals_data)} animals for dropdown")
                 
                 animals = []
                 for animal in animals_data:
@@ -524,35 +442,26 @@ def rekam_medis_edit(request, id):
 
                 cursor.close()
                 connection.close()
-                print("DEBUG: Database connection closed")
                 
                 context = {
                     'rekam_medis': record_to_edit,
                     'animals': animals
                 }
-                print("=== DEBUG REKAM MEDIS EDIT END ===")
                 return render(request, 'hijau_kesehatan_satwa/rekam_medis_form.html', context)
             else:
                 cursor.close()
                 connection.close()
-                print("DEBUG: Record not found for edit")
                 messages.error(request, 'Data tidak ditemukan!')
                 return redirect('hijau_kesehatan_satwa:rekam_medis_list')
             
     except Exception as e:
         # Handle database errors
-        print(f"=== DEBUG ERROR - EDIT ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(f"Error details: {repr(e)}")
-        
         # Rollback transaction if still active
         try:
             if 'connection' in locals():
                 connection.rollback()
-                print("DEBUG: Transaction rolled back")
-        except Exception as rollback_error:
-            print(f"DEBUG: Error in rollback: {rollback_error}")
+        except Exception:
+            pass
         
         messages.error(request, f'Terjadi kesalahan: {str(e)}')
         
@@ -560,27 +469,24 @@ def rekam_medis_edit(request, id):
         try:
             if 'cursor' in locals():
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if 'connection' in locals():
                 connection.close()
-                print("DEBUG: Connection closed in error handling")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+        except Exception:
+            pass
         
         return redirect('hijau_kesehatan_satwa:rekam_medis_list')
     
 def rekam_medis_delete(request, id):
-    print(f"=== DEBUG REKAM MEDIS DELETE START - ID: {id} ===")
-    
     if not check_doctor_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     try:
         # Get database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection established")
+        
+        # Start transaction
+        connection.autocommit = False
         
         # Delete medical record using raw SQL
         # First, get the record details for proper deletion
@@ -592,14 +498,14 @@ def rekam_medis_delete(request, id):
         """
         
         offset = int(id) - 1
-        print(f"DEBUG: Getting record to delete with offset: {offset}")
         cursor.execute(fetch_query, [offset])
         record = cursor.fetchone()
-        print(f"DEBUG: Found record to delete: {record}")
         
         if record:
             id_hewan, tanggal_pemeriksaan = record
-            print(f"DEBUG: Deleting record - id_hewan: {id_hewan}, tanggal: {tanggal_pemeriksaan}")
+            
+            # Reset trigger message sebelum delete
+            cursor.execute("SELECT reset_trigger_message()")
             
             # Delete the specific record
             delete_query = """
@@ -607,85 +513,63 @@ def rekam_medis_delete(request, id):
             WHERE id_hewan = %s AND tanggal_pemeriksaan = %s
             """
             
-            print("=== DEBUG DELETE SQL ===")
-            print(f"SQL Query: {delete_query}")
-            print(f"Parameters: [{id_hewan}, {tanggal_pemeriksaan}]")
-            
             cursor.execute(delete_query, [id_hewan, tanggal_pemeriksaan])
-            print(f"DEBUG: Rows affected: {cursor.rowcount}")
-            
-            # Check if there are any notices from triggers
-            try:
-                cursor.execute("SELECT get_trigger_message()")
-                trigger_result = cursor.fetchone()
-                print(f"DEBUG: Trigger result: {trigger_result}")
-            except Exception as trigger_error:
-                print(f"DEBUG: Error getting trigger message: {trigger_error}")
-                trigger_result = None
             
             # Commit the transaction
             connection.commit()
-            print("DEBUG: Transaction committed")
             
-            # Display success message and any trigger messages
-            if trigger_result and trigger_result[0]:
-                messages.success(request, f'Data rekam medis hewan berhasil dihapus! {trigger_result[0]}')
-                print("DEBUG: Success message with trigger")
+            # Check for trigger messages
+            trigger_message = ""
+            try:
+                cursor.execute("SELECT get_trigger_message()")
+                result = cursor.fetchone()
+                if result and result[0] and result[0].strip():
+                    trigger_message = result[0].strip()
+            except Exception as e:
+                print(f"Warning: Could not retrieve trigger message: {e}")
+            
+            # Display success message
+            base_message = 'Data rekam medis hewan berhasil dihapus!'
+            if trigger_message:    
+                messages.success(request, f'{base_message} {trigger_message}')
             else:
-                messages.success(request, 'Data rekam medis hewan berhasil dihapus!')
-                print("DEBUG: Success message without trigger")
+                messages.success(request, base_message)
         else:
-            print("DEBUG: Record not found for deletion")
+            connection.rollback()
             messages.error(request, 'Data tidak ditemukan!')
         
         # Close database connection
         cursor.close()
         connection.close()
-        print("DEBUG: Database connection closed")
         
     except Exception as e:
         # Handle database errors
-        print(f"=== DEBUG ERROR - DELETE ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(f"Error details: {repr(e)}")
-        
         messages.error(request, f'Terjadi kesalahan saat menghapus data: {str(e)}')
         
         # Close connection if it exists
         try:
             if 'cursor' in locals():
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if 'connection' in locals():
                 connection.rollback()
                 connection.close()
-                print("DEBUG: Connection rolled back and closed in error handling")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+        except Exception:
+            pass
     
-    print("=== DEBUG REKAM MEDIS DELETE END ===")
     return redirect('hijau_kesehatan_satwa:rekam_medis_list')
 
-# Updated jadwal_pemeriksaan_list function with debug messages
+# Cleaned jadwal_pemeriksaan_list function
 def jadwal_pemeriksaan_list(request):
-    print("=== DEBUG JADWAL PEMERIKSAAN LIST START ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_doctor_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     try:
         # Get database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection established")
         
         # Get filter parameter from request
         selected_animal = request.GET.get('filter_hewan', '')
-        print(f"DEBUG: Selected animal filter: {selected_animal}")
         
         # Base SQL query
         base_query = """
@@ -707,16 +591,12 @@ def jadwal_pemeriksaan_list(request):
         # Add WHERE clause if animal is selected
         if selected_animal:
             query = base_query + " WHERE jpk.id_hewan = %s ORDER BY jpk.tgl_pemeriksaan_selanjutnya ASC"
-            print(f"DEBUG: Filtered query: {query}")
-            print(f"DEBUG: Filter parameter: {selected_animal}")
             cursor.execute(query, [selected_animal])
         else:
             query = base_query + " ORDER BY jpk.tgl_pemeriksaan_selanjutnya ASC"
-            print(f"DEBUG: Unfiltered query: {query}")
             cursor.execute(query)
         
         rows = cursor.fetchall()
-        print(f"DEBUG: Found {len(rows)} schedule records")
         
         # Convert query results to list of dictionaries
         jadwal_list = []
@@ -733,8 +613,6 @@ def jadwal_pemeriksaan_list(request):
                 'frequency': row[7]
             }
             jadwal_list.append(schedule_dict)
-            if i <= 3:  # Only print first 3 to reduce log spam
-                print(f"DEBUG: Schedule {i}: {schedule_dict}")
         
         # Get all animals that have schedules for dropdown
         animals_query = """
@@ -750,10 +628,8 @@ def jadwal_pemeriksaan_list(request):
             h.nama ASC
         """
         
-        print(f"DEBUG: Animals dropdown query: {animals_query}")
         cursor.execute(animals_query)
         animals_rows = cursor.fetchall()
-        print(f"DEBUG: Found {len(animals_rows)} animals for dropdown")
         
         # Convert to list of dictionaries for dropdown
         animals_for_dropdown = []
@@ -768,11 +644,9 @@ def jadwal_pemeriksaan_list(request):
         # Close database connection
         cursor.close()
         connection.close()
-        print("DEBUG: Database connection closed")
         
         # Get the default frequency (you can make this configurable later)
         examination_frequency = 3  # Default 3 days
-        print(f"DEBUG: Default examination frequency: {examination_frequency}")
         
         context = {
             'jadwal_list': jadwal_list,
@@ -780,29 +654,20 @@ def jadwal_pemeriksaan_list(request):
             'animals_dropdown': animals_for_dropdown,
             'selected_animal': selected_animal
         }
-        print(f"DEBUG: Context prepared with {len(jadwal_list)} schedules and {len(animals_for_dropdown)} dropdown animals")
-        print("=== DEBUG JADWAL PEMERIKSAAN LIST END ===")
         return render(request, 'hijau_kesehatan_satwa/jadwal_pemeriksaan_list.html', context)
         
     except Exception as e:
         # Handle database errors
-        print(f"=== DEBUG ERROR - JADWAL LIST ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(f"Error details: {repr(e)}")
-        
         messages.error(request, f'Terjadi kesalahan saat mengambil data: {str(e)}')
         
         # Close connection if it exists
         try:
             if 'cursor' in locals():
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if 'connection' in locals():
                 connection.close()
-                print("DEBUG: Connection closed in error handling")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+        except Exception:
+            pass
         
         # Return empty list on error
         context = {
@@ -811,110 +676,71 @@ def jadwal_pemeriksaan_list(request):
             'animals_dropdown': [],
             'selected_animal': ''
         }
-        print("DEBUG: Returning empty context due to error")
         return render(request, 'hijau_kesehatan_satwa/jadwal_pemeriksaan_list.html', context)
 
-# Updated update_frequency function with debug messages
+# Cleaned update_frequency function
 def update_frequency(request):
-    print("=== DEBUG UPDATE FREQUENCY START ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_doctor_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     if request.method == 'POST':
-        print("=== DEBUG POST REQUEST - UPDATE FREQUENCY ===")
         connection = None
         cursor = None
         
         try:
             new_frequency = int(request.POST.get('frequency', 3))
-            print(f"DEBUG: New frequency from form: {new_frequency}")
             
             # Validate frequency
             if new_frequency < 1:
-                print("DEBUG: Validation failed - frequency less than 1")
                 messages.error(request, 'Frekuensi harus lebih dari atau sama dengan 1 hari!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
-            
-            print("DEBUG: Frequency validation passed")
             
             # Get database connection
             connection = get_db_connection()
             cursor = connection.cursor()
-            print("DEBUG: Database connection established")
             
             # Update all examination schedules with new frequency
-            # You might want to make this more selective based on your business logic
             update_query = """
             UPDATE jadwal_pemeriksaan_kesehatan 
             SET freq_pemeriksaan_rutin = %s
             """
             
-            print("=== DEBUG SQL EXECUTION - UPDATE FREQUENCY ===")
-            print(f"SQL Query: {update_query}")
-            print(f"Parameters: [{new_frequency}]")
-            
             cursor.execute(update_query, [new_frequency])
             affected_rows = cursor.rowcount
-            print(f"DEBUG: Rows affected: {affected_rows}")
             
             # Commit the transaction
             connection.commit()
-            print("DEBUG: Transaction committed successfully")
             
             # Close database connection
             cursor.close()
             connection.close()
-            print("DEBUG: Database connection closed")
             
             messages.success(request, f'Frekuensi pemeriksaan berhasil diubah menjadi {new_frequency} hari untuk {affected_rows} jadwal!')
-            print("DEBUG: Success message set")
             
-        except ValueError as ve:
-            print(f"=== DEBUG VALUE ERROR ===")
-            print(f"Error: {str(ve)}")
+        except ValueError:
             messages.error(request, 'Frekuensi harus berupa angka!')
         except Exception as e:
             # Handle database errors
-            print(f"=== DEBUG ERROR - UPDATE FREQUENCY ===")
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            print(f"Error details: {repr(e)}")
-            
             messages.error(request, f'Terjadi kesalahan saat mengubah frekuensi: {str(e)}')
             
             # Close connection if it exists
             try:
                 if cursor:
                     cursor.close()
-                    print("DEBUG: Cursor closed in error handling")
                 if connection:
                     connection.rollback()
                     connection.close()
-                    print("DEBUG: Connection rolled back and closed in error handling")
-            except Exception as cleanup_error:
-                print(f"DEBUG: Error in cleanup: {cleanup_error}")
-    else:
-        print("DEBUG: Not a POST request - redirecting")
+            except Exception:
+                pass
     
-    print("=== DEBUG UPDATE FREQUENCY END ===")
     return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
 
-# Updated jadwal_pemeriksaan_form function with debug messages
+# Cleaned jadwal_pemeriksaan_form function
 def jadwal_pemeriksaan_form(request):
-    print("=== DEBUG JADWAL PEMERIKSAAN FORM START ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_doctor_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     if request.method == 'POST':
-        print("=== DEBUG POST REQUEST - JADWAL FORM ===")
         connection = None
         cursor = None
         
@@ -922,41 +748,29 @@ def jadwal_pemeriksaan_form(request):
             # Get database connection
             connection = get_db_connection()
             cursor = connection.cursor()
-            print("DEBUG: Database connection established")
             
             # Get current user (doctor)
             current_user = request.session.get('user', {})
             username_dh = current_user.get('username', '')
-            print(f"DEBUG: Current user: {current_user}")
-            print(f"DEBUG: Username DH: {username_dh}")
             
             # Get form data
             id_hewan = request.POST.get('id_hewan')
             tanggal_pemeriksaan = request.POST.get('tanggal')
             frequency = request.POST.get('frequency', 3)
             
-            print("=== DEBUG FORM DATA - JADWAL ===")
-            print(f"id_hewan: {id_hewan}")
-            print(f"tanggal_pemeriksaan: {tanggal_pemeriksaan}")
-            print(f"frequency: {frequency}")
-            
             # Convert and validate frequency
             try:
                 frequency = int(frequency)
-                print(f"DEBUG: Frequency converted to int: {frequency}")
             except ValueError:
-                print("DEBUG: Invalid frequency value")
                 messages.error(request, 'Frekuensi harus berupa angka!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_form')
             
             # Validate required fields
             if not id_hewan:
-                print("DEBUG: Validation failed - id_hewan is empty")
                 messages.error(request, 'Silahkan pilih hewan yang akan dijadwalkan!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_form')
             
             if not tanggal_pemeriksaan:
-                print("DEBUG: Validation failed - tanggal_pemeriksaan is empty")
                 messages.error(request, 'Tanggal pemeriksaan wajib diisi!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_form')
             
@@ -964,31 +778,22 @@ def jadwal_pemeriksaan_form(request):
             try:
                 import uuid
                 uuid.UUID(id_hewan)
-                print("DEBUG: UUID validation passed")
             except ValueError:
-                print("DEBUG: Invalid UUID format")
                 messages.error(request, 'Format ID hewan tidak valid!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_form')
             
-            print("DEBUG: Form validation passed")
-            
             # Start transaction
             connection.autocommit = False
-            print("DEBUG: Autocommit disabled, starting transaction")
             
             # Verify the animal exists
             verify_query = "SELECT COUNT(*) FROM hewan WHERE id = %s"
-            print(f"DEBUG: Verifying animal exists: {verify_query}")
             cursor.execute(verify_query, [id_hewan])
             animal_count = cursor.fetchone()[0]
             
             if animal_count == 0:
-                print("DEBUG: Animal not found")
                 connection.rollback()
                 messages.error(request, 'Hewan yang dipilih tidak ditemukan!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_form')
-            
-            print(f"DEBUG: Animal found, count: {animal_count}")
             
             # Insert new examination schedule
             insert_query = """
@@ -1001,16 +806,10 @@ def jadwal_pemeriksaan_form(request):
             DO UPDATE SET freq_pemeriksaan_rutin = EXCLUDED.freq_pemeriksaan_rutin
             """
             
-            print("=== DEBUG SQL EXECUTION - JADWAL INSERT ===")
-            print(f"SQL Query: {insert_query}")
-            print(f"Parameters: [{id_hewan}, {tanggal_pemeriksaan}, {frequency}]")
-            
             cursor.execute(insert_query, [id_hewan, tanggal_pemeriksaan, frequency])
-            print("DEBUG: SQL executed successfully")
             
             # Commit the transaction
             connection.commit()
-            print("DEBUG: Transaction committed successfully")
             
             # Check for trigger messages after commit (optional)
             trigger_message = ""
@@ -1019,36 +818,25 @@ def jadwal_pemeriksaan_form(request):
                 result = cursor.fetchone()
                 if result and result[0] and result[0] != '':
                     trigger_message = result[0]
-                print(f"DEBUG: Trigger message: {trigger_message}")
-            except Exception as trigger_error:
-                print(f"DEBUG: No trigger message or error getting it: {trigger_error}")
+            except Exception:
                 trigger_message = ""
             
             # Display success message
             if trigger_message and trigger_message.strip():
                 messages.success(request, f'Jadwal pemeriksaan berhasil disimpan! {trigger_message}')
-                print("DEBUG: Success message with trigger")
             else:
                 messages.success(request, 'Jadwal pemeriksaan berhasil disimpan!')
-                print("DEBUG: Success message without trigger")
             
-            print("=== DEBUG: Redirecting to jadwal list ===")
             return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
             
         except Exception as e:
             # Handle database errors
-            print(f"=== DEBUG ERROR - JADWAL FORM ===")
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            print(f"Error details: {repr(e)}")
-            
             # Rollback transaction on error
             if connection:
                 try:
                     connection.rollback()
-                    print("DEBUG: Transaction rolled back")
-                except Exception as rollback_error:
-                    print(f"DEBUG: Error during rollback: {rollback_error}")
+                except Exception:
+                    pass
             
             messages.error(request, f'Terjadi kesalahan saat menyimpan data: {str(e)}')
             
@@ -1057,22 +845,18 @@ def jadwal_pemeriksaan_form(request):
             try:
                 if cursor:
                     cursor.close()
-                    print("DEBUG: Cursor closed")
                 if connection:
                     connection.close()
-                    print("DEBUG: Connection closed")
-            except Exception as cleanup_error:
-                print(f"DEBUG: Error in cleanup: {cleanup_error}")
+            except Exception:
+                pass
     
     # For GET request, fetch available animals from database
-    print("=== DEBUG GET REQUEST - Fetching animals for jadwal ===")
     connection = None
     cursor = None
     
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection for animals established")
         
         # Query to get all animals
         animals_query = """
@@ -1088,14 +872,12 @@ def jadwal_pemeriksaan_form(request):
             ORDER BY nama;
         """
         
-        print(f"DEBUG: Animals query: {animals_query}")
         cursor.execute(animals_query)
         animals_data = cursor.fetchall()
-        print(f"DEBUG: Found {len(animals_data)} animals")
         
         # Convert to list of dictionaries
         animals = []
-        for i, animal in enumerate(animals_data):
+        for animal in animals_data:
             animal_dict = {
                 'id_hewan': str(animal[0]),  # Convert UUID to string for template
                 'nama_individu': animal[1],
@@ -1106,74 +888,48 @@ def jadwal_pemeriksaan_form(request):
                 'status_kesehatan': animal[6]
             }
             animals.append(animal_dict)
-            if i < 5:  # Only print first 5 to reduce log spam
-                print(f"DEBUG: Animal {i+1}: {animal_dict}")
 
-        print("DEBUG: Animals data fetched successfully")
-        
         cursor.close()
         connection.close()
-        print("DEBUG: Database connection closed")
         
         context = {'animals': animals}
-        print(f"DEBUG: Context prepared with {len(animals)} animals")
-        print("=== DEBUG JADWAL PEMERIKSAAN FORM END ===")
         return render(request, 'hijau_kesehatan_satwa/jadwal_pemeriksaan_form.html', context)
         
     except Exception as e:
         # Handle database errors when fetching animals
-        print(f"=== DEBUG ERROR FETCHING ANIMALS - JADWAL ===")
-        print(f"Error: {str(e)}")
         messages.error(request, f'Terjadi kesalahan saat mengambil data hewan: {str(e)}')
         
         # Close connection if it exists
         try:
             if cursor:
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if connection:
                 connection.close()
-                print("DEBUG: Connection closed in error handling")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+        except Exception:
+            pass
         
         context = {'animals': []}
-        print("DEBUG: Returning empty animals context due to error")
         return render(request, 'hijau_kesehatan_satwa/jadwal_pemeriksaan_form.html', context)
 
-# Updated jadwal_pemeriksaan_edit function with debug messages
+# Cleaned jadwal_pemeriksaan_edit function
 def jadwal_pemeriksaan_edit(request, id):
-    print(f"=== DEBUG JADWAL PEMERIKSAAN EDIT START - ID: {id} ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_doctor_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     try:
         # Get database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection established")
         
         if request.method == 'POST':
-            print("=== DEBUG POST REQUEST - JADWAL EDIT ===")
-            
             # Get form data
             tanggal = request.POST.get('tanggal')
             frequency = request.POST.get('frequency', 3)
             
-            print("=== DEBUG FORM DATA - JADWAL EDIT ===")
-            print(f"tanggal: {tanggal}")
-            print(f"frequency: {frequency}")
-            
             # Convert and validate frequency
             try:
                 frequency = int(frequency)
-                print(f"DEBUG: Frequency converted to int: {frequency}")
             except ValueError:
-                print("DEBUG: Invalid frequency value")
                 messages.error(request, 'Frekuensi harus berupa angka!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
             
@@ -1187,14 +943,11 @@ def jadwal_pemeriksaan_edit(request, id):
             """
             
             offset = int(id) - 1
-            print(f"DEBUG: Getting record with offset: {offset}")
             cursor.execute(get_record_query, [offset])
             record = cursor.fetchone()
-            print(f"DEBUG: Found record: {record}")
             
             if record:
                 old_id_hewan, old_tanggal = record
-                print(f"DEBUG: Old record - id_hewan: {old_id_hewan}, tanggal: {old_tanggal}")
                 
                 # Update the schedule
                 update_query = """
@@ -1205,16 +958,10 @@ def jadwal_pemeriksaan_edit(request, id):
                 WHERE id_hewan = %s AND tgl_pemeriksaan_selanjutnya = %s
                 """
                 
-                print("=== DEBUG UPDATE SQL - JADWAL ===")
-                print(f"SQL Query: {update_query}")
-                print(f"Parameters: [{tanggal}, {frequency}, {old_id_hewan}, {old_tanggal}]")
-                
                 cursor.execute(update_query, [tanggal, frequency, old_id_hewan, old_tanggal])
-                print(f"DEBUG: Rows affected: {cursor.rowcount}")
                 
                 # Commit the transaction
                 connection.commit()
-                print("DEBUG: Transaction committed")
                 
                 # Check for trigger messages using a more robust approach
                 trigger_message = ""
@@ -1224,32 +971,26 @@ def jadwal_pemeriksaan_edit(request, id):
                     result = cursor.fetchone()
                     if result and result[0]:
                         trigger_message = result[0]
-                    print(f"DEBUG: Trigger message: {trigger_message}")
-                except Exception as trigger_error:
-                    print(f"DEBUG: Error getting trigger message: {trigger_error}")
+                except Exception:
                     # If trigger message fails, just continue without it
+                    pass
                 
                 # Display success message and any trigger messages
                 if trigger_message and trigger_message.strip():
                     messages.success(request, f'Jadwal pemeriksaan berhasil diperbarui! {trigger_message}')
-                    print("DEBUG: Success message with trigger")
                 else:
                     messages.success(request, 'Jadwal pemeriksaan berhasil diperbarui!')
-                    print("DEBUG: Success message without trigger")
             else:
-                print("DEBUG: Record not found for update")
                 messages.error(request, 'Data tidak ditemukan!')
             
             # Close database connection
             cursor.close()
             connection.close()
-            print("DEBUG: Database connection closed")
             
             return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
             
         else:
             # GET request - fetch the record to edit
-            print("=== DEBUG GET REQUEST - JADWAL EDIT ===")
             fetch_query = """
             SELECT
                 jpk.id_hewan,
@@ -1267,10 +1008,8 @@ def jadwal_pemeriksaan_edit(request, id):
             """
             
             offset = int(id) - 1
-            print(f"DEBUG: Fetching record with offset: {offset}")
             cursor.execute(fetch_query, [offset])
             row = cursor.fetchone()
-            print(f"DEBUG: Fetched record: {row}")
             
             if row:
                 schedule_to_edit = {
@@ -1281,38 +1020,28 @@ def jadwal_pemeriksaan_edit(request, id):
                     'tanggal': row[3].strftime('%Y-%m-%d') if row[3] else '',
                     'frequency': row[4]
                 }
-                print(f"DEBUG: Schedule to edit: {schedule_to_edit}")
                 
                 cursor.close()
                 connection.close()
-                print("DEBUG: Database connection closed")
                 
                 context = {
                     'schedule': schedule_to_edit
                 }
-                print("=== DEBUG JADWAL PEMERIKSAAN EDIT END ===")
                 return render(request, 'hijau_kesehatan_satwa/jadwal_pemeriksaan_edit.html', context)
             else:
                 cursor.close()
                 connection.close()
-                print("DEBUG: Record not found for edit")
                 messages.error(request, 'Data tidak ditemukan!')
                 return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
             
     except Exception as e:
         # Handle database errors
-        print(f"=== DEBUG ERROR - JADWAL EDIT ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(f"Error details: {repr(e)}")
-        
         # Rollback transaction if still active
         try:
             if 'connection' in locals():
                 connection.rollback()
-                print("DEBUG: Transaction rolled back")
-        except Exception as rollback_error:
-            print(f"DEBUG: Error in rollback: {rollback_error}")
+        except Exception:
+            pass
         
         messages.error(request, f'Terjadi kesalahan: {str(e)}')
         
@@ -1320,16 +1049,14 @@ def jadwal_pemeriksaan_edit(request, id):
         try:
             if 'cursor' in locals():
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if 'connection' in locals():
                 connection.close()
-                print("DEBUG: Connection closed in error handling")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+        except Exception:
+            pass
         
         return redirect('hijau_kesehatan_satwa:jadwal_pemeriksaan_list')
 
-# Updated jadwal_pemeriksaan_delete function to work with database
+# Cleaned jadwal_pemeriksaan_delete function
 def jadwal_pemeriksaan_delete(request, id):
     if not check_doctor_access(request):
         return redirect('register_login:login')
@@ -1354,7 +1081,6 @@ def jadwal_pemeriksaan_delete(request, id):
         
         if record:
             id_hewan, tanggal_pemeriksaan = record
-            print(f"DEBUG: Deleting record - id_hewan: {id_hewan}, tanggal: {tanggal_pemeriksaan}")
             
             # Delete the specific record
             delete_query = """
@@ -1363,7 +1089,6 @@ def jadwal_pemeriksaan_delete(request, id):
             """
             
             cursor.execute(delete_query, [id_hewan, tanggal_pemeriksaan])
-            print(f"DEBUG: Rows affected: {cursor.rowcount}")
             
             # Commit the transaction
             connection.commit()
@@ -1377,8 +1102,6 @@ def jadwal_pemeriksaan_delete(request, id):
         connection.close()
         
     except Exception as e:
-        print(f"DEBUG: Error in jadwal_pemeriksaan_delete: {str(e)}")
-        
         # Handle database errors
         messages.error(request, f'Terjadi kesalahan saat menghapus data: {str(e)}')
         
@@ -1409,19 +1132,13 @@ def debug_urls(request):
 
 # Updated pemberian_pakan_list function with raw SQL query and debug messages
 def pemberian_pakan_list(request):
-    print("=== DEBUG PEMBERIAN PAKAN LIST START ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_keeper_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     try:
         # Get database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection established")
         
         # Updated SQL query with JOIN to get animal and keeper information
         query = """
@@ -1445,14 +1162,12 @@ def pemberian_pakan_list(request):
             pakan.jadwal
         """
         
-        print(f"DEBUG: Executing query: {query}")
         cursor.execute(query)
         rows = cursor.fetchall()
-        print(f"DEBUG: Found {len(rows)} feeding records")
         
         # Convert query results to list of dictionaries
         feeding_schedules = []
-        for i, row in enumerate(rows, 1):
+        for row in rows:
             feeding_dict = {
                 'id': row[0],  # ROW_NUMBER as ID for display purposes
                 'id_hewan': row[1],  # Animal ID (UUID)
@@ -1465,62 +1180,44 @@ def pemberian_pakan_list(request):
                 'penjaga_hewan': row[8] if row[8] else 'Belum ditugaskan'  # Penjaga Hewan (handle NULL)
             }
             feeding_schedules.append(feeding_dict)
-            if i <= 3:  # Only print first 3 to reduce log spam
-                print(f"DEBUG: Feeding schedule {i}: {feeding_dict}")
         
         # Close database connection
         cursor.close()
         connection.close()
-        print("DEBUG: Database connection closed")
         
         context = {
             'feeding_schedules': feeding_schedules
         }
-        print(f"DEBUG: Context prepared with {len(feeding_schedules)} feeding schedules")
-        print("=== DEBUG PEMBERIAN PAKAN LIST END ===")
         return render(request, 'hijau_kesehatan_satwa/pemberian_pakan_list.html', context)
         
     except Exception as e:
         # Handle database errors
-        print(f"=== DEBUG ERROR - FEEDING LIST ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(f"Error details: {repr(e)}")
-        
         messages.error(request, f'Terjadi kesalahan saat mengambil data pemberian pakan: {str(e)}')
         
         # Close connection if it exists
         try:
             if 'cursor' in locals():
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if 'connection' in locals():
                 connection.close()
-                print("DEBUG: Connection closed in error handling")
         except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+            pass
         
         # Return empty list on error
         context = {
             'feeding_schedules': []
         }
-        print("DEBUG: Returning empty context due to error")
         return render(request, 'hijau_kesehatan_satwa/pemberian_pakan_list.html', context)
     
+
 def riwayat_pemberian_pakan(request):
-    print("=== DEBUG RIWAYAT PEMBERIAN PAKAN START ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_keeper_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     try:
         # Get database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection established")
         
         # Updated SQL query to get feeding history with additional hewan table columns
         query = """
@@ -1549,15 +1246,13 @@ def riwayat_pemberian_pakan(request):
             pakan.jadwal DESC
         """
         
-        print(f"DEBUG: Executing query: {query}")
         cursor.execute(query)
         rows = cursor.fetchall()
-        print(f"DEBUG: Found {len(rows)} feeding history records with status 'Diberikan'")
         
         # Convert query results to list of dictionaries
         # Updated to match the new query with 12 columns
         feeding_history = []
-        for i, row in enumerate(rows, 1):
+        for row in rows:
             history_dict = {
                 'id': row[0],  # ROW_NUMBER as ID for display purposes
                 'id_hewan': row[1],  # Animal ID (UUID)
@@ -1573,59 +1268,40 @@ def riwayat_pemberian_pakan(request):
                 'penjaga_hewan': row[11] if row[11] else 'Belum ditugaskan'  # Penjaga Hewan (column 11)
             }
             feeding_history.append(history_dict)
-            if i <= 3:  # Only print first 3 to reduce log spam
-                print(f"DEBUG: Feeding history {i}: {history_dict}")
         
         # Close database connection
         cursor.close()
         connection.close()
-        print("DEBUG: Database connection closed")
         
         context = {
             'feeding_history': feeding_history
         }
-        print(f"DEBUG: Context prepared with {len(feeding_history)} feeding history records")
-        print("=== DEBUG RIWAYAT PEMBERIAN PAKAN END ===")
         return render(request, 'hijau_kesehatan_satwa/riwayat_pemberian_pakan.html', context)
         
     except Exception as e:
         # Handle database errors
-        print(f"=== DEBUG ERROR - FEEDING HISTORY ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(f"Error details: {repr(e)}")
-        
         messages.error(request, f'Terjadi kesalahan saat mengambil riwayat pemberian pakan: {str(e)}')
         
         # Close connection if it exists
         try:
             if 'cursor' in locals():
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if 'connection' in locals():
                 connection.close()
-                print("DEBUG: Connection closed in error handling")
         except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+            pass
         
         # Return empty list on error
         context = {
             'feeding_history': []
         }
-        print("DEBUG: Returning empty context due to error")
         return render(request, 'hijau_kesehatan_satwa/riwayat_pemberian_pakan.html', context)
 
 def pemberian_pakan_form(request):
-    print("=== DEBUG PEMBERIAN PAKAN FORM START ===")
-    print(f"Request method: {request.method}")
-    print(f"User in session: {'user' in request.session}")
-    
     if not check_keeper_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     if request.method == 'POST':
-        print("=== DEBUG POST REQUEST - PAKAN FORM ===")
         connection = None
         cursor = None
         
@@ -1633,13 +1309,10 @@ def pemberian_pakan_form(request):
             # Get database connection
             connection = get_db_connection()
             cursor = connection.cursor()
-            print("DEBUG: Database connection established")
             
             # Get current user (keeper)
             current_user = request.session.get('user', {})
             username = current_user.get('username', '')
-            print(f"DEBUG: Current user: {current_user}")
-            print(f"DEBUG: Username: {username}")
             
             # Get form data
             animal_id = request.POST.get('animal_id')
@@ -1647,34 +1320,23 @@ def pemberian_pakan_form(request):
             jumlah = request.POST.get('jumlah')
             jadwal = request.POST.get('jadwal')
             
-            print("=== DEBUG FORM DATA - PAKAN ===")
-            print(f"animal_id: {animal_id}")
-            print(f"jenis_pakan: {jenis_pakan}")
-            print(f"jumlah: {jumlah}")
-            print(f"jadwal: {jadwal}")
-            
             # Convert and validate jumlah
             try:
                 jumlah = float(jumlah)
-                print(f"DEBUG: Jumlah converted to float: {jumlah}")
             except (ValueError, TypeError):
-                print("DEBUG: Invalid jumlah value")
                 messages.error(request, 'Jumlah pakan harus berupa angka!')
                 return redirect('hijau_kesehatan_satwa:pemberian_pakan_form')
             
             # Validate required fields
             if not animal_id:
-                print("DEBUG: Validation failed - animal_id is empty")
                 messages.error(request, 'Silahkan pilih hewan untuk pemberian pakan!')
                 return redirect('hijau_kesehatan_satwa:pemberian_pakan_form')
             
             if not jenis_pakan:
-                print("DEBUG: Validation failed - jenis_pakan is empty")
                 messages.error(request, 'Jenis pakan wajib diisi!')
                 return redirect('hijau_kesehatan_satwa:pemberian_pakan_form')
             
             if not jadwal:
-                print("DEBUG: Validation failed - jadwal is empty")
                 messages.error(request, 'Jadwal pemberian wajib diisi!')
                 return redirect('hijau_kesehatan_satwa:pemberian_pakan_form')
             
@@ -1682,31 +1344,22 @@ def pemberian_pakan_form(request):
             try:
                 import uuid
                 uuid.UUID(animal_id)
-                print("DEBUG: UUID validation passed")
             except ValueError:
-                print("DEBUG: Invalid UUID format")
                 messages.error(request, 'Format ID hewan tidak valid!')
                 return redirect('hijau_kesehatan_satwa:pemberian_pakan_form')
             
-            print("DEBUG: Form validation passed")
-            
             # Start transaction
             connection.autocommit = False
-            print("DEBUG: Autocommit disabled, starting transaction")
             
             # Verify the animal exists
             verify_query = "SELECT COUNT(*) FROM hewan WHERE id = %s"
-            print(f"DEBUG: Verifying animal exists: {verify_query}")
             cursor.execute(verify_query, [animal_id])
             animal_count = cursor.fetchone()[0]
             
             if animal_count == 0:
-                print("DEBUG: Animal not found")
                 connection.rollback()
                 messages.error(request, 'Hewan yang dipilih tidak ditemukan!')
                 return redirect('hijau_kesehatan_satwa:pemberian_pakan_form')
-            
-            print(f"DEBUG: Animal found, count: {animal_count}")
             
             # Check if this feeding schedule already exists
             check_duplicate_query = """
@@ -1717,7 +1370,6 @@ def pemberian_pakan_form(request):
             duplicate_count = cursor.fetchone()[0]
             
             if duplicate_count > 0:
-                print("DEBUG: Duplicate feeding schedule found")
                 connection.rollback()
                 messages.error(request, 'Jadwal pemberian pakan untuk hewan ini sudah ada!')
                 return redirect('hijau_kesehatan_satwa:pemberian_pakan_form')
@@ -1736,12 +1388,7 @@ def pemberian_pakan_form(request):
             # Set default status as 'Dijadwalkan'
             status = 'Dijadwalkan'
             
-            print("=== DEBUG SQL EXECUTION - PAKAN INSERT ===")
-            print(f"SQL Query: {insert_pakan_query}")
-            print(f"Parameters: [{animal_id}, {jenis_pakan}, {jumlah}, {jadwal}, {status}]")
-            
             cursor.execute(insert_pakan_query, [animal_id, jenis_pakan, jumlah, jadwal, status])
-            print("DEBUG: Pakan record inserted successfully")
             
             # Insert into memberi table to track who assigned this feeding
             insert_memberi_query = """
@@ -1752,16 +1399,10 @@ def pemberian_pakan_form(request):
             ) VALUES (%s, %s, %s)
             """
             
-            print("=== DEBUG SQL EXECUTION - MEMBERI INSERT ===")
-            print(f"SQL Query: {insert_memberi_query}")
-            print(f"Parameters: [{animal_id}, {jadwal}, {username}]")
-            
             cursor.execute(insert_memberi_query, [animal_id, jadwal, username])
-            print("DEBUG: Memberi record inserted successfully")
             
             # Commit the transaction
             connection.commit()
-            print("DEBUG: Transaction committed successfully")
             
             # Check for trigger messages after commit (optional)
             trigger_message = ""
@@ -1770,36 +1411,24 @@ def pemberian_pakan_form(request):
                 result = cursor.fetchone()
                 if result and result[0] and result[0] != '':
                     trigger_message = result[0]
-                print(f"DEBUG: Trigger message: {trigger_message}")
-            except Exception as trigger_error:
-                print(f"DEBUG: No trigger message or error getting it: {trigger_error}")
+            except Exception:
                 trigger_message = ""
             
             # Display success message
             if trigger_message and trigger_message.strip():
                 messages.success(request, f'Jadwal pemberian pakan berhasil disimpan! {trigger_message}')
-                print("DEBUG: Success message with trigger")
             else:
                 messages.success(request, 'Jadwal pemberian pakan berhasil disimpan!')
-                print("DEBUG: Success message without trigger")
             
-            print("=== DEBUG: Redirecting to pakan list ===")
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
             
         except Exception as e:
             # Handle database errors
-            print(f"=== DEBUG ERROR - PAKAN FORM ===")
-            print(f"Error type: {type(e).__name__}")
-            print(f"Error message: {str(e)}")
-            print(f"Error details: {repr(e)}")
-            
-            # Rollback transaction on error
             if connection:
                 try:
                     connection.rollback()
-                    print("DEBUG: Transaction rolled back")
-                except Exception as rollback_error:
-                    print(f"DEBUG: Error during rollback: {rollback_error}")
+                except Exception:
+                    pass
             
             messages.error(request, f'Terjadi kesalahan saat menyimpan data: {str(e)}')
             
@@ -1808,22 +1437,18 @@ def pemberian_pakan_form(request):
             try:
                 if cursor:
                     cursor.close()
-                    print("DEBUG: Cursor closed")
                 if connection:
                     connection.close()
-                    print("DEBUG: Connection closed")
-            except Exception as cleanup_error:
-                print(f"DEBUG: Error in cleanup: {cleanup_error}")
+            except Exception:
+                pass
     
     # For GET request, fetch available animals from database
-    print("=== DEBUG GET REQUEST - Fetching animals for pakan ===")
     connection = None
     cursor = None
     
     try:
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection for animals established")
         
         # Query to get all animals
         animals_query = """
@@ -1839,15 +1464,12 @@ def pemberian_pakan_form(request):
             ORDER BY nama;
         """
         
-        print(f"DEBUG: Animals query: {animals_query}")
         cursor.execute(animals_query)
         animals_data = cursor.fetchall()
-        print(f"DEBUG: Found {len(animals_data)} animals")
         
         # Convert to dictionary format for template compatibility
-        # Based on the HTML template, it expects animals.items()
         animals = {}
-        for i, animal in enumerate(animals_data):
+        for animal in animals_data:
             animal_id = str(animal[0])  # Convert UUID to string
             animals[animal_id] = {
                 'nama_individu': animal[1],
@@ -1857,39 +1479,27 @@ def pemberian_pakan_form(request):
                 'nama_habitat': animal[5],
                 'status_kesehatan': animal[6]
             }
-            if i < 5:  # Only print first 5 to reduce log spam
-                print(f"DEBUG: Animal {i+1}: ID={animal_id}, Data={animals[animal_id]}")
 
-        print("DEBUG: Animals data fetched successfully")
-        
         cursor.close()
         connection.close()
-        print("DEBUG: Database connection closed")
         
         context = {'animals': animals}
-        print(f"DEBUG: Context prepared with {len(animals)} animals")
-        print("=== DEBUG PEMBERIAN PAKAN FORM END ===")
         return render(request, 'hijau_kesehatan_satwa/pemberian_pakan_form.html', context)
         
     except Exception as e:
         # Handle database errors when fetching animals
-        print(f"=== DEBUG ERROR FETCHING ANIMALS - PAKAN ===")
-        print(f"Error: {str(e)}")
         messages.error(request, f'Terjadi kesalahan saat mengambil data hewan: {str(e)}')
         
         # Close connection if it exists
         try:
             if cursor:
                 cursor.close()
-                print("DEBUG: Cursor closed in error handling")
             if connection:
                 connection.close()
-                print("DEBUG: Connection closed in error handling")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
+        except Exception:
+            pass
         
         context = {'animals': {}}
-        print("DEBUG: Returning empty animals context due to error")
         return render(request, 'hijau_kesehatan_satwa/pemberian_pakan_form.html', context)
 
 def pemberian_pakan_edit(request, id):
@@ -2183,8 +1793,6 @@ def pemberian_pakan_delete(request, id):
     cursor = None
     
     try:
-        print(f"[DEBUG] Attempting to delete feeding record with id: {id}")
-        
         # Get database connection without setting autocommit initially
         connection = get_db_connection()
         cursor = connection.cursor()
@@ -2210,26 +1818,19 @@ def pemberian_pakan_delete(request, id):
         WHERE row_id = %s
         """
         
-        print(f"[DEBUG] Executing query to find feeding record")
         cursor.execute(get_feeding_query, [id])
         feeding_data = cursor.fetchone()
         
-        print(f"[DEBUG] Query result: {feeding_data}")
-        
         if not feeding_data:
-            print(f"[DEBUG] No feeding data found for id: {id}")
             messages.error(request, 'Data pemberian pakan tidak ditemukan!')
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
         animal_id = feeding_data[0]
         jadwal = feeding_data[1]
         
-        print(f"[DEBUG] Found feeding record - Animal ID: {animal_id}, Jadwal: {jadwal}")
-        
         # Close the current connection and create a fresh one for the delete operation
         cursor.close()
         connection.close()
-        print(f"[DEBUG] Closed initial connection, creating new one for delete")
         
         # Create new connection for delete operations
         connection = get_db_connection()
@@ -2237,64 +1838,46 @@ def pemberian_pakan_delete(request, id):
         
         # Set autocommit to False for transaction
         connection.autocommit = False
-        print(f"[DEBUG] Set autocommit to False, starting transaction")
         
         # Delete from memberi table first
-        print(f"[DEBUG] Deleting from memberi table")
         cursor.execute("DELETE FROM memberi WHERE id_hewan = %s AND jadwal = %s", [animal_id, jadwal])
-        memberi_affected = cursor.rowcount
-        print(f"[DEBUG] Memberi rows affected: {memberi_affected}")
         
         # Delete from pakan table
-        print(f"[DEBUG] Deleting from pakan table")
         cursor.execute("DELETE FROM pakan WHERE id_hewan = %s AND jadwal = %s", [animal_id, jadwal])
         pakan_affected = cursor.rowcount
-        print(f"[DEBUG] Pakan rows affected: {pakan_affected}")
         
         if pakan_affected == 0:
-            print(f"[DEBUG] No rows affected, rolling back")
             connection.rollback()
             messages.error(request, 'Data tidak dapat dihapus. Mungkin data telah dihapus oleh pengguna lain.')
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
         # Commit the transaction
         connection.commit()
-        print(f"[DEBUG] Transaction committed successfully")
         
         messages.success(request, 'Data pemberian pakan berhasil dihapus!')
         return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
     except Exception as e:
-        print(f"[DEBUG] Exception occurred: {str(e)}")
-        print(f"[DEBUG] Exception type: {type(e).__name__}")
-        
         if connection:
             try:
                 connection.rollback()
-                print(f"[DEBUG] Rolled back transaction")
-            except Exception as rollback_error:
-                print(f"[DEBUG] Rollback error: {str(rollback_error)}")
+            except Exception:
+                pass
         
         messages.error(request, f'Terjadi kesalahan: {str(e)}')
         return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
     finally:
-        print(f"[DEBUG] Cleaning up connections")
         try:
             if cursor:
                 cursor.close()
             if connection:
                 connection.close()
-        except Exception as cleanup_error:
-            print(f"[DEBUG] Cleanup error: {str(cleanup_error)}")
+        except Exception:
+            pass
 
 def beri_pakan(request, id):
-    print("=== DEBUG BERI PAKAN START ===")
-    print(f"Request method: {request.method}")
-    print(f"Feeding ID (row number): {id}")
-    
     if not check_keeper_access(request):
-        print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
     connection = None
@@ -2304,12 +1887,10 @@ def beri_pakan(request, id):
         # Get database connection
         connection = get_db_connection()
         cursor = connection.cursor()
-        print("DEBUG: Database connection established")
         
         # Get current user (keeper)
         current_user = request.session.get('user', {})
         username = current_user.get('username', '')
-        print(f"DEBUG: Current user: {username}")
         
         # Improved query to get the exact feeding record using row_number
         get_feeding_query = """
@@ -2334,12 +1915,10 @@ def beri_pakan(request, id):
         WHERE row_id = %s
         """
         
-        print(f"DEBUG: Executing query to get feeding record with row_id: {id}")
         cursor.execute(get_feeding_query, [id])
         feeding_data = cursor.fetchone()
         
         if not feeding_data:
-            print("DEBUG: Feeding record not found")
             messages.error(request, 'Data pemberian pakan tidak ditemukan!')
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
@@ -2351,16 +1930,10 @@ def beri_pakan(request, id):
             'jadwal': feeding_data[3],
             'status': feeding_data[4]
         }
-        print(f"DEBUG: Found feeding record - Animal ID: {feeding_record['animal_id']}")
-        print(f"DEBUG: Jenis: {feeding_record['jenis_pakan']}")
-        print(f"DEBUG: Jumlah: {feeding_record['jumlah']}")
-        print(f"DEBUG: Jadwal: {feeding_record['jadwal']}")
-        print(f"DEBUG: Status: {feeding_record['status']}")
         
         # Check if status allows feeding
         if feeding_record['status'] != 'Dijadwalkan':
             msg = f"Pemberian pakan gagal! Status saat ini: '{feeding_record['status']}'"
-            print(f"DEBUG: {msg}")
             messages.warning(request, msg)
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
@@ -2374,16 +1947,12 @@ def beri_pakan(request, id):
             status = 'Dijadwalkan'
         """
         
-        print(f"DEBUG: Executing update query: {update_query}")
-        print(f"DEBUG: With params: {feeding_record['animal_id']}, {feeding_record['jadwal']}")
-        
         cursor.execute(update_query, [
             feeding_record['animal_id'],
             feeding_record['jadwal']
         ])
         
         rows_affected = cursor.rowcount
-        print(f"DEBUG: Rows affected by update: {rows_affected}")
         
         if rows_affected == 0:
             # Check why update failed
@@ -2399,11 +1968,9 @@ def beri_pakan(request, id):
             
             if current_status:
                 msg = f"Status sudah berubah menjadi: '{current_status[0]}'"
-                print(f"DEBUG: {msg}")
                 messages.info(request, msg)
             else:
                 msg = "Data pemberian pakan tidak ditemukan (mungkin sudah dihapus)"
-                print(f"DEBUG: {msg}")
                 messages.error(request, msg)
             
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
@@ -2430,7 +1997,6 @@ def beri_pakan(request, id):
                 feeding_record['animal_id'],
                 feeding_record['jadwal']
             ])
-            print(f"DEBUG: Updated memberi record for keeper: {username}")
         else:
             insert_memberi_query = """
             INSERT INTO memberi (username_jh, id_hewan, jadwal)
@@ -2441,21 +2007,12 @@ def beri_pakan(request, id):
                 feeding_record['animal_id'],
                 feeding_record['jadwal']
             ])
-            print(f"DEBUG: Created new memberi record for keeper: {username}")
-        
-        print("DEBUG: All operations completed successfully")
         
         messages.success(request, 'Status pemberian pakan berhasil diubah menjadi "Diberikan"!')
-        print("DEBUG: Success - redirecting to pakan list")
         
         return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
     except Exception as e:
-        print(f"=== DEBUG ERROR ===")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        print(f"Traceback: {traceback.format_exc()}")
-        
         messages.error(request, f'Terjadi kesalahan sistem: {str(e)}')
         return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
@@ -2464,11 +2021,7 @@ def beri_pakan(request, id):
         try:
             if cursor:
                 cursor.close()
-                print("DEBUG: Cursor closed")
             if connection:
                 connection.close()
-                print("DEBUG: Connection closed")
-        except Exception as cleanup_error:
-            print(f"DEBUG: Cleanup error: {str(cleanup_error)}")
-        
-        print("=== DEBUG BERI PAKAN END ===")
+        except Exception:
+            pass
