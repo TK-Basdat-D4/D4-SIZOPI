@@ -49,6 +49,11 @@
     color: #b91c1c;
   }
   
+  .status-given {
+    background-color: #dbeafe;
+    color: #1e40af;
+  }
+  
   .pagination-link {
     padding: 0.25rem 0.75rem;
     border-radius: 0.375rem;
@@ -88,30 +93,36 @@
     <table class="w-full text-left border-collapse">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Individu</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Hewan</th>
           <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Spesies</th>
           <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Asal Hewan</th>
           <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Habitat</th>
           <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status Kesehatan</th>
           <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Pakan</th>
-          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah (gram)</th>
           <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Penjaga</th>
+          <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
         {% for record in feeding_history %}
         <tr class="hover:bg-gray-50 transition">
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ forloop.counter }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
             {{ record.nama_individu }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
             {{ record.spesies }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {{ record.asal_hewan }}
+            {{ record.asal_hewan|default:"Tidak diketahui" }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {{ record.habitat }}
+            {{ record.habitat|default:"Tidak diketahui" }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             {% if record.status_kesehatan == 'Sehat' %}
@@ -119,7 +130,7 @@
             {% elif record.status_kesehatan == 'Dalam Perawatan' %}
               <span class="status-badge status-treatment">Dalam Perawatan</span>
             {% else %}
-              <span class="status-badge status-sick">Sakit</span>
+              <span class="status-badge status-sick">{{ record.status_kesehatan|default:"Tidak diketahui" }}</span>
             {% endif %}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -129,17 +140,23 @@
             {{ record.jumlah }}
           </td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-            {{ record.jadwal }}
+            {{ record.jadwal|date:"d M Y H:i" }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            {{ record.penjaga_hewan }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="status-badge status-given">{{ record.status }}</span>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+          <td colspan="11" class="px-6 py-12 text-center text-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             <p class="text-lg font-medium">Tidak ada riwayat pemberian pakan</p>
-            <p class="mt-1">Belum ada catatan pemberian pakan yang tersimpan</p>
+            <p class="mt-1">Belum ada catatan pemberian pakan yang telah diberikan</p>
           </td>
         </tr>
         {% endfor %}
@@ -147,8 +164,21 @@
     </table>
   </div>
   
-  <!-- Pagination -->
+  <!-- Summary Information -->
   {% if feeding_history %}
+  <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div class="flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div class="text-sm text-blue-800">
+        <p class="font-medium">Total riwayat pemberian pakan: {{ feeding_history|length }} catatan</p>
+        <p>Menampilkan semua catatan pemberian pakan yang telah berhasil diberikan</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Pagination -->
   <div class="flex justify-between items-center mt-6">
     <p class="text-sm text-gray-700">
       Menampilkan <span class="font-medium">1</span> sampai <span class="font-medium">{{ feeding_history|length }}</span> dari <span class="font-medium">{{ feeding_history|length }}</span> riwayat

@@ -8,51 +8,68 @@
     background-color: white;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
   }
   
-  .input-field {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    transition: all 0.2s;
-  }
-  
-  .input-field:focus {
-    border-color: #10b981;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+  .form-group {
+    margin-bottom: 1.5rem;
   }
   
   .form-label {
     display: block;
-    color: #374151;
+    font-size: 0.875rem;
     font-weight: 500;
-    margin-bottom: 0.25rem;
+    color: #374151;
+    margin-bottom: 0.5rem;
+  }
+  
+  .input-field {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+  
+  .input-field:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
   }
   
   .btn-primary {
     background-color: #059669;
     color: white;
     font-weight: 500;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 0.375rem;
     transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
   }
   
-  .btn-primary:hover {
+  .btn-primary:hover:not(:disabled) {
     background-color: #047857;
+  }
+  
+  .btn-primary:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
   }
   
   .btn-secondary {
     background-color: #6b7280;
     color: white;
     font-weight: 500;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 0.375rem;
     transition: background-color 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 1rem;
   }
   
   .btn-secondary:hover {
@@ -63,6 +80,28 @@
     font-size: 0.875rem;
     color: #6b7280;
     margin-top: 0.25rem;
+  }
+  
+  .error-message {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  
+  .success-message {
+    color: #059669;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+  
+  .required {
+    color: #dc2626;
+  }
+  
+  .animal-info {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-left: 0.5rem;
   }
 </style>
 {% endblock %}
@@ -82,51 +121,227 @@
       </a>
     </div>
     
-    <div class="form-card p-6">
-      <form method="post" class="space-y-6">
+    <div class="form-card">
+      <form method="post" id="feedingForm" novalidate>
         {% csrf_token %}
         
-        <div>
-          <label for="animal_id" class="form-label">Pilih Hewan <span class="text-red-500">*</span></label>
+        <!-- Animal Selection -->
+        <div class="form-group">
+          <label for="animal_id" class="form-label">
+            Pilih Hewan <span class="required">*</span>
+          </label>
           <select name="animal_id" id="animal_id" class="input-field" required>
+            <option value="">-- Pilih Hewan --</option>
             {% for id, animal in animals.items %}
-              <option value="{{ id }}" {% if feeding and feeding.animal_id == id %}selected{% endif %}>
-                {{ animal.nama_individu }} ({{ animal.spesies }})
-              </option>
+            <option value="{{ id }}" 
+                    {% if feeding and feeding.animal_id == id %}selected{% endif %}
+                    data-spesies="{{ animal.spesies }}"
+                    data-habitat="{{ animal.nama_habitat }}">
+              {{ animal.nama_individu }}
+              <span class="animal-info">({{ animal.spesies }} - {{ animal.nama_habitat }})</span>
+            </option>
             {% endfor %}
           </select>
           <p class="helper-text">Pilih hewan yang akan diberi pakan</p>
+          <div id="animal_error" class="error-message" style="display: none;"></div>
         </div>
         
-        <div>
-          <label for="jenis" class="form-label">Jenis Pakan <span class="text-red-500">*</span></label>
-          <input type="text" name="jenis" id="jenis" class="input-field" value="{{ feeding.jenis_pakan }}" required>
+        <!-- Feed Type -->
+        <div class="form-group">
+          <label for="jenis" class="form-label">
+            Jenis Pakan <span class="required">*</span>
+          </label>
+          <input type="text" 
+                 name="jenis" 
+                 id="jenis" 
+                 class="input-field" 
+                 value="{% if feeding %}{{ feeding.jenis_pakan }}{% endif %}"
+                 placeholder="Contoh: Buah-buahan, Daging, Sayuran"
+                 required>
           <p class="helper-text">Masukkan jenis pakan untuk hewan</p>
+          <div id="jenis_error" class="error-message" style="display: none;"></div>
         </div>
         
-        <div>
-          <label for="jumlah" class="form-label">Jumlah Pakan (gram) <span class="text-red-500">*</span></label>
-          <input type="number" name="jumlah" id="jumlah" class="input-field" value="{{ feeding.jumlah }}" required>
+        <!-- Amount -->
+        <div class="form-group">
+          <label for="jumlah" class="form-label">
+            Jumlah Pakan (gram) <span class="required">*</span>
+          </label>
+          <input type="number" 
+                 name="jumlah" 
+                 id="jumlah" 
+                 class="input-field" 
+                 value="{% if feeding %}{{ feeding.jumlah }}{% endif %}"
+                 min="0.1"
+                 step="0.1"
+                 placeholder="Contoh: 500"
+                 required>
           <p class="helper-text">Masukkan jumlah pakan dalam satuan gram</p>
+          <div id="jumlah_error" class="error-message" style="display: none;"></div>
         </div>
         
-        <div>
-          <label for="jadwal" class="form-label">Jadwal Pemberian <span class="text-red-500">*</span></label>
-          <input type="datetime-local" name="jadwal" id="jadwal" class="input-field" value="{{ feeding.jadwal|date:'Y-m-d\TH:i' }}" required>
+        <!-- Schedule -->
+        <div class="form-group">
+          <label for="jadwal" class="form-label">
+            Jadwal Pemberian <span class="required">*</span>
+          </label>
+          <input type="datetime-local" 
+                 name="jadwal" 
+                 id="jadwal" 
+                 class="input-field" 
+                 value="{% if feeding %}{{ feeding.jadwal|date:'Y-m-d\TH:i' }}{% endif %}"
+                 required>
           <p class="helper-text">Tentukan waktu pemberian pakan</p>
+          <div id="jadwal_error" class="error-message" style="display: none;"></div>
         </div>
         
-        <div class="flex space-x-4 pt-2">
-          <button type="submit" class="btn-primary">
+        <!-- Current Info (for edit mode) -->
+        {% if feeding %}
+        <div class="form-group">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h3 class="font-medium text-gray-800 mb-2">Informasi Saat Ini:</h3>
+            <p class="text-sm text-gray-600">Hewan: {{ feeding.nama_hewan }} ({{ feeding.spesies }})</p>
+            <p class="text-sm text-gray-600">Status: {{ feeding.status }}</p>
+            <p class="text-sm text-gray-600">Penjaga: {{ feeding.penjaga_hewan }}</p>
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Action Buttons -->
+        <div class="flex justify-end space-x-4 pt-2">
+          <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="btn-secondary">
+            Batal
+          </a>
+          <button type="submit" class="btn-primary" id="submitBtn">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
             </svg>
-            Simpan
+            {% if feeding %}Perbarui Jadwal{% else %}Simpan{% endif %}
           </button>
-          <a href="{% url 'hijau_kesehatan_satwa:pemberian_pakan_list' %}" class="btn-secondary">Batal</a>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('feedingForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Form validation
+    function validateForm() {
+        let isValid = true;
+        
+        // Clear previous errors
+        document.querySelectorAll('.error-message').forEach(el => {
+            el.style.display = 'none';
+            el.textContent = '';
+        });
+        
+        // Validate animal selection
+        const animalId = document.getElementById('animal_id').value;
+        if (!animalId) {
+            showError('animal_error', 'Silahkan pilih hewan untuk pemberian pakan!');
+            isValid = false;
+        }
+        
+        // Validate feed type
+        const jenis = document.getElementById('jenis').value.trim();
+        if (!jenis) {
+            showError('jenis_error', 'Jenis pakan wajib diisi!');
+            isValid = false;
+        } else if (jenis.length < 3) {
+            showError('jenis_error', 'Jenis pakan minimal 3 karakter!');
+            isValid = false;
+        }
+        
+        // Validate amount
+        const jumlah = document.getElementById('jumlah').value;
+        if (!jumlah || parseFloat(jumlah) <= 0) {
+            showError('jumlah_error', 'Jumlah pakan harus lebih dari 0!');
+            isValid = false;
+        }
+        
+        // Validate schedule
+        const jadwal = document.getElementById('jadwal').value;
+        if (!jadwal) {
+            showError('jadwal_error', 'Jadwal pemberian wajib diisi!');
+            isValid = false;
+        } else {
+            // Check if the scheduled time is not in the past
+            const scheduledTime = new Date(jadwal);
+            const now = new Date();
+            if (scheduledTime < now) {
+                showError('jadwal_error', 'Jadwal tidak boleh di masa lalu!');
+                isValid = false;
+            }
+        }
+        
+        return isValid;
+    }
+    
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+    
+    // Real-time validation
+    document.getElementById('animal_id').addEventListener('change', function() {
+        if (this.value) {
+            document.getElementById('animal_error').style.display = 'none';
+        }
+    });
+    
+    document.getElementById('jenis').addEventListener('input', function() {
+        if (this.value.trim().length >= 3) {
+            document.getElementById('jenis_error').style.display = 'none';
+        }
+    });
+    
+    document.getElementById('jumlah').addEventListener('input', function() {
+        if (this.value && parseFloat(this.value) > 0) {
+            document.getElementById('jumlah_error').style.display = 'none';
+        }
+    });
+    
+    document.getElementById('jadwal').addEventListener('change', function() {
+        if (this.value) {
+            const scheduledTime = new Date(this.value);
+            const now = new Date();
+            if (scheduledTime >= now) {
+                document.getElementById('jadwal_error').style.display = 'none';
+            }
+        }
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Menyimpan...';
+        
+        // Show confirmation for edit mode
+        {% if feeding %}
+        if (!confirm('Apakah Anda yakin ingin mengubah data pemberian pakan ini?')) {
+            e.preventDefault();
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Perbarui Jadwal';
+            return false;
+        }
+        {% endif %}
+    });
+    
+    // Set minimum datetime to now
+    const now = new Date();
+    const minDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    document.getElementById('jadwal').min = minDateTime;
+});
+</script>
 {% endblock %}
