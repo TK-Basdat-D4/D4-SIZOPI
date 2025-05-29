@@ -3,75 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Zoo Management System{% endblock %}</title>
+    <title>{% block title %}SIZOPI - Sistem Informasi Zoo Pintar{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
 </head>
 <body class="flex flex-col min-h-screen bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-emerald-600 text-white shadow-lg">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo/Brand -->
-                <div class="flex items-center">
-                    <a href="{% url 'register_login:home' %}" class="text-2xl font-bold">SIZOPI</a>
-                </div>
+    <header>
+        {% include 'navbar.html' %}
+    </header>
 
-                <!-- Navigation Links -->
-                <div class="flex items-center space-x-4">
-                    <a href="{% url 'register_login:home' %}" class="px-3 py-2 rounded-md hover:bg-emerald-700 transition-colors">Home</a>
-                    {% if current_user %}
-                        <a href="{% url 'register_login:profile' %}" class="px-3 py-2 rounded-md hover:bg-emerald-700 transition-colors">Profile</a>
-                        <a href="{% url 'register_login:logout' %}" class="px-3 py-2 rounded-md hover:bg-emerald-700 transition-colors">Logout</a>
-                    {% else %}
-                        <a href="{% url 'register_login:login' %}" class="px-3 py-2 rounded-md hover:bg-emerald-700 transition-colors">Login</a>
-                        <a href="{% url 'register_login:choose_role' %}" class="px-3 py-2 rounded-md hover:bg-emerald-700 transition-colors">Register</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Messages -->
-    {% if messages %}
-    <div class="container mx-auto px-4 py-4 max-w-4xl">
-        {% for message in messages %}
-            <div class="p-4 mb-4 rounded-lg shadow-md border-l-4 {% if message.tags == 'error' %}bg-red-50 text-red-800 border-red-500 border-l-red-500{% elif message.tags == 'success' %}bg-green-50 text-green-800 border-green-500 border-l-green-500{% else %}bg-blue-50 text-blue-800 border-blue-500 border-l-blue-500{% endif %}">
-                <div class="flex items-center">
-                    {% if message.tags == 'error' %}
-                        <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                    {% elif message.tags == 'success' %}
-                        <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                    {% else %}
-                        <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1 9a1 1 0 01-1-1v-4a1 1 0 112 0v4a1 1 0 01-1 1z" clip-rule="evenodd"/>
-                        </svg>
-                    {% endif %}
-                    <div>
-                        <p class="font-semibold text-base">
-                            {% if message.tags == 'error' %}Error{% elif message.tags == 'success' %}Success{% else %}Info{% endif %}
-                        </p>
-                        <p class="text-sm mt-1">{{ message }}</p>
+    <main class="flex-grow">
+        {% if messages %}
+            <div class="container mx-auto px-4 py-4">
+                {% for message in messages %}
+                    <div class="p-4 mb-4 rounded-lg flex items-start
+                        {% if message.tags == 'error' or message.tags == 'danger' %} 
+                            bg-red-100 text-red-800 border-l-4 border-red-500
+                        {% elif message.tags == 'success' %} 
+                            bg-green-100 text-green-800 border-l-4 border-green-500
+                        {% elif message.tags == 'warning' %}
+                            bg-yellow-100 text-yellow-800 border-l-4 border-yellow-500
+                        {% else %}
+                            bg-blue-100 text-blue-800 border-l-4 border-blue-500
+                        {% endif %}">
+                        <i class="fas 
+                            {% if message.tags == 'error' or message.tags == 'danger' %} 
+                                fa-exclamation-circle mr-3
+                            {% elif message.tags == 'success' %} 
+                                fa-check-circle mr-3
+                            {% elif message.tags == 'warning' %}
+                                fa-exclamation-triangle mr-3
+                            {% else %}
+                                fa-info-circle mr-3
+                            {% endif %}"></i>
+                        <span>{{ message }}</span>
                     </div>
-                </div>
+                {% endfor %}
             </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 py-8">
-        {% block content %}{% endblock %}
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-6 mt-auto">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-sm">&copy; 2025 Zoo Management System. All rights reserved.</p>
+    <footer class="bg-gray-800 text-white py-4 text-center">
+        <div>
+            <span>&copy; 2024 SIZOPI. All rights reserved.</span>
         </div>
     </footer>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>
