@@ -16,7 +16,6 @@ urlpatterns = [
     path('hewan/<str:id_hewan>/daftar/', views.admin_form_adopsi, name='admin_form_adopsi'),
     path('hewan/<str:id_hewan>/hentikan/', views.hentikan_adopsi, name='hentikan_adopsi'),
 
-
     # Adopter Program
     path('program-adopter/', views.adopter_program_adopsi, name='adopter_program_adopsi'),
     path('adopter/<str:id_hewan>/', views.adopter_lihat_adopsi, name='adopter_lihat_adopsi'),
@@ -24,7 +23,6 @@ urlpatterns = [
     path('pantau-kondisi/<str:id_hewan>/', views.adopter_pantau_kondisi, name='adopter_pantau_kondisi'),
     path('sertifikat-adopsi/<str:id_hewan>/', views.adopter_sertifikat, name='adopter_sertifikat'),
     path('perpanjang-adopsi/<str:id_hewan>/', views.adopter_perpanjang_adopsi, name='adopter_perpanjang_adopsi'),
-    #path('hewan/<str:id_hewan>/hentikan/', views.hentikan_adopsi_adopter, name='hentikan_adopsi_adopter'),
     path('adopter/hentikan-adopsi/<uuid:id_hewan>/', views.hentikan_adopsi_adopter, name='hentikan_adopsi_adopter'),
     path('adopsi/adopter/hewan/<uuid:id_hewan>/', views.adopter_lihat_adopsi, name='adopter_lihat_adopsi'),
 

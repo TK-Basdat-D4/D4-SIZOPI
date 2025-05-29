@@ -190,7 +190,17 @@ def admin_detail_adopsi(request, id_hewan):
             AND CURRENT_DATE BETWEEN tgl_mulai_adopsi AND tgl_berhenti_adopsi
         """, [new_status, str(id_hewan)])
         connect.commit()
-        messages.success(request, "Status pembayaran berhasil diperbarui.")
+        
+        cursor.execute("""
+            SELECT COALESCE(i.nama, o.nama_organisaasi)
+            FROM ADOPTER a
+            LEFT JOIN INDIVIDU i ON a.id_adopter = i.id_adopter
+            LEFT JOIN ORGANISASI o ON a.id_adopter = o.id_adopter
+            WHERE a.id_adopter = %s
+        """, [id_adopter])
+        nama_adopter = cursor.fetchone()[0]
+
+        messages.success(request, f'SUKSES: Total kontribusi adopter "{nama_adopter}" telah diperbarui.')
 
     # Ambil data detail adopsi
     cursor.execute("""
@@ -222,12 +232,17 @@ def admin_detail_adopsi(request, id_hewan):
     hewan = dict(zip(columns, row))
 
     # Hitung total kontribusi LUNAS untuk adopter ini
-    cursor.execute("""
-        SELECT SUM(kontribusi_finansial)
-        FROM ADOPSI
-        WHERE id_adopter = %s AND status_pembayaran = 'lunas'
-    """, [id_adopter])
-    total_kontribusi = cursor.fetchone()[0] or 0
+    # cursor.execute("""
+    #     SELECT SUM(kontribusi_finansial)
+    #     FROM ADOPSI
+    #     WHERE id_adopter = %s AND status_pembayaran = 'lunas'
+    # """, [id_adopter])
+    # total_kontribusi = cursor.fetchone()[0] or 0
+    # ini udah ada di trigger, tapi aku ttep adain
+
+    # Ambil nilai total kontribusi yang sudah diupdate lewat trigger
+    cursor.execute("SELECT total_kontribusi FROM ADOPTER WHERE id_adopter = %s", [id_adopter])
+    total_kontribusi = cursor.fetchone()[0]
 
     cursor.close()
     connect.close()
@@ -459,7 +474,6 @@ def adopter_lihat_adopsi(request, id_hewan):
         LEFT JOIN HABITAT hab ON h.nama_habitat = hab.nama
         WHERE h.id = %s
         AND a.username_adopter = %s
-        AND CURRENT_DATE BETWEEN ad.tgl_mulai_adopsi AND ad.tgl_berhenti_adopsi
         ORDER BY ad.tgl_mulai_adopsi DESC
         LIMIT 1
     """, [str(id_hewan), username_adopter])
@@ -516,8 +530,9 @@ def adopter_program_adopsi(request):
         LEFT JOIN INDIVIDU i ON i.id_adopter = a.id_adopter
         LEFT JOIN ORGANISASI o ON o.id_adopter = a.id_adopter
         WHERE a.username_adopter = %s
-        AND ad.tgl_mulai_adopsi <= CURRENT_DATE
-        AND ad.tgl_berhenti_adopsi > CURRENT_DATE
+            AND CURRENT_DATE BETWEEN ad.tgl_mulai_adopsi AND ad.tgl_berhenti_adopsi
+        ORDER BY h.id, ad.tgl_mulai_adopsi DESC
+
     """, [username])
     
     rows = cursor.fetchall()
@@ -727,7 +742,7 @@ def adopter_perpanjang_adopsi(request, id_hewan):
         periode = request.POST.get('periode')
         nominal = int(request.POST.get("nominal", 0))
         if nominal < 1000:
-            messages.error(request, "Kontribusi minimal adalah Rp 1000.")
+            messages.error(request, "Kontribusi minimal adalah Rp 1")
             return redirect(reverse('adopsi:adopter_perpanjang_adopsi', args=[id_hewan]))  
 
         if not all([nominal, periode]):
@@ -735,24 +750,38 @@ def adopter_perpanjang_adopsi(request, id_hewan):
             return redirect(reverse('adopsi:adopter_perpanjang_adopsi', args=[id_hewan]))
 
         tambahan_bulan = int(periode)
-        tanggal_baru = tgl_akhir_lama + relativedelta(months=tambahan_bulan)
+        tgl_mulai_baru = date.today()
+        tgl_akhir_baru = tgl_akhir_lama + relativedelta(months=tambahan_bulan)
 
-        # Masukkan adopsi baru ke DB (perpanjangan)
+        # Ambil ID adopter
+        cursor.execute("SELECT id_adopter FROM ADOPTER WHERE username_adopter = %s", [username_adopter])
+        id_adopter = cursor.fetchone()[0]
+
+        # Tambah periode dan kontribusi ke adopsi aktif
         cursor.execute("""
-            INSERT INTO ADOPSI (
-                id_adopter, id_hewan, tgl_mulai_adopsi,
-                tgl_berhenti_adopsi, kontribusi_finansial, status_pembayaran
-            )
-            SELECT a.id_adopter, %s, %s, %s, %s, 'tertunda'
-            FROM ADOPTER a
-            WHERE a.username_adopter = %s
+            UPDATE ADOPSI
+            SET 
+                tgl_berhenti_adopsi = tgl_berhenti_adopsi + INTERVAL '%s month',
+                kontribusi_finansial = kontribusi_finansial + %s
+            WHERE id_adopter = %s AND id_hewan = %s
+            AND CURRENT_DATE BETWEEN tgl_mulai_adopsi AND tgl_berhenti_adopsi
         """, [
-            str(id_hewan),
-            tgl_akhir_lama + relativedelta(days=1),
-            tanggal_baru,
-            int(nominal),
-            username_adopter
+            tambahan_bulan,
+            nominal,
+            id_adopter,
+            str(id_hewan)
         ])
+
+        # Update juga total kontribusi di tabel ADOPTER
+        cursor.execute("""
+            UPDATE ADOPTER
+            SET total_kontribusi = (
+                SELECT COALESCE(SUM(kontribusi_finansial), 0)
+                FROM ADOPSI
+                WHERE id_adopter = %s AND status_pembayaran = 'lunas'
+            )
+            WHERE id_adopter = %s
+        """, [id_adopter, id_adopter])
 
         connect.commit()
         cursor.close()
@@ -789,10 +818,29 @@ def hentikan_adopsi_adopter(request, id_hewan):
         cursor = connect.cursor()
         cursor.execute("SET search_path TO sizopi")
 
-        # Potong masa adopsi ke hari ini
+        # Cari adopsi aktif milik adopter ini untuk hewan ini
+        cursor.execute("""
+            SELECT ad.id_adopter, ad.tgl_mulai_adopsi
+            FROM ADOPSI ad
+            JOIN ADOPTER a ON ad.id_adopter = a.id_adopter
+            WHERE a.username_adopter = %s
+            AND ad.id_hewan = %s
+            AND ad.tgl_berhenti_adopsi >= CURRENT_DATE
+            ORDER BY ad.tgl_mulai_adopsi DESC
+            LIMIT 1
+        """, [username_adopter, str(id_hewan)])
+        result = cursor.fetchone()
+
+        if not result:
+            messages.error(request, "Tidak ditemukan adopsi aktif yang bisa dihentikan.")
+            return redirect('adopsi:adopter_program_adopsi')
+
+        id_adopter, tgl_mulai = result
+
+        # Potong masa adopsi ke hari kemarin supaya langsung tidak aktif
         cursor.execute("""
             UPDATE ADOPSI
-            SET tgl_berhenti_adopsi = CURRENT_DATE
+            SET tgl_berhenti_adopsi = CURRENT_DATE - INTERVAL '1 day'
             WHERE id_hewan = %s
             AND CURRENT_DATE BETWEEN tgl_mulai_adopsi AND tgl_berhenti_adopsi
             AND id_adopter = (
@@ -800,18 +848,14 @@ def hentikan_adopsi_adopter(request, id_hewan):
             )
         """, [str(id_hewan), username_adopter])
 
-        print(f"Hentikan adopsi untuk hewan {id_hewan} oleh {username_adopter}")
-
-        print(f"{cursor.rowcount} rows affected.")
-
         connect.commit()
         cursor.close()
         connect.close()
 
         messages.success(request, "Adopsi berhasil dihentikan.")
-        return HttpResponseRedirect(reverse('adopsi:adopter_program_adopsi'))
-    
-    return HttpResponseRedirect(reverse('adopsi:adopter_program_adopsi'))
+        return redirect('adopsi:adopter_program_adopsi')
+
+    return redirect('adopsi:adopter_program_adopsi')
 
 def admin_list_adopter(request):
     connect = get_db_connection()
@@ -845,19 +889,23 @@ def admin_list_adopter(request):
     rows = cursor.fetchall()
 
     # Pemeringkatan
-    cursor.execute("""
-        SELECT 
-            COALESCE(i.nama, o.nama_organisaasi) AS nama_adopter,
-            SUM(ad.kontribusi_finansial) AS total_lunas_1thn
-        FROM ADOPTER a
-        LEFT JOIN INDIVIDU i ON a.id_adopter = i.id_adopter
-        LEFT JOIN ORGANISASI o ON a.id_adopter = o.id_adopter
-        JOIN ADOPSI ad ON a.id_adopter = ad.id_adopter
-        WHERE ad.status_pembayaran = 'lunas' AND ad.tgl_mulai_adopsi >= %s
-        GROUP BY nama_adopter
-        ORDER BY total_lunas_1thn DESC
-        LIMIT 5
-    """, [one_year_ago])
+    # cursor.execute("""
+    #     SELECT 
+    #         COALESCE(i.nama, o.nama_organisaasi) AS nama_adopter,
+    #         SUM(ad.kontribusi_finansial) AS total_lunas_1thn
+    #     FROM ADOPTER a
+    #     LEFT JOIN INDIVIDU i ON a.id_adopter = i.id_adopter
+    #     LEFT JOIN ORGANISASI o ON a.id_adopter = o.id_adopter
+    #     JOIN ADOPSI ad ON a.id_adopter = ad.id_adopter
+    #     WHERE ad.status_pembayaran = 'lunas' AND ad.tgl_mulai_adopsi >= %s
+    #     GROUP BY nama_adopter
+    #     ORDER BY total_lunas_1thn DESC
+    #     LIMIT 5
+    # """, [one_year_ago])
+    # top_5 = cursor.fetchall() 
+    # udah ada di procedured tapi tetep aku taro aja
+
+    cursor.execute("SELECT * FROM get_top5_adopter()")
     top_5 = cursor.fetchall()
 
     cursor.close()
@@ -880,12 +928,29 @@ def admin_list_adopter(request):
             individu.append(data)
         else:
             organisasi.append(data)
+    
+    individu.sort(key=lambda x: x['total_kontribusi'], reverse=True)
+    organisasi.sort(key=lambda x: x['total_kontribusi'], reverse=True)
+
+    # top_contributors = [{
+    #     'rank': i+1,
+    #     'nama': r[0],
+    #     'kontribusi': r[1]
+    # } for i, r in enumerate(top_5)]
+    # udah ada di procedured tapi tetep aku taro aja
 
     top_contributors = [{
-        'rank': i+1,
-        'nama': r[0],
-        'kontribusi': r[1]
-    } for i, r in enumerate(top_5)]
+        'rank': r[0],
+        'nama': r[1],
+        'kontribusi': r[2]
+    } for r in top_5]
+
+    if top_5:
+        messages.success(
+            request,
+            f'SUKSES: Daftar Top 5 Adopter satu tahun terakhir berhasil diperbarui, '
+            f'dengan peringkat pertama dengan nama adopter "{top_5[0][1]}" berkontribusi sebesar "Rp{top_5[0][2]:,}".'
+        )
 
     context = {
         'pengunjung_individu': individu,
@@ -970,7 +1035,6 @@ def hapus_riwayat_adopsi(request, id_adopter, id_hewan, tanggal_mulai):
             WHERE id_adopter = %s 
             AND id_hewan = %s 
             AND tgl_mulai_adopsi = %s
-            AND tgl_berhenti_adopsi < CURRENT_DATE
         """, [id_adopter, id_hewan, tanggal_mulai])
         connect.commit()
         messages.success(request, 'Riwayat adopsi berhasil dihapus.')

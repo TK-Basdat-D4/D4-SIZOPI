@@ -26,6 +26,16 @@
         <h2 class="text-3xl font-bold text-gray-800 mt-4">Halo {{ username }} 👋</h2>
     </div>
 
+    {% if messages %}
+      <ul class="mb-4">
+        {% for message in messages %}
+          <li class="text-green-700 bg-green-100 border border-green-300 px-4 py-2 rounded-lg shadow-sm">
+            {{ message }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    
     <!-- Bagian Terima Kasih di Sebelah Kiri -->
     <div class="flex justify-start mb-8">
         <p class="text-lg text-gray-600 mt-2">

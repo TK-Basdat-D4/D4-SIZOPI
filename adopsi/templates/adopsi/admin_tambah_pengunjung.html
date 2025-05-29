@@ -7,6 +7,16 @@
     <div class="max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Daftarkan Pengunjung</h1>
         
+        {% if messages %}
+            <ul class="mb-4">
+                {% for message in messages %}
+                <li class="text-green-700 bg-green-100 border border-green-300 px-4 py-2 rounded-lg shadow-sm">
+                    {{ message }}
+                </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
         <form method="post" class="space-y-6">
             {% csrf_token %}
             
