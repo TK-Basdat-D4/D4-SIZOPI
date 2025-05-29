@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 from utils.db_utils import get_db_connection
+import traceback
 
 # Helper functions remain the same
 def check_doctor_access(request):
@@ -2290,15 +2291,14 @@ def pemberian_pakan_delete(request, id):
 def beri_pakan(request, id):
     print("=== DEBUG BERI PAKAN START ===")
     print(f"Request method: {request.method}")
-    print(f"Feeding ID: {id}")
-    print(f"User in session: {'user' in request.session}")
+    print(f"Feeding ID (row number): {id}")
     
     if not check_keeper_access(request):
         print("DEBUG: Access denied - redirecting to login")
         return redirect('register_login:login')
     
-    connection = get_db_connection()
-    cursor = connection.cursor()
+    connection = None
+    cursor = None
     
     try:
         # Get database connection
@@ -2309,20 +2309,20 @@ def beri_pakan(request, id):
         # Get current user (keeper)
         current_user = request.session.get('user', {})
         username = current_user.get('username', '')
-        print(f"DEBUG: Current user: {current_user}")
+        print(f"DEBUG: Current user: {username}")
         
-        # PERBAIKAN 1: Gunakan query yang sama seperti di list untuk konsistensi
+        # Improved query to get the exact feeding record using row_number
         get_feeding_query = """
         WITH numbered_pakan AS (
             SELECT 
-                ROW_NUMBER() OVER (ORDER BY pakan.jadwal) as row_id,
-                pakan.id_hewan,
-                pakan.jenis,
-                pakan.jumlah,
-                pakan.jadwal,
-                pakan.status
+                id_hewan,
+                jenis,
+                jumlah,
+                jadwal,
+                status,
+                ROW_NUMBER() OVER (ORDER BY jadwal) as row_id
             FROM pakan
-            ORDER BY pakan.jadwal
+            ORDER BY jadwal
         )
         SELECT 
             id_hewan,
@@ -2334,7 +2334,7 @@ def beri_pakan(request, id):
         WHERE row_id = %s
         """
         
-        print(f"DEBUG: Getting feeding record with ID: {id}")
+        print(f"DEBUG: Executing query to get feeding record with row_id: {id}")
         cursor.execute(get_feeding_query, [id])
         feeding_data = cursor.fetchone()
         
@@ -2345,101 +2345,93 @@ def beri_pakan(request, id):
         
         # Convert feeding data to dictionary
         feeding_record = {
-            'animal_id': feeding_data[0],  # Tetap sebagai UUID object
+            'animal_id': feeding_data[0],
             'jenis_pakan': feeding_data[1],
-            'jumlah': feeding_data[2],
+            'jumlah': float(feeding_data[2]),
             'jadwal': feeding_data[3],
             'status': feeding_data[4]
         }
-        print(f"DEBUG: Found feeding record: {feeding_record}")
+        print(f"DEBUG: Found feeding record - Animal ID: {feeding_record['animal_id']}")
+        print(f"DEBUG: Jenis: {feeding_record['jenis_pakan']}")
+        print(f"DEBUG: Jumlah: {feeding_record['jumlah']}")
+        print(f"DEBUG: Jadwal: {feeding_record['jadwal']}")
+        print(f"DEBUG: Status: {feeding_record['status']}")
         
-        # Check if status allows feeding (only 'Dijadwalkan')
+        # Check if status allows feeding
         if feeding_record['status'] != 'Dijadwalkan':
-            print(f"DEBUG: Feeding not allowed with current status: {feeding_record['status']}")
-            messages.warning(request, f'Pemberian pakan ini tidak dapat dilakukan! Status saat ini: {feeding_record["status"]}')
+            msg = f"Pemberian pakan gagal! Status saat ini: '{feeding_record['status']}'"
+            print(f"DEBUG: {msg}")
+            messages.warning(request, msg)
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
-        print(f"DEBUG: Status allows feeding: {feeding_record['status']}")
-        
-        # Start transaction
-        connection.autocommit = False
-        print("DEBUG: Autocommit disabled, starting transaction")
-        
-        # PERBAIKAN 2: Update dengan kondisi yang lebih spesifik dan handle timestamp
+        # Update the feeding status (let database handle transaction automatically)
         update_query = """
         UPDATE pakan 
         SET status = 'Diberikan'
         WHERE 
-            id_hewan = %s 
-            AND jenis = %s 
-            AND jumlah = %s 
-            AND DATE(jadwal) = DATE(%s)
-            AND TIME(jadwal) = TIME(%s)
-            AND status = 'Dijadwalkan'
+            id_hewan = %s AND 
+            jadwal = %s AND
+            status = 'Dijadwalkan'
         """
         
-        print("=== DEBUG SQL EXECUTION - UPDATE STATUS ===")
-        print(f"SQL Query: {update_query}")
-        print(f"Parameters: [{feeding_record['animal_id']}, {feeding_record['jenis_pakan']}, {feeding_record['jumlah']}, {feeding_record['jadwal']}, {feeding_record['jadwal']}]")
+        print(f"DEBUG: Executing update query: {update_query}")
+        print(f"DEBUG: With params: {feeding_record['animal_id']}, {feeding_record['jadwal']}")
         
         cursor.execute(update_query, [
-            feeding_record['animal_id'], 
-            feeding_record['jenis_pakan'], 
-            feeding_record['jumlah'], 
-            feeding_record['jadwal'],
+            feeding_record['animal_id'],
             feeding_record['jadwal']
         ])
         
         rows_affected = cursor.rowcount
-        print(f"DEBUG: Rows affected: {rows_affected}")
+        print(f"DEBUG: Rows affected by update: {rows_affected}")
         
         if rows_affected == 0:
-            print("DEBUG: No rows updated - checking if record still exists")
-            
-            # PERBAIKAN 3: Cek ulang apakah record masih ada dan statusnya
+            # Check why update failed
             check_query = """
-            SELECT status FROM pakan 
-            WHERE id_hewan = %s AND jenis = %s AND jumlah = %s 
-            AND jadwal = %s
+            SELECT status FROM pakan
+            WHERE id_hewan = %s AND jadwal = %s
             """
             cursor.execute(check_query, [
-                feeding_record['animal_id'], 
-                feeding_record['jenis_pakan'], 
-                feeding_record['jumlah'], 
-                feeding_record['jadwal'],
+                feeding_record['animal_id'],
                 feeding_record['jadwal']
             ])
             current_status = cursor.fetchone()
             
             if current_status:
-                status = current_status[0]
-                if status == 'Diberikan':
-                    connection.rollback()
-                    messages.info(request, 'Pemberian pakan ini sudah dilakukan sebelumnya!')
-                else:
-                    connection.rollback()
-                    messages.error(request, f'Status pemberian pakan sudah berubah menjadi: {status}')
+                msg = f"Status sudah berubah menjadi: '{current_status[0]}'"
+                print(f"DEBUG: {msg}")
+                messages.info(request, msg)
             else:
-                connection.rollback()
-                messages.error(request, 'Data pemberian pakan tidak ditemukan!')
+                msg = "Data pemberian pakan tidak ditemukan (mungkin sudah dihapus)"
+                print(f"DEBUG: {msg}")
+                messages.error(request, msg)
             
             return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
-        # PERBAIKAN 4: Tambahkan record ke tabel memberi jika belum ada
-        # Cek apakah sudah ada record di tabel memberi
+        # Update or insert into memberi table
         check_memberi_query = """
-        SELECT COUNT(*) FROM memberi 
+        SELECT COUNT(*) FROM memberi
         WHERE id_hewan = %s AND jadwal = %s
         """
         cursor.execute(check_memberi_query, [
             feeding_record['animal_id'],
-            feeding_record['jadwal'],
             feeding_record['jadwal']
         ])
-        memberi_exists = cursor.fetchone()[0]
+        memberi_exists = cursor.fetchone()[0] > 0
         
-        if memberi_exists == 0:
-            # Tambahkan record ke tabel memberi
+        if memberi_exists:
+            update_memberi_query = """
+            UPDATE memberi
+            SET username_jh = %s
+            WHERE id_hewan = %s AND jadwal = %s
+            """
+            cursor.execute(update_memberi_query, [
+                username,
+                feeding_record['animal_id'],
+                feeding_record['jadwal']
+            ])
+            print(f"DEBUG: Updated memberi record for keeper: {username}")
+        else:
             insert_memberi_query = """
             INSERT INTO memberi (username_jh, id_hewan, jadwal)
             VALUES (%s, %s, %s)
@@ -2449,79 +2441,34 @@ def beri_pakan(request, id):
                 feeding_record['animal_id'],
                 feeding_record['jadwal']
             ])
-            print(f"DEBUG: Added record to memberi table for keeper: {username}")
+            print(f"DEBUG: Created new memberi record for keeper: {username}")
         
-        # Commit the transaction
-        connection.commit()
-        print("DEBUG: Transaction committed successfully")
+        print("DEBUG: All operations completed successfully")
         
-        # Display success message
-        messages.success(request, f'Status pemberian pakan berhasil diubah menjadi "Diberikan"!')
-        print("DEBUG: Success message displayed")
+        messages.success(request, 'Status pemberian pakan berhasil diubah menjadi "Diberikan"!')
+        print("DEBUG: Success - redirecting to pakan list")
         
-        print("=== DEBUG: Redirecting to pakan list ===")
         return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
     except Exception as e:
-        # Handle database errors
-        print(f"=== DEBUG ERROR - BERI PAKAN ===")
+        print(f"=== DEBUG ERROR ===")
         print(f"Error type: {type(e).__name__}")
         print(f"Error message: {str(e)}")
-        print(f"Error details: {repr(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
         
-        # Rollback transaction on error
-        if connection:
-            try:
-                connection.rollback()
-                print("DEBUG: Transaction rolled back")
-            except Exception as rollback_error:
-                print(f"DEBUG: Error during rollback: {rollback_error}")
-        
-        messages.error(request, f'Terjadi kesalahan saat mengubah status pemberian pakan: {str(e)}')
+        messages.error(request, f'Terjadi kesalahan sistem: {str(e)}')
         return redirect('hijau_kesehatan_satwa:pemberian_pakan_list')
         
     finally:
-        # Always close connection
+        # Clean up resources
         try:
             if cursor:
                 cursor.close()
-                print("DEBUG: Cursor closed in cleanup")
+                print("DEBUG: Cursor closed")
             if connection:
                 connection.close()
-                print("DEBUG: Connection closed in cleanup")
+                print("DEBUG: Connection closed")
         except Exception as cleanup_error:
-            print(f"DEBUG: Error in cleanup: {cleanup_error}")
-
-
-# TAMBAHAN: Fungsi helper untuk debug
-def debug_pakan_data(connection, animal_id, jenis, jumlah, jadwal):
-    """Helper function untuk debug data pakan"""
-    cursor = connection.cursor()
-    
-    print("=== DEBUG PAKAN DATA ===")
-    
-    # Cek semua data pakan untuk hewan ini
-    debug_query = """
-    SELECT id_hewan, jenis, jumlah, jadwal, status 
-    FROM pakan 
-    WHERE id_hewan = %s
-    ORDER BY jadwal
-    """
-    cursor.execute(debug_query, [animal_id])
-    all_records = cursor.fetchall()
-    
-    print(f"All pakan records for animal {animal_id}:")
-    for i, record in enumerate(all_records):
-        print(f"  {i+1}. ID: {record[0]}, Jenis: {record[1]}, Jumlah: {record[2]}, Jadwal: {record[3]}, Status: {record[4]}")
-    
-    # Cek exact match
-    exact_query = """
-    SELECT COUNT(*) FROM pakan 
-    WHERE id_hewan = %s AND jenis = %s AND jumlah = %s AND jadwal = %s
-    """
-    cursor.execute(exact_query, [animal_id, jenis, jumlah, jadwal])
-    exact_count = cursor.fetchone()[0]
-    print(f"Exact matches found: {exact_count}")
-    
-    cursor.close()
-    return all_records
+            print(f"DEBUG: Cleanup error: {str(cleanup_error)}")
+        
+        print("=== DEBUG BERI PAKAN END ===")
