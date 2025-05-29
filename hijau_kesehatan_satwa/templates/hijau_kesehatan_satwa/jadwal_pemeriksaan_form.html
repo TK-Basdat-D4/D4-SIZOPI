@@ -37,6 +37,8 @@
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
+    border: none;
+    cursor: pointer;
     transition: background-color 0.2s;
   }
   
@@ -50,6 +52,8 @@
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
+    text-decoration: none;
+    display: inline-block;
     transition: background-color 0.2s;
   }
   
@@ -61,6 +65,50 @@
     font-size: 0.875rem;
     color: #6b7280;
     margin-top: 0.25rem;
+  }
+  
+  .required {
+    color: #ef4444;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .animal-info {
+    background-color: #f0f9ff;
+    border: 1px solid #e0f2fe;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    display: none;
+  }
+  
+  .animal-info.active {
+    display: block;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .status-sehat {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .status-sakit {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .status-pemulihan {
+    background-color: #fef3c7;
+    color: #92400e;
   }
 </style>
 {% endblock %}
@@ -81,29 +129,191 @@
     </div>
     
     <div class="form-card p-6">
-
-      
-      <form method="post" class="space-y-6">
+      <form method="post" class="space-y-6" id="scheduleForm">
         {% csrf_token %}
         
-        <div>
-          <label for="tanggal" class="form-label">Tanggal Pemeriksaan <span class="text-red-500">*</span></label>
-          <input type="date" name="tanggal" id="tanggal" class="input-field" required>
+        <!-- Pilih Hewan -->
+        <div class="form-group">
+          <label for="id_hewan" class="form-label">
+            Pilih Hewan <span class="required">*</span>
+          </label>
+          <select name="id_hewan" id="id_hewan" class="input-field" required onchange="showAnimalInfo(this)">
+            <option value="">-- Pilih Hewan --</option>
+            {% for animal in animals %}
+              <option value="{{ animal.id_hewan }}" 
+                      data-spesies="{{ animal.spesies }}"
+                      data-asal="{{ animal.asal_hewan }}"
+                      data-habitat="{{ animal.habitat }}"
+                      data-status="{{ animal.status_kesehatan }}"
+                      data-lahir="{{ animal.tanggal_lahir }}">
+                {{ animal.nama_individu }} ({{ animal.spesies }})
+              </option>
+            {% endfor %}
+          </select>
+          <p class="helper-text">Pilih hewan yang akan dijadwalkan untuk pemeriksaan kesehatan</p>
+          
+          <!-- Animal Info Display -->
+          <div id="animalInfo" class="animal-info">
+            <h4 class="font-semibold text-gray-700 mb-2">Informasi Hewan:</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="font-medium">Spesies:</span>
+                <span id="infoSpesies">-</span>
+              </div>
+              <div>
+                <span class="font-medium">Asal:</span>
+                <span id="infoAsal">-</span>
+              </div>
+              <div>
+                <span class="font-medium">Habitat:</span>
+                <span id="infoHabitat">-</span>
+              </div>
+              <div>
+                <span class="font-medium">Status Kesehatan:</span>
+                <span id="infoStatus" class="status-badge">-</span>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div class="flex space-x-4 pt-2">
+        <!-- Tanggal Pemeriksaan -->
+        <div class="form-group">
+          <label for="tanggal" class="form-label">
+            Tanggal Pemeriksaan <span class="required">*</span>
+          </label>
+          <input type="date" 
+                 name="tanggal" 
+                 id="tanggal" 
+                 class="input-field" 
+                 min="{% if today_date %}{{ today_date }}{% endif %}"
+                 required>
+          <p class="helper-text">Pilih tanggal untuk pemeriksaan kesehatan selanjutnya</p>
+        </div>
+        
+        <!-- Frekuensi Pemeriksaan -->
+        <div class="form-group">
+          <label for="frequency" class="form-label">
+            Frekuensi Pemeriksaan (bulan)
+          </label>
+          <input type="number" 
+                 name="frequency" 
+                 id="frequency" 
+                 class="input-field" 
+                 value="{% if default_frequency %}{{ default_frequency }}{% else %}3{% endif %}"
+                 min="1" 
+                 max="365"
+                 placeholder="Contoh: 7 (untuk seminggu sekali)">
+          <p class="helper-text">Interval bulan untuk pemeriksaan rutin selanjutnya (default: 3 bulan)</p>
+        </div>
+        
+        <!-- Submit Buttons -->
+        <div class="flex space-x-4 pt-4">
           <button type="submit" class="btn-primary">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
             </svg>
-            Simpan
+            Simpan Jadwal
           </button>
-          <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_list' %}" class="btn-secondary">Batal</a>
+          <a href="{% url 'hijau_kesehatan_satwa:jadwal_pemeriksaan_list' %}" class="btn-secondary">
+            Batal
+          </a>
         </div>
       </form>
     </div>
     
-
+    <!-- Info Card -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div class="flex items-start">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <h3 class="text-sm font-medium text-blue-800 mb-1">Informasi Penjadwalan</h3>
+          <ul class="text-sm text-blue-700 space-y-1">
+            <li>• Pilih hewan yang akan dijadwalkan pemeriksaan kesehatan</li>
+            <li>• Tanggal tidak boleh kurang dari hari ini</li>
+            <li>• Frekuensi pemeriksaan digunakan untuk penjadwalan otomatis selanjutnya</li>
+            <li>• Sistem akan memberikan notifikasi sesuai jadwal yang ditentukan</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<script>
+function showAnimalInfo(select) {
+    const infoDiv = document.getElementById('animalInfo');
+    const option = select.options[select.selectedIndex];
+    
+    if (select.value === '') {
+        infoDiv.classList.remove('active');
+        return;
+    }
+    
+    // Get data from selected option
+    const spesies = option.getAttribute('data-spesies') || '-';
+    const asal = option.getAttribute('data-asal') || '-';
+    const habitat = option.getAttribute('data-habitat') || '-';
+    const status = option.getAttribute('data-status') || '-';
+    
+    // Update info display
+    document.getElementById('infoSpesies').textContent = spesies;
+    document.getElementById('infoAsal').textContent = asal;
+    document.getElementById('infoHabitat').textContent = habitat;
+    
+    // Update status with appropriate styling
+    const statusSpan = document.getElementById('infoStatus');
+    statusSpan.textContent = status;
+    statusSpan.className = 'status-badge';
+    
+    if (status.toLowerCase() === 'sehat') {
+        statusSpan.classList.add('status-sehat');
+    } else if (status.toLowerCase() === 'sakit') {
+        statusSpan.classList.add('status-sakit');
+    } else {
+        statusSpan.classList.add('status-pemulihan');
+    }
+    
+    infoDiv.classList.add('active');
+}
+
+// Form validation
+document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+    const hewan = document.getElementById('id_hewan').value;
+    const tanggal = document.getElementById('tanggal').value;
+    
+    if (!hewan) {
+        e.preventDefault();
+        alert('Silakan pilih hewan terlebih dahulu!');
+        document.getElementById('id_hewan').focus();
+        return false;
+    }
+    
+    if (!tanggal) {
+        e.preventDefault();
+        alert('Silakan pilih tanggal pemeriksaan!');
+        document.getElementById('tanggal').focus();
+        return false;
+    }
+    
+    // Check if date is not in the past
+    const selectedDate = new Date(tanggal);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+        e.preventDefault();
+        alert('Tanggal pemeriksaan tidak boleh kurang dari hari ini!');
+        document.getElementById('tanggal').focus();
+        return false;
+    }
+});
+
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tanggal').setAttribute('min', today);
+});
+</script>
 {% endblock %}

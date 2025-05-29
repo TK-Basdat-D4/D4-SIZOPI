@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{% if rekam_medis %}Edit{% else %}Tambah{% endif %} Rekam Medis Hewan{% endblock %}
 
@@ -38,6 +39,8 @@
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
   }
   
   .btn-primary:hover {
@@ -51,23 +54,14 @@
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     transition: background-color 0.2s;
+    text-decoration: none;
+    display: inline-block;
   }
   
   .btn-secondary:hover {
     background-color: #4b5563;
-  }
-  
-  .btn-danger {
-    background-color: #ef4444;
     color: white;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    transition: background-color 0.2s;
-  }
-  
-  .btn-danger:hover {
-    background-color: #dc2626;
+    text-decoration: none;
   }
   
   .status-healthy {
@@ -76,10 +70,39 @@
     border-color: #86efac;
   }
   
-  .status-sick {
+  .status-sick-light {
     background-color: #fef9c3;
     color: #854d0e;
     border-color: #facc15;
+  }
+  
+  .status-sick-severe {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+  }
+  
+  .animal-info {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    display: none;
+  }
+  
+  .animal-info.show {
+    display: block;
+  }
+  
+  .animal-detail {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-bottom: 0.25rem;
+  }
+  
+  .animal-detail:last-child {
+    margin-bottom: 0;
   }
 </style>
 {% endblock %}
@@ -103,10 +126,39 @@
       <form method="post" class="space-y-6">
         {% csrf_token %}
         
+        <!-- Animal Selection Field -->
+        <div>
+          <label for="id_hewan" class="form-label">Pilih Hewan <span class="text-red-500">*</span></label>
+          <select name="id_hewan" id="id_hewan" class="input-field" required>
+            <option value="">-- Pilih Hewan --</option>
+            {% for animal in animals %}
+            <option value="{{ animal.id_hewan }}" 
+                    data-nama="{{ animal.nama_individu }}"
+                    data-spesies="{{ animal.spesies }}"
+                    data-asal="{{ animal.asal_hewan }}"
+                    data-umur="{{ animal.umur }}"
+                    data-jenis-kelamin="{{ animal.jenis_kelamin }}"
+                    {% if rekam_medis and rekam_medis.id_hewan == animal.id_hewan %}selected{% endif %}>
+              {{ animal.nama_individu }} - {{ animal.spesies }} ({{ animal.asal_hewan }})
+            </option>
+            {% endfor %}
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Pilih hewan yang akan diperiksa</p>
+          
+          <!-- Animal Details Display -->
+          <div id="animal-info" class="animal-info">
+            <div class="animal-detail"><strong>Nama:</strong> <span id="detail-nama">-</span></div>
+            <div class="animal-detail"><strong>Spesies:</strong> <span id="detail-spesies">-</span></div>
+            <div class="animal-detail"><strong>Asal:</strong> <span id="detail-asal">-</span></div>
+            <div class="animal-detail"><strong>Umur:</strong> <span id="detail-umur">-</span></div>
+            <div class="animal-detail"><strong>Jenis Kelamin:</strong> <span id="detail-kelamin">-</span></div>
+          </div>
+        </div>
+        
         <div>
           <label for="tanggal" class="form-label">Tanggal Pemeriksaan <span class="text-red-500">*</span></label>
           <input type="date" name="tanggal" id="tanggal" class="input-field" 
-                value="{{ rekam_medis.tanggal|date:'Y-m-d' }}" required>
+                value="{% if rekam_medis %}{{ rekam_medis.tanggal|date:'Y-m-d' }}{% endif %}" required>
         </div>
         
         {# Hidden field to store doctor name #}
@@ -122,16 +174,21 @@
         
         <div>
           <label for="status" class="form-label">Status Kesehatan <span class="text-red-500">*</span></label>
-          <div class="flex space-x-4 mt-1">
+          <div class="flex flex-wrap gap-4 mt-1">
             <label class="inline-flex items-center">
               <input type="radio" name="status" value="Sehat" class="h-4 w-4 text-green-600" 
                     {% if rekam_medis and rekam_medis.status == 'Sehat' %}checked{% endif %} required>
               <span class="ml-2 px-3 py-1 rounded-full text-sm status-healthy">Sehat</span>
             </label>
             <label class="inline-flex items-center">
-              <input type="radio" name="status" value="Sakit" class="h-4 w-4 text-yellow-500" 
-                    {% if rekam_medis and rekam_medis.status == 'Sakit' %}checked{% endif %} required>
-              <span class="ml-2 px-3 py-1 rounded-full text-sm status-sick">Sakit</span>
+              <input type="radio" name="status" value="Sakit Ringan" class="h-4 w-4 text-yellow-500" 
+                    {% if rekam_medis and rekam_medis.status == 'Sakit Ringan' %}checked{% endif %} required>
+              <span class="ml-2 px-3 py-1 rounded-full text-sm status-sick-light">Sakit Ringan</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="status" value="Sakit Berat" class="h-4 w-4 text-red-500" 
+                    {% if rekam_medis and rekam_medis.status == 'Sakit Berat' %}checked{% endif %} required>
+              <span class="ml-2 px-3 py-1 rounded-full text-sm status-sick-severe">Sakit Berat</span>
             </label>
           </div>
         </div>
@@ -139,19 +196,19 @@
         <div>
           <label for="diagnosa" class="form-label">Diagnosa <span class="text-red-500">*</span></label>
           <textarea name="diagnosa" id="diagnosa" class="input-field" rows="3" 
-                    placeholder="Masukkan hasil diagnosa..." required>{{ rekam_medis.diagnosa }}</textarea>
+                    placeholder="Masukkan hasil diagnosa..." required>{% if rekam_medis %}{{ rekam_medis.diagnosa }}{% endif %}</textarea>
         </div>
         
         <div>
           <label for="pengobatan" class="form-label">Pengobatan <span class="text-red-500">*</span></label>
           <textarea name="pengobatan" id="pengobatan" class="input-field" rows="3" 
-                    placeholder="Deskripsi pengobatan yang diberikan..." required>{{ rekam_medis.pengobatan }}</textarea>
+                    placeholder="Deskripsi pengobatan yang diberikan..." required>{% if rekam_medis %}{{ rekam_medis.pengobatan }}{% endif %}</textarea>
         </div>
         
         <div>
           <label for="catatan_tindak_lanjut" class="form-label">Catatan Tindak Lanjut</label>
           <textarea name="catatan_tindak_lanjut" id="catatan_tindak_lanjut" class="input-field" rows="3" 
-                    placeholder="Tindak lanjut yang diperlukan...">{{ rekam_medis.catatan_tindak_lanjut }}</textarea>
+                    placeholder="Tindak lanjut yang diperlukan...">{% if rekam_medis %}{{ rekam_medis.catatan_tindak_lanjut }}{% endif %}</textarea>
         </div>
         
         <div class="flex space-x-4 pt-2">
@@ -159,7 +216,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
             </svg>
-            Simpan Data
+            {% if rekam_medis %}Update{% else %}Simpan{% endif %} Data
           </button>
           <a href="{% url 'hijau_kesehatan_satwa:rekam_medis_list' %}" class="btn-secondary">Batal</a>
         </div>
@@ -167,4 +224,35 @@
     </div>
   </div>
 </div>
+
+<script>
+// Display animal details when selection changes
+document.getElementById('id_hewan').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const animalInfo = document.getElementById('animal-info');
+    
+    if (this.value && selectedOption.dataset.nama) {
+        // Update detail fields
+        document.getElementById('detail-nama').textContent = selectedOption.dataset.nama || '-';
+        document.getElementById('detail-spesies').textContent = selectedOption.dataset.spesies || '-';
+        document.getElementById('detail-asal').textContent = selectedOption.dataset.asal || '-';
+        document.getElementById('detail-umur').textContent = selectedOption.dataset.umur || '-';
+        document.getElementById('detail-kelamin').textContent = selectedOption.dataset.jenisKelamin || '-';
+        
+        // Show animal info
+        animalInfo.classList.add('show');
+    } else {
+        // Hide animal info
+        animalInfo.classList.remove('show');
+    }
+});
+
+// Trigger change event on page load if there's a selected value
+document.addEventListener('DOMContentLoaded', function() {
+    const selectElement = document.getElementById('id_hewan');
+    if (selectElement.value) {
+        selectElement.dispatchEvent(new Event('change'));
+    }
+});
+</script>
 {% endblock %}
